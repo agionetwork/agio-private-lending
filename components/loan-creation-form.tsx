@@ -32,7 +32,12 @@ const MODE_CONFIG = {
     collateralTooltip: "The token and amount you will provide as collateral for this loan.",
     percentageTooltip:
       "The percentage of collateral relative to the loan amount. Higher percentages provide more security for lenders.",
-    privateLabel: "SET PRIVATE LENDER?",
+    privacyLabel: "SET PRIVATE LENDER?",
+    privacyTooltip:
+      "Route this offer through Cloak: shielded transfers and a stealth address hide the lender's wallet and amount on-chain. Subject to a privacy premium and ZK proof costs.",
+    exclusiveLabel: "SET EXCLUSIVE COUNTERPARTY?",
+    exclusiveTooltip:
+      "Restrict who can accept this offer to a specific wallet or .sol domain. The offer is still posted on-chain — only acceptance is gated to that counterparty.",
     contractFn: "createBorrowRequest" as const,
     successMsg: "Borrow offer created!",
     loanType: "borrow" as const,
@@ -43,7 +48,12 @@ const MODE_CONFIG = {
     collateralTooltip: "The token and amount you require as collateral for this loan.",
     percentageTooltip:
       "The percentage of collateral you require relative to the loan amount. Higher percentages provide more security for your loan.",
-    privateLabel: "SET PRIVATE BORROWER?",
+    privacyLabel: "SET PRIVATE BORROWER?",
+    privacyTooltip:
+      "Route this offer through Cloak: shielded transfers and a stealth address hide the borrower's wallet and amount on-chain. Subject to a privacy premium and ZK proof costs.",
+    exclusiveLabel: "SET EXCLUSIVE COUNTERPARTY?",
+    exclusiveTooltip:
+      "Restrict who can accept this offer to a specific wallet or .sol domain. The offer is still posted on-chain — only acceptance is gated to that counterparty.",
     contractFn: "createLendOffer" as const,
     successMsg: "Lend offer created!",
     loanType: "lend" as const,
@@ -77,14 +87,15 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
   const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [resolving, setResolving] = useState(false)
-  const [isPrivate, setIsPrivate] = useState("no")
-  const [isPrivateWarningOpen, setIsPrivateWarningOpen] = useState(false)
+  const [isExclusive, setIsExclusive] = useState("no")
+  const [isExclusiveWarningOpen, setIsExclusiveWarningOpen] = useState(false)
+  const [usePrivacy, setUsePrivacy] = useState("no")
 
   const handleCreateLoan = async () => {
-    if (isPrivate === "yes") {
+    if (isExclusive === "yes") {
       const trimmed = receiverAddress.trim()
       if (!trimmed) {
-        setIsPrivateWarningOpen(true)
+        setIsExclusiveWarningOpen(true)
         return
       }
       if (isSolDomain(trimmed)) {
@@ -138,8 +149,9 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
         apy: Math.round(apy),
         debtTokenSymbol: token,
         collateralTokenSymbol: tokenCollateral,
-        isPrivate: !!receiverAddress,
-        counterparty: receiverAddress || undefined,
+        isExclusive: !!receiverAddress,
+        exclusiveCounterparty: receiverAddress || undefined,
+        usePrivacy: usePrivacy === "yes",
       })
       toast.success(`${config.successMsg} TX: ${tx.slice(0, 8)}...`, {
         description: "View on OrbMarkets",
@@ -204,7 +216,8 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
     setCollateralAmount(1000)
     setCollateralPercentage(150)
     setReceiverAddress("")
-    setIsPrivate("no")
+    setIsExclusive("no")
+    setUsePrivacy("no")
     setErrors({})
     setUserModifiedField(null)
   }
@@ -614,7 +627,7 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Label className="text-sm font-medium text-foreground whitespace-nowrap">
-                  {config.privateLabel}
+                  {config.privacyLabel}
                 </Label>
                 <TooltipProvider>
                   <Tooltip>
@@ -622,14 +635,50 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
                       <QuestionMarkCircledIcon className="h-4 w-4 text-muted-foreground hover:text-blue-600 transition-colors flex-shrink-0" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
-                      <p>
-                        Enable this to send the offer to a specific wallet address or .sol domain instead of the public market.
-                      </p>
+                      <p>{config.privacyTooltip}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <Select value={isPrivate} onValueChange={(v) => {
-                  setIsPrivate(v)
+                <Select value={usePrivacy} onValueChange={setUsePrivacy}>
+                  <SelectTrigger className="w-20 h-8 text-black dark:text-white bg-transparent dark:bg-transparent">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="text-black dark:text-white bg-white dark:bg-blue-950">
+                    <SelectItem value="no">No</SelectItem>
+                    <SelectItem value="yes">Yes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {usePrivacy === "yes" && (
+                <div className="mt-2 p-3 rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50/60 dark:bg-blue-950/30 text-xs space-y-1">
+                  <div className="font-semibold text-blue-700 dark:text-blue-300">Privacy mode (Cloak ZK)</div>
+                  <div className="flex justify-between"><span>Privacy premium</span><span>+0.5% origination fee</span></div>
+                  <div className="flex justify-between"><span>ZK proofs (3x)</span><span>~0.005 SOL</span></div>
+                  <div className="flex justify-between"><span>Relayer fees</span><span>~0.001 SOL</span></div>
+                  <div className="text-muted-foreground pt-1 border-t border-blue-200 dark:border-blue-900">
+                    Wallets hidden, amounts encrypted on-chain. Audit via viewing key.
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Label className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {config.exclusiveLabel}
+                </Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <QuestionMarkCircledIcon className="h-4 w-4 text-muted-foreground hover:text-blue-600 transition-colors flex-shrink-0" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>{config.exclusiveTooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <Select value={isExclusive} onValueChange={(v) => {
+                  setIsExclusive(v)
                   if (v === "no") {
                     setReceiverAddress("")
                     setErrors((prev) => { const { receiverAddress: _, ...rest } = prev; return rest })
@@ -644,7 +693,7 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
                   </SelectContent>
                 </Select>
               </div>
-              {isPrivate === "yes" && (
+              {isExclusive === "yes" && (
                 <div className="mt-2">
                   <Input
                     type="text"
@@ -795,16 +844,16 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isPrivateWarningOpen} onOpenChange={setIsPrivateWarningOpen}>
+      <Dialog open={isExclusiveWarningOpen} onOpenChange={setIsExclusiveWarningOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Private Address Required</DialogTitle>
+            <DialogTitle>Exclusive Counterparty Required</DialogTitle>
             <DialogDescription>
-              Please enter the private wallet address or .sol domain before creating the loan.
+              Please enter the wallet address or .sol domain that will be allowed to accept this offer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={() => setIsPrivateWarningOpen(false)} className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button onClick={() => setIsExclusiveWarningOpen(false)} className="bg-blue-600 text-white hover:bg-blue-700">
               OK
             </Button>
           </DialogFooter>

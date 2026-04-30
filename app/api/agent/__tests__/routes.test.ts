@@ -161,6 +161,9 @@ describe("GET /api/agent/status", () => {
       swapEnabled: false,
       swapSlippageBps: 50,
       swapAutoRebalance: false,
+      socialAutoAcceptFriends: true,
+      privacyEnabled: false,
+      privacyMode: "never" as const,
     })
     vi.mocked(getAgentPublicKey).mockResolvedValue(WALLET)
 
@@ -271,6 +274,9 @@ describe("GET /api/agent/config", () => {
       swapEnabled: false,
       swapSlippageBps: 50,
       swapAutoRebalance: false,
+      socialAutoAcceptFriends: true,
+      privacyEnabled: false,
+      privacyMode: "never" as const,
     })
 
     const res = await GET(
@@ -384,6 +390,9 @@ describe("PUT /api/agent/config", () => {
       swapEnabled: false,
       swapSlippageBps: 50,
       swapAutoRebalance: false,
+      socialAutoAcceptFriends: true,
+      privacyEnabled: false,
+      privacyMode: "never" as const,
     })
     vi.mocked(setAgentConfig).mockResolvedValue()
 

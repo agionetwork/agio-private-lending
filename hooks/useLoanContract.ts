@@ -108,8 +108,19 @@ export interface CreateOfferParams {
   apy: number; // 0-100
   debtTokenSymbol: string;
   collateralTokenSymbol: string;
-  isPrivate: boolean;
-  counterparty?: string; // base58 pubkey of private counterparty
+  /**
+   * When true the offer is restricted to a single counterparty (`exclusiveCounterparty`).
+   * Maps to the program's `is_private` arg, which gates who can accept the loan.
+   * Independent of `usePrivacy` — an offer can be exclusive AND/OR ZK-private.
+   */
+  isExclusive: boolean;
+  /** Base58 pubkey of the only wallet allowed to accept (when `isExclusive` is true). */
+  exclusiveCounterparty?: string;
+  /**
+   * When true the offer is routed through Cloak (shielded transfers + stealth address).
+   * Public/exclusive offers leave this as false.
+   */
+  usePrivacy?: boolean;
 }
 
 export interface AcceptOfferParams {
@@ -438,10 +449,10 @@ export function useLoanContract() {
               ),
               duration: new BN(params.duration),
               apy: params.apy,
-              isPrivate: params.isPrivate,
+              isPrivate: params.isExclusive,
               lender:
-                params.isPrivate && params.counterparty
-                  ? new PublicKey(params.counterparty)
+                params.isExclusive && params.exclusiveCounterparty
+                  ? new PublicKey(params.exclusiveCounterparty)
                   : null,
             })
             .accounts({
@@ -521,10 +532,10 @@ export function useLoanContract() {
               ),
               duration: new BN(params.duration),
               apy: params.apy,
-              isPrivate: params.isPrivate,
+              isPrivate: params.isExclusive,
               borrower:
-                params.isPrivate && params.counterparty
-                  ? new PublicKey(params.counterparty)
+                params.isExclusive && params.exclusiveCounterparty
+                  ? new PublicKey(params.exclusiveCounterparty)
                   : null,
             })
             .accounts({

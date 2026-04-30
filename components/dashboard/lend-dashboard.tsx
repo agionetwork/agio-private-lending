@@ -246,13 +246,13 @@ export default function LendDashboard() {
           <Card className="border-2 border-gray-200 dark:border-gray-800 shadow-lg bg-transparent">
             <CardHeader>
               <CardTitle className="text-base font-medium">Available Offers</CardTitle>
-              <CardDescription>Private offers sent to your wallet</CardDescription>
+              <CardDescription>Exclusive offers sent to your wallet</CardDescription>
             </CardHeader>
             <CardContent>
               {offersForMe.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <p className="text-lg font-medium">No offers available</p>
-                  <p className="text-sm mt-1">Private offers sent to your wallet will appear here</p>
+                  <p className="text-sm mt-1">Exclusive offers sent to your wallet will appear here</p>
                 </div>
               ) : (
                 <div className="rounded-md border">

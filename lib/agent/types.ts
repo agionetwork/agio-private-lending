@@ -42,7 +42,17 @@ export interface AgentConfig {
 
   // Social settings
   socialAutoAcceptFriends: boolean
+
+  // Privacy (Cloak ZK lending)
+  privacyEnabled: boolean
+  privacyMode: PrivacyMode
 }
+
+/** Per-loan privacy default for autonomous agents.
+ *  - "always": every loan the agent creates/accepts is routed through Cloak.
+ *  - "ask":    agent prompts the user before each privacy decision (manual mode only).
+ *  - "never":  standard public flow, no ZK overhead. */
+export type PrivacyMode = "always" | "ask" | "never"
 
 export const DEFAULT_AGENT_CONFIG: AgentConfig = {
   enabled: false,
@@ -77,6 +87,9 @@ export const DEFAULT_AGENT_CONFIG: AgentConfig = {
   swapAutoRebalance: false,
 
   socialAutoAcceptFriends: true,
+
+  privacyEnabled: false,
+  privacyMode: "never",
 }
 
 export type AgentActionType =

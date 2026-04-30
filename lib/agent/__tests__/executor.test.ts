@@ -121,6 +121,9 @@ function makeConfig(overrides = {}) {
     swapEnabled: false,
     swapSlippageBps: 50,
     swapAutoRebalance: false,
+    socialAutoAcceptFriends: true,
+    privacyEnabled: false,
+    privacyMode: "never" as const,
     ...overrides,
   }
 }
