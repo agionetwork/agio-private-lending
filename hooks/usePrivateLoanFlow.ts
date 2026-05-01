@@ -108,14 +108,18 @@ export function usePrivateLoanFlow() {
 
       // Step 2 — fund stealth with SOL (fees + ATA rent for the Anchor create).
       onProgress?.("shield-sol")
-      await fundStealthWallet({
-        connection,
-        funderPublicKey: publicKey,
-        funderWallet: wallet,
-        mint: NATIVE_SOL_MINT,
-        amount: SOL_BUFFER_LAMPORTS,
-        stealthRecipient,
-      })
+      try {
+        await fundStealthWallet({
+          connection,
+          funderPublicKey: publicKey,
+          funderWallet: wallet,
+          mint: NATIVE_SOL_MINT,
+          amount: SOL_BUFFER_LAMPORTS,
+          stealthRecipient,
+        })
+      } catch (err: any) {
+        throw new Error(`shield-sol failed: ${err?.message ?? err}`)
+      }
 
       // Step 3 — fund stealth with the loan token (debt for lend, collateral
       // for borrow). The token sits in the stealth's ATA after unshield.
@@ -130,14 +134,18 @@ export function usePrivateLoanFlow() {
       )
 
       onProgress?.("shield-token")
-      await fundStealthWallet({
-        connection,
-        funderPublicKey: publicKey,
-        funderWallet: wallet,
-        mint: loanTokenMint,
-        amount: loanTokenAmountRaw,
-        stealthRecipient,
-      })
+      try {
+        await fundStealthWallet({
+          connection,
+          funderPublicKey: publicKey,
+          funderWallet: wallet,
+          mint: loanTokenMint,
+          amount: loanTokenAmountRaw,
+          stealthRecipient,
+        })
+      } catch (err: any) {
+        throw new Error(`shield-${loanTokenSymbol} failed: ${err?.message ?? err}`)
+      }
 
       // Step 4 — server posts Pyth + builds + signs the Anchor tx with stealth.
       onProgress?.("create-offer")

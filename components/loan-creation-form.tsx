@@ -216,9 +216,16 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
       resetForm()
     } catch (error: any) {
       const raw = error?.message || "Error creating loan"
+      console.error("[loan-creation-form] error:", error)
       let msg = raw
       const depositSymbol = mode === "borrow" ? tokenCollateral : token
-      if (raw.includes("NetworkError") || raw.includes("Failed to fetch") || raw.includes("failed to get recent blockhash")) {
+      // In privacy mode the flow has many stages (Cloak shield/unshield, stealth
+      // sign, server-side broadcast). Show the raw message so the user — and
+      // we — can see exactly which stage failed instead of swallowing into a
+      // generic "Network error" string.
+      if (usePrivacy === "yes") {
+        msg = `Private flow failed: ${raw}`
+      } else if (raw.includes("NetworkError") || raw.includes("Failed to fetch") || raw.includes("failed to get recent blockhash")) {
         msg = "Network error: unable to connect to Solana RPC. Check your internet connection and try again."
       } else if (raw.includes("failed to get info about account")) {
         msg = "Network error: unable to fetch account data from Solana. Please try again."
@@ -232,7 +239,7 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
       } else if (raw.includes("Simulation failed") || raw.includes("simulation failed")) {
         msg = `Transaction simulation failed: ${raw}`
       }
-      toast.error(msg)
+      toast.error(msg, { duration: 12000 })
       setErrors({ submit: msg })
     } finally {
       setIsLoading(false)
