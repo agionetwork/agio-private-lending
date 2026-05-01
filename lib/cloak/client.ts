@@ -43,15 +43,37 @@ async function loadSdk() {
       network === "devnet"
         ? import("@cloak.dev/sdk-devnet")
         : import("@cloak.dev/sdk")
-    ).catch((err) => {
-      throw new Error(
-        `Cloak SDK failed to load (${network}). Make sure the right package ` +
-          `is installed (\`pnpm add @cloak.dev/${network === "devnet" ? "sdk-devnet" : "sdk"}\`). ` +
-          `Original error: ${err?.message ?? err}`,
-      )
-    }) as Promise<typeof import("@cloak.dev/sdk")>
+    )
+      .then((sdk) => {
+        // Browser-side: route circuit fetches through our proxy. The S3 bucket
+        // hosting Cloak's circuits has no CORS, so direct browser fetches fail
+        // with `NetworkError`. The proxy at /api/cloak-proxy/circuits forwards
+        // to S3 server-side. No-op when running on the server (same fetch the
+        // proxy would do).
+        if (typeof window !== "undefined" && typeof sdk.setCircuitsPath === "function") {
+          sdk.setCircuitsPath("/api/cloak-proxy/circuits")
+        }
+        return sdk
+      })
+      .catch((err) => {
+        throw new Error(
+          `Cloak SDK failed to load (${network}). Make sure the right package ` +
+            `is installed (\`pnpm add @cloak.dev/${network === "devnet" ? "sdk-devnet" : "sdk"}\`). ` +
+            `Original error: ${err?.message ?? err}`,
+        )
+      }) as Promise<typeof import("@cloak.dev/sdk")>
   }
   return sdkPromise
+}
+
+/**
+ * Default relay URL the wrapper passes to SDK calls. In browsers we route
+ * through `/api/cloak-proxy/relay` (same origin, no CORS hassle). On the
+ * server we hit the upstream relay directly.
+ */
+function defaultRelayUrl(network: "devnet" | "mainnet"): string {
+  if (typeof window !== "undefined") return "/api/cloak-proxy/relay"
+  return network === "devnet" ? "https://api.devnet.cloak.ag" : "https://api.cloak.ag"
 }
 
 export interface CloakSignerContext {
@@ -99,7 +121,7 @@ export async function shield(
     {
       connection: signing.connection,
       programId,
-      relayUrl: signing.relayUrl,
+      relayUrl: signing.relayUrl ?? defaultRelayUrl(resolveCloakNetwork()),
       depositorKeypair: signing.depositorKeypair,
       wallet: signing.wallet,
       walletPublicKey: signing.walletPublicKey,
@@ -130,7 +152,7 @@ export async function privateTransfer(
   const result = await (sdk as any).transfer(inputUtxos, toUtxoPubkey, amount, {
     connection: signing.connection,
     programId,
-    relayUrl: signing.relayUrl,
+    relayUrl: signing.relayUrl ?? defaultRelayUrl(resolveCloakNetwork()),
     depositorKeypair: signing.depositorKeypair,
     wallet: signing.wallet,
     walletPublicKey: signing.walletPublicKey,
@@ -158,7 +180,7 @@ export async function unshield(
       {
         connection: signing.connection,
         programId,
-        relayUrl: signing.relayUrl,
+        relayUrl: signing.relayUrl ?? defaultRelayUrl(resolveCloakNetwork()),
         depositorKeypair: signing.depositorKeypair,
         wallet: signing.wallet,
         walletPublicKey: signing.walletPublicKey,
@@ -173,7 +195,7 @@ export async function unshield(
   const result = await sdk.fullWithdraw(opts.inputUtxos, opts.toAddress, {
     connection: signing.connection,
     programId,
-    relayUrl: signing.relayUrl,
+    relayUrl: signing.relayUrl ?? defaultRelayUrl(resolveCloakNetwork()),
     depositorKeypair: signing.depositorKeypair,
     wallet: signing.wallet,
     walletPublicKey: signing.walletPublicKey,
@@ -212,7 +234,7 @@ export async function privateSwap(
     {
       connection: signing.connection,
       programId,
-      relayUrl: signing.relayUrl,
+      relayUrl: signing.relayUrl ?? defaultRelayUrl(resolveCloakNetwork()),
       depositorKeypair: signing.depositorKeypair,
       wallet: signing.wallet,
       walletPublicKey: signing.walletPublicKey,
