@@ -19,6 +19,7 @@ import { Icons } from "@/components/ui/icons"
 import { HelpCircle as QuestionMarkCircledIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useLoanContract } from "@/hooks/useLoanContract"
+import { usePrivateLoanFlow } from "@/hooks/usePrivateLoanFlow"
 import { useTokenPrices } from "@/hooks/useTokenPrices"
 import { useWalletTokens } from "@/hooks/useWalletTokens"
 import { useTapestryProfile } from "@/components/tapestry-profile-provider"
@@ -69,6 +70,7 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
   const contract = useLoanContract()
   const { isConnected, publicKey, isValidSolanaAddress } = contract
   const createLoan = contract[config.contractFn]
+  const { createPrivateLoan } = usePrivateLoanFlow()
   const { postActivity } = useTapestryProfile()
   const { getAddress, isSolDomain } = useSNS()
   const { prices, getTokenPrice, isPriceReliable } = useTokenPrices()
@@ -142,17 +144,47 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
     try {
       setIsLoading(true)
       const durationInSeconds = loanTerm * 24 * 60 * 60
-      const tx = await createLoan({
-        debtAmount: loanAmount,
-        collateralAmount,
-        duration: durationInSeconds,
-        apy: Math.round(apy),
-        debtTokenSymbol: token,
-        collateralTokenSymbol: tokenCollateral,
-        isExclusive: !!receiverAddress,
-        exclusiveCounterparty: receiverAddress || undefined,
-        usePrivacy: usePrivacy === "yes",
-      })
+
+      let tx: string
+      if (usePrivacy === "yes") {
+        // Private path: stealth wallet via Cloak shield→unshield, server-side
+        // sign by Privy. Steps surface as toasts so the user understands the
+        // multi-stage flow (it takes ~30-60s end to end).
+        const stages: Record<string, string> = {
+          init: "Initializing stealth wallet...",
+          "shield-sol": "Shielding SOL for fees (Cloak)...",
+          "shield-token": `Shielding ${mode === "lend" ? token : tokenCollateral} (Cloak)...`,
+          "create-offer": "Posting offer on-chain (stealth)...",
+        }
+        const result = await createPrivateLoan(
+          {
+            mode: mode === "lend" ? "lend" : "borrow",
+            debtTokenSymbol: token,
+            collateralTokenSymbol: tokenCollateral,
+            debtAmount: loanAmount,
+            collateralAmount,
+            duration: durationInSeconds,
+            apy: Math.round(apy),
+          },
+          (stage) => {
+            const msg = stages[stage]
+            if (msg) toast.message(msg, { duration: 8000 })
+          },
+        )
+        tx = result.txHash
+      } else {
+        tx = await createLoan({
+          debtAmount: loanAmount,
+          collateralAmount,
+          duration: durationInSeconds,
+          apy: Math.round(apy),
+          debtTokenSymbol: token,
+          collateralTokenSymbol: tokenCollateral,
+          isExclusive: !!receiverAddress,
+          exclusiveCounterparty: receiverAddress || undefined,
+          usePrivacy: false,
+        })
+      }
       toast.success(`${config.successMsg} TX: ${tx.slice(0, 8)}...`, {
         description: "View on OrbMarkets",
         action: { label: "↗", onClick: () => window.open("https://orbmarkets.io", "_blank") },

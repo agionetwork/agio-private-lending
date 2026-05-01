@@ -44,7 +44,6 @@ export interface PrivateTransferOptions {
 }
 
 export interface UnshieldOptions {
-  fromUtxo: string
   toAddress: PublicKey
   mint: PublicKey
   amount: bigint

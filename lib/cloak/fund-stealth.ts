@@ -1,5 +1,6 @@
 import type { Connection, Keypair, PublicKey } from "@solana/web3.js"
 import { shield, unshield } from "./client"
+import type { CloakSignerContext } from "./client"
 
 /**
  * Fund a stealth wallet via a Cloak shield→unshield round-trip.
@@ -15,8 +16,12 @@ import { shield, unshield } from "./client"
 
 export interface FundStealthParams {
   connection: Connection
-  /** Funder's keypair (the user's main wallet). Pays the shield deposit + fees. */
-  funderKeypair: Keypair
+  /** Public key of the funder (user's main wallet). */
+  funderPublicKey: PublicKey
+  /** Funder's keypair — Node/server flows. Mutually exclusive with funderWallet. */
+  funderKeypair?: Keypair
+  /** Funder's wallet adapter — browser flows (Privy, Phantom, etc.). */
+  funderWallet?: any
   /** Mint of the token being moved (e.g. USDC, NATIVE_SOL_MINT). */
   mint: PublicKey
   /** Amount in raw units (smallest token units). */
@@ -37,43 +42,46 @@ export interface FundStealthResult {
 }
 
 export async function fundStealthWallet(params: FundStealthParams): Promise<FundStealthResult> {
-  const { connection, funderKeypair, mint, amount, stealthRecipient, delayMs = 0, relayUrl } = params
+  const {
+    connection,
+    funderPublicKey,
+    funderKeypair,
+    funderWallet,
+    mint,
+    amount,
+    stealthRecipient,
+    delayMs = 0,
+    relayUrl,
+  } = params
+
+  if (!funderKeypair && !funderWallet) {
+    throw new Error("fundStealthWallet requires either funderKeypair or funderWallet")
+  }
+
+  const signing: CloakSignerContext = {
+    walletPublicKey: funderPublicKey,
+    ...(funderKeypair ? { depositorKeypair: funderKeypair } : {}),
+    ...(funderWallet ? { wallet: funderWallet } : {}),
+  }
 
   // Step 1 — shield: move funds from funder's public wallet into a fresh
-  // Cloak UTXO. This tx is signed by the funder; the deposit is publicly
-  // visible (linked to funder's main wallet).
+  // Cloak UTXO. The deposit is publicly visible (linked to funder).
   const shielded = await shield(
     { mint, amount },
-    {
-      connection,
-      walletPublicKey: funderKeypair.publicKey,
-      depositorKeypair: funderKeypair,
-      relayUrl,
-    },
+    { connection, ...signing, relayUrl },
   )
 
   if (delayMs > 0) {
     await new Promise((resolve) => setTimeout(resolve, delayMs))
   }
 
-  // Step 2 — unshield: spend the UTXO and send funds to the stealth wallet.
-  // From an observer's perspective, this looks like a withdrawal from the
-  // Cloak pool to a fresh address, with no on-chain link to step 1.
+  // Step 2 — unshield: spend the UTXO into the stealth wallet. From an
+  // observer's perspective, this looks like a withdrawal from the Cloak
+  // pool to a fresh address. The link to step 1 is broken modulo pool
+  // depth and timing analysis.
   const unshielded = await unshield(
-    {
-      inputUtxos: [shielded.utxo],
-      mint,
-      amount,
-      toAddress: stealthRecipient,
-      // We use `fullWithdraw` semantics: take the entire UTXO, no change.
-      // partialAmount left undefined.
-    },
-    {
-      connection,
-      walletPublicKey: funderKeypair.publicKey,
-      depositorKeypair: funderKeypair,
-      relayUrl,
-    },
+    { inputUtxos: [shielded.utxo], mint, amount, toAddress: stealthRecipient },
+    { connection, ...signing, relayUrl },
   )
 
   return {

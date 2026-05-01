@@ -19,6 +19,7 @@
     "@bonfida/spl-name-service": "^3.0.19",
     "@cloak.dev/sdk": "^0.1.6",
     "@coral-xyz/anchor": "^0.32.1",
+    "@dialectlabs/react-sdk": "3.0.0-beta.7",
     "@dialectlabs/react-sdk-blockchain-solana": "^3.0.0-beta.7",
     "@dialectlabs/react-ui": "^3.0.0-beta.7",
     "@hookform/resolvers": "^5.2.2",
