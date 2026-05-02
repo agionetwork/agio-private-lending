@@ -157,30 +157,42 @@ async function waitForRelayCommitment(opts: {
 
   const deadline = Date.now() + timeoutMs
   let attempt = 0
+  // Query window — request a few leaves around our expected index. The relay
+  // accepts `from_index` + `limit`. We fetch a small slice to keep responses
+  // small while letting the relay's `canonical_count` tell us if it's caught up.
+  const fromIdx = Math.max(0, (minIndex ?? 0) - 2)
   while (Date.now() < deadline) {
     attempt++
     try {
-      const res = await fetch(`${base}/commitments?_t=${Date.now()}`)
+      const res = await fetch(
+        `${base}/commitments?from_index=${fromIdx}&limit=10&_t=${Date.now()}`,
+      )
       if (res.ok) {
-        const body = await res.json().catch(() => null) as any
-        const leaves: string[] | undefined =
-          body?.commitments ?? body?.leaves ?? body?.data ?? body
-        if (Array.isArray(leaves)) {
-          const hit = commitHex
-            ? leaves.includes(commitHex)
-            : leaves.length >= target
-          if (hit) {
-            onProgress?.(
-              `relay-sync: indexed (${leaves.length} leaves, attempt ${attempt})`,
-            )
-            return
-          }
-          onProgress?.(
-            `relay-sync: ${leaves.length} leaves, waiting for ` +
-              (commitHex ? `commitment ${commitHex.slice(0, 12)}…` : `index ${target - 1}`) +
-              ` (attempt ${attempt})`,
-          )
+        const body = (await res.json().catch(() => null)) as any
+        // Relay shape: { commitments: [{commitment, index}, ...], canonical_count, ... }
+        const items: Array<{ commitment: string; index: number }> | undefined =
+          Array.isArray(body?.commitments) ? body.commitments : undefined
+        const canonicalCount: number | undefined = body?.canonical_count
+        let hit = false
+        if (commitHex && items) {
+          hit = items.some((it) => it?.commitment === commitHex)
         }
+        if (!hit && canonicalCount !== undefined && canonicalCount >= target) {
+          // Fallback: relay reports enough leaves on chain even if our slice
+          // doesn't include the commitment — assume sync is current.
+          hit = true
+        }
+        if (hit) {
+          onProgress?.(
+            `relay-sync: indexed (canonical_count=${canonicalCount}, attempt ${attempt})`,
+          )
+          return
+        }
+        onProgress?.(
+          `relay-sync: canonical_count=${canonicalCount ?? "?"} target>=${target} ` +
+            (commitHex ? `(commitment ${commitHex.slice(0, 12)}…) ` : "") +
+            `attempt ${attempt}`,
+        )
       } else {
         onProgress?.(`relay-sync: HTTP ${res.status} (attempt ${attempt})`)
       }
