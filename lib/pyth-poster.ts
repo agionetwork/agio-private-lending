@@ -342,18 +342,28 @@ export async function postPriceUpdatesForMints(
     ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50_000 }),
   ]
 
-  // Send each price update in its own transaction
-  for (let i = 0; i < pythResult.postInstructions.length; i++) {
-    const tx = new Transaction()
-    tx.add(...computeBudgetIxs)
-    tx.add(pythResult.postInstructions[i])
-    const { blockhash } = await connection.getLatestBlockhash("confirmed")
-    tx.recentBlockhash = blockhash
-    tx.feePayer = payerKeypair.publicKey
-    tx.sign(payerKeypair, pythResult.ephemeralSigners[i])
-    const sig = await connection.sendRawTransaction(tx.serialize())
-    await connection.confirmTransaction(sig, "confirmed")
-  }
+  // Send all price-update txs in parallel and confirm together. Sequential
+  // post-and-confirm was eating 10-30s of the program's 60s MAX_PYTH_PRICE_AGE
+  // budget — by the time the consuming tx (createLendOffer / foreclose / etc.)
+  // landed on-chain, the Pyth publish_time was too old and the program threw
+  // PriceFeedStale (0x178e). Parallel cuts the post phase to ~one-confirm
+  // round-trip regardless of feed count.
+  const { blockhash } = await connection.getLatestBlockhash("confirmed")
+  await Promise.all(
+    pythResult.postInstructions.map(async (postIx, i) => {
+      const tx = new Transaction()
+      tx.add(...computeBudgetIxs)
+      tx.add(postIx)
+      tx.recentBlockhash = blockhash
+      tx.feePayer = payerKeypair.publicKey
+      tx.sign(payerKeypair, pythResult.ephemeralSigners[i])
+      const sig = await connection.sendRawTransaction(tx.serialize(), {
+        skipPreflight: true,
+        maxRetries: 5,
+      })
+      await connection.confirmTransaction(sig, "confirmed")
+    }),
+  )
 
   // Cleanup function: close PriceUpdateV2 accounts to reclaim rent
   const cleanup = async () => {
