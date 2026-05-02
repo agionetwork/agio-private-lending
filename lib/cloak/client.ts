@@ -236,19 +236,25 @@ export interface BaseTransactOptions extends CloakSignerContext {
 export async function shield(
   opts: ShieldOptions,
   signing: BaseTransactOptions,
-): Promise<{ utxo: any; signature: string; commitmentIndex: number; merkleTree?: any }> {
+): Promise<{
+  outputUtxos: any[]
+  signature: string
+  commitmentIndices: number[]
+  merkleTree?: any
+}> {
   await ensureBufferPolyfill()
   const sdk = await loadSdk()
   const programId = signing.programId ?? sdk.CLOAK_PROGRAM_ID
   const recipient = await resolveUtxoOwner(sdk, opts.recipient)
   const output = await sdk.createUtxo(opts.amount, recipient, opts.mint)
+  // Canonical 1-zero-input + 1-real-output shape (matches README quickstart).
+  // The SDK pads to the fixed 2/2 circuit arity internally and assigns indices
+  // to both. We forward the full result.outputUtxos to fullWithdraw so the SDK
+  // sees the same UTXO instances it just inserted.
   const result = await sdk.transact(
     {
-      inputUtxos: [
-        await sdk.createZeroUtxo(opts.mint),
-        await sdk.createZeroUtxo(opts.mint),
-      ],
-      outputUtxos: [output, await sdk.createZeroUtxo(opts.mint)],
+      inputUtxos: [await sdk.createZeroUtxo(opts.mint)],
+      outputUtxos: [output],
       externalAmount: opts.amount,
       depositor: signing.walletPublicKey,
     },
@@ -263,9 +269,9 @@ export async function shield(
     } as any,
   )
   return {
-    utxo: result.outputUtxos[0],
+    outputUtxos: result.outputUtxos,
     signature: (result as any).signature,
-    commitmentIndex: (result as any).commitmentIndices?.[0] ?? -1,
+    commitmentIndices: (result as any).commitmentIndices ?? [],
     merkleTree: (result as any).merkleTree,
   }
 }

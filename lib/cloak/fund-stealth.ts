@@ -44,8 +44,8 @@ export interface FundStealthParams {
 export interface FundStealthResult {
   shieldSignature: string
   unshieldSignature: string
-  /** Cloak UTXO created during shield (consumed by unshield). Diagnostics only. */
-  utxo: any
+  /** Cloak UTXOs created during shield (consumed by unshield). Diagnostics only. */
+  outputUtxos: any[]
 }
 
 export async function fundStealthWallet(params: FundStealthParams): Promise<FundStealthResult> {
@@ -90,17 +90,19 @@ export async function fundStealthWallet(params: FundStealthParams): Promise<Fund
     await new Promise((resolve) => setTimeout(resolve, delayMs))
   }
 
-  // Step 2 — unshield: spend the UTXO into the stealth wallet. We pass the
-  // cachedMerkleTree returned by the shield, so the SDK builds the spend
-  // proof from a tree that already has our commitment, no relay refetch
-  // needed. This sidesteps the "Local note commitment does not match relay
-  // tree" failures caused by relay sync lag.
+  // Step 2 — unshield: spend the UTXO into the stealth wallet. We pass:
+  // - shielded.outputUtxos: the full UTXO array from the deposit (both
+  //   real + zero outputs), which is what the SDK README's quickstart does.
+  //   The SDK figures out the spend math.
+  // - shielded.merkleTree as cachedMerkleTree: skips relay refetch entirely,
+  //   sidestepping the "Local note commitment does not match relay tree"
+  //   race that hits when the relay's tree is briefly behind ours.
   //
-  // From an observer's perspective, this still looks like a withdrawal from
+  // From an observer's perspective this still looks like a withdrawal from
   // the Cloak pool to a fresh address. Privacy strength is unaffected.
   const unshielded = await unshield(
     {
-      inputUtxos: [shielded.utxo],
+      inputUtxos: shielded.outputUtxos,
       mint,
       amount,
       toAddress: stealthRecipient,
@@ -118,7 +120,7 @@ export async function fundStealthWallet(params: FundStealthParams): Promise<Fund
   return {
     shieldSignature: shielded.signature,
     unshieldSignature: unshielded.signature,
-    utxo: shielded.utxo,
+    outputUtxos: shielded.outputUtxos,
   }
 }
 
