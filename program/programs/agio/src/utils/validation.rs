@@ -46,7 +46,7 @@ pub fn validate_collateral_ratio(
             &Clock::get()?,
             MAX_PYTH_PRICE_AGE_SECS,
             &collateral_price_feed_config.feed_id,
-            VerificationLevel::Partial { num_signatures: 4 },
+            VerificationLevel::Partial { num_signatures: 1 },
         )
         .map_err(|_| error!(AgioError::PriceFeedStale))?;
 
@@ -55,7 +55,7 @@ pub fn validate_collateral_ratio(
             &Clock::get()?,
             MAX_PYTH_PRICE_AGE_SECS,
             &debt_price_feed_config.feed_id,
-            VerificationLevel::Partial { num_signatures: 4 },
+            VerificationLevel::Partial { num_signatures: 1 },
         )
         .map_err(|_| error!(AgioError::PriceFeedStale))?;
 

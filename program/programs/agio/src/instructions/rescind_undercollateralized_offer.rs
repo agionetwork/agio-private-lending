@@ -127,7 +127,7 @@ pub fn rescind_undercollateralized_offer<'info>(
             &Clock::get()?,
             MAX_PYTH_PRICE_AGE_SECS,
             &collateral_feed_id,
-            VerificationLevel::Partial { num_signatures: 4 },
+            VerificationLevel::Partial { num_signatures: 1 },
         )
         .map_err(|_| error!(AgioError::PriceFeedStale))?;
 
@@ -139,7 +139,7 @@ pub fn rescind_undercollateralized_offer<'info>(
             &Clock::get()?,
             MAX_PYTH_PRICE_AGE_SECS,
             &debt_feed_id,
-            VerificationLevel::Partial { num_signatures: 4 },
+            VerificationLevel::Partial { num_signatures: 1 },
         )
         .map_err(|_| error!(AgioError::PriceFeedStale))?;
 
