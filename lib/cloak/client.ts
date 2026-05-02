@@ -50,9 +50,24 @@ async function ensureBufferPolyfill() {
   if (typeof window === "undefined") return
   const g = globalThis as any
   const probe = g.Buffer?.from?.("")
-  if (probe && typeof probe.readBigInt64LE === "function") return
+  const ok = probe && typeof probe.readBigInt64LE === "function"
+  if (ok) {
+    console.log("[cloak] Buffer polyfill OK (readBigInt64LE present)")
+    return
+  }
+  console.warn(
+    "[cloak] Buffer polyfill missing readBigInt64LE — replacing globalThis.Buffer with buffer@6.x",
+  )
   const { Buffer } = await import("buffer")
   g.Buffer = Buffer
+  // Verify the swap worked.
+  const probe2 = (globalThis as any).Buffer?.from?.("")
+  if (!probe2 || typeof probe2.readBigInt64LE !== "function") {
+    throw new Error(
+      "Buffer polyfill failed: globalThis.Buffer was overwritten or readBigInt64LE is still missing.",
+    )
+  }
+  console.log("[cloak] Buffer polyfill installed (readBigInt64LE present)")
 }
 
 async function loadSdk() {
@@ -165,6 +180,7 @@ export async function shield(
   opts: ShieldOptions,
   signing: BaseTransactOptions,
 ): Promise<{ utxo: any; signature: string; commitmentIndex: number }> {
+  await ensureBufferPolyfill()
   const sdk = await loadSdk()
   const programId = signing.programId ?? sdk.CLOAK_PROGRAM_ID
   const recipient = await resolveUtxoOwner(sdk, opts.recipient)
@@ -208,6 +224,7 @@ export async function privateTransfer(
   signing: BaseTransactOptions,
   _opts?: Pick<PrivateTransferOptions, "memo">,
 ): Promise<{ outputUtxos: any[]; signature: string }> {
+  await ensureBufferPolyfill()
   const sdk = await loadSdk()
   const programId = signing.programId ?? sdk.CLOAK_PROGRAM_ID
   const result = await (sdk as any).transfer(inputUtxos, toUtxoPubkey, amount, {
@@ -231,6 +248,7 @@ export async function unshield(
   opts: UnshieldOptions & { inputUtxos: any[]; partialAmount?: bigint },
   signing: BaseTransactOptions,
 ): Promise<{ signature: string; changeUtxos?: any[] }> {
+  await ensureBufferPolyfill()
   const sdk = await loadSdk()
   const programId = signing.programId ?? sdk.CLOAK_PROGRAM_ID
   if (opts.partialAmount && opts.partialAmount < opts.amount) {
@@ -282,6 +300,7 @@ export async function privateSwap(
   opts: PrivateSwapOptions,
   signing: BaseTransactOptions,
 ): Promise<{ signature: string; changeUtxos?: any[] }> {
+  await ensureBufferPolyfill()
   const sdk = await loadSdk()
   const programId = signing.programId ?? sdk.CLOAK_PROGRAM_ID
   const result = await sdk.swapUtxo(
