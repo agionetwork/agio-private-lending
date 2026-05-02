@@ -106,26 +106,7 @@ export function usePrivateLoanFlow() {
           : await import("@cloak.dev/sdk")
       const { NATIVE_SOL_MINT } = sdk
 
-      // Step 2 — fund stealth with SOL (fees + ATA rent for the Anchor create).
-      onProgress?.("shield-sol")
-      try {
-        await fundStealthWallet({
-          connection,
-          funderPublicKey: publicKey,
-          funderWallet: wallet,
-          mint: NATIVE_SOL_MINT,
-          amount: SOL_BUFFER_LAMPORTS,
-          stealthRecipient,
-          onProgress: (status) => console.log("[cloak/shield-sol]", status),
-          onProofProgress: (pct) =>
-            console.log(`[cloak/shield-sol] proof ${pct.toFixed(1)}%`),
-        })
-      } catch (err: any) {
-        throw new Error(`shield-sol failed: ${err?.message ?? err}`)
-      }
-
-      // Step 3 — fund stealth with the loan token (debt for lend, collateral
-      // for borrow). The token sits in the stealth's ATA after unshield.
+      // Compute the loan-token mint + amount once.
       const loanTokenSymbol =
         params.mode === "lend" ? params.debtTokenSymbol : params.collateralTokenSymbol
       const loanTokenAmount =
@@ -136,21 +117,67 @@ export function usePrivateLoanFlow() {
         Math.round(loanTokenAmount * 10 ** loanTokenDecimals),
       )
 
-      onProgress?.("shield-token")
-      try {
-        await fundStealthWallet({
-          connection,
-          funderPublicKey: publicKey,
-          funderWallet: wallet,
-          mint: loanTokenMint,
-          amount: loanTokenAmountRaw,
-          stealthRecipient,
-          onProgress: (status) => console.log(`[cloak/shield-${loanTokenSymbol}]`, status),
-          onProofProgress: (pct) =>
-            console.log(`[cloak/shield-${loanTokenSymbol}] proof ${pct.toFixed(1)}%`),
-        })
-      } catch (err: any) {
-        throw new Error(`shield-${loanTokenSymbol} failed: ${err?.message ?? err}`)
+      // When the loan token is SOL we can fund both fee buffer + loan amount
+      // in a SINGLE Cloak round-trip (one shield + one unshield). Two separate
+      // round-trips of the same mint were tripping over SDK module-level
+      // state and surfacing as 'Local note commitment does not match relay
+      // tree at index N'. One call avoids that path entirely and is also
+      // ~2x cheaper in fees + proof gen time.
+      const loanTokenIsSol = loanTokenMint.equals(NATIVE_SOL_MINT)
+
+      if (loanTokenIsSol) {
+        onProgress?.("shield-sol")
+        try {
+          await fundStealthWallet({
+            connection,
+            funderPublicKey: publicKey,
+            funderWallet: wallet,
+            mint: NATIVE_SOL_MINT,
+            amount: SOL_BUFFER_LAMPORTS + loanTokenAmountRaw,
+            stealthRecipient,
+            onProgress: (status) => console.log("[cloak/fund-sol]", status),
+            onProofProgress: (pct) =>
+              console.log(`[cloak/fund-sol] proof ${pct.toFixed(1)}%`),
+          })
+        } catch (err: any) {
+          throw new Error(`fund-sol failed: ${err?.message ?? err}`)
+        }
+      } else {
+        // Step 2 — fund stealth with SOL fee buffer (separate mint).
+        onProgress?.("shield-sol")
+        try {
+          await fundStealthWallet({
+            connection,
+            funderPublicKey: publicKey,
+            funderWallet: wallet,
+            mint: NATIVE_SOL_MINT,
+            amount: SOL_BUFFER_LAMPORTS,
+            stealthRecipient,
+            onProgress: (status) => console.log("[cloak/shield-sol]", status),
+            onProofProgress: (pct) =>
+              console.log(`[cloak/shield-sol] proof ${pct.toFixed(1)}%`),
+          })
+        } catch (err: any) {
+          throw new Error(`shield-sol failed: ${err?.message ?? err}`)
+        }
+
+        // Step 3 — fund stealth with the loan token.
+        onProgress?.("shield-token")
+        try {
+          await fundStealthWallet({
+            connection,
+            funderPublicKey: publicKey,
+            funderWallet: wallet,
+            mint: loanTokenMint,
+            amount: loanTokenAmountRaw,
+            stealthRecipient,
+            onProgress: (status) => console.log(`[cloak/shield-${loanTokenSymbol}]`, status),
+            onProofProgress: (pct) =>
+              console.log(`[cloak/shield-${loanTokenSymbol}] proof ${pct.toFixed(1)}%`),
+          })
+        } catch (err: any) {
+          throw new Error(`shield-${loanTokenSymbol} failed: ${err?.message ?? err}`)
+        }
       }
 
       // Step 4 — server posts Pyth + builds + signs the Anchor tx with stealth.
