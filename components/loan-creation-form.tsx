@@ -19,9 +19,11 @@ import { Icons } from "@/components/ui/icons"
 import { HelpCircle as QuestionMarkCircledIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useLoanContract } from "@/hooks/useLoanContract"
-import { usePrivateLoanFlow } from "@/hooks/usePrivateLoanFlow"
+import { usePrivateLoanFlow, type PrivateLoanProgress } from "@/hooks/usePrivateLoanFlow"
 import { useTokenPrices } from "@/hooks/useTokenPrices"
 import { useWalletTokens } from "@/hooks/useWalletTokens"
+import { estimatePrivateLoanCost, formatCostLines } from "@/lib/cloak/cost-estimator"
+import { Check, X, Loader2 } from "lucide-react"
 import { useTapestryProfile } from "@/components/tapestry-profile-provider"
 import { toast } from "sonner"
 import { useSNS } from "@/hooks/useSNS"
@@ -92,6 +94,9 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
   const [isExclusive, setIsExclusive] = useState("no")
   const [isExclusiveWarningOpen, setIsExclusiveWarningOpen] = useState(false)
   const [usePrivacy, setUsePrivacy] = useState("no")
+  const [privateStage, setPrivateStage] = useState<PrivateLoanProgress | "success" | "error" | null>(null)
+  const [privateError, setPrivateError] = useState<string | null>(null)
+  const [privateTxHash, setPrivateTxHash] = useState<string | null>(null)
 
   const handleCreateLoan = async () => {
     if (isExclusive === "yes") {
@@ -147,15 +152,12 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
 
       let tx: string
       if (usePrivacy === "yes") {
-        // Private path: stealth wallet via Cloak shield→unshield, server-side
-        // sign by Privy. Steps surface as toasts so the user understands the
-        // multi-stage flow (it takes ~30-60s end to end).
-        const stages: Record<string, string> = {
-          init: "Initializing stealth wallet...",
-          "shield-sol": "Shielding SOL for fees (Cloak)...",
-          "shield-token": `Shielding ${mode === "lend" ? token : tokenCollateral} (Cloak)...`,
-          "create-offer": "Posting offer on-chain (stealth)...",
-        }
+        // Private path: surface stage progress in the modal (replaces the
+        // loan summary while the flow runs). No bottom-left toasts in
+        // private mode — they would just duplicate the modal content.
+        setPrivateStage("init")
+        setPrivateError(null)
+        setPrivateTxHash(null)
         const result = await createPrivateLoan(
           {
             mode: mode === "lend" ? "lend" : "borrow",
@@ -166,12 +168,11 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
             duration: durationInSeconds,
             apy: Math.round(apy),
           },
-          (stage) => {
-            const msg = stages[stage]
-            if (msg) toast.message(msg, { duration: 8000 })
-          },
+          (stage) => setPrivateStage(stage),
         )
         tx = result.txHash
+        setPrivateStage("success")
+        setPrivateTxHash(tx)
       } else {
         tx = await createLoan({
           debtAmount: loanAmount,
@@ -212,8 +213,12 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
       }).catch(() => {})
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 3000)
-      setIsSummaryDialogOpen(false)
-      resetForm()
+      // Private mode: keep the modal open on the success screen so the user
+      // can see the txHash + close manually. Public mode closes immediately.
+      if (usePrivacy !== "yes") {
+        setIsSummaryDialogOpen(false)
+        resetForm()
+      }
     } catch (error: any) {
       const raw = error?.message || "Error creating loan"
       console.error("[loan-creation-form] error:", error)
@@ -225,6 +230,8 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
       // generic "Network error" string.
       if (usePrivacy === "yes") {
         msg = `Private flow failed: ${raw}`
+        setPrivateStage("error")
+        setPrivateError(raw)
       } else if (raw.includes("NetworkError") || raw.includes("Failed to fetch") || raw.includes("failed to get recent blockhash")) {
         msg = "Network error: unable to connect to Solana RPC. Check your internet connection and try again."
       } else if (raw.includes("failed to get info about account")) {
@@ -239,11 +246,23 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
       } else if (raw.includes("Simulation failed") || raw.includes("simulation failed")) {
         msg = `Transaction simulation failed: ${raw}`
       }
-      toast.error(msg, { duration: 12000 })
+      // In private mode the modal already shows the error inline — skip the
+      // toast to avoid duplication.
+      if (usePrivacy !== "yes") {
+        toast.error(msg, { duration: 12000 })
+      }
       setErrors({ submit: msg })
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const closePrivateModal = () => {
+    setIsSummaryDialogOpen(false)
+    setPrivateStage(null)
+    setPrivateError(null)
+    setPrivateTxHash(null)
+    if (privateStage === "success") resetForm()
   }
 
   const resetForm = () => {
@@ -788,14 +807,56 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
         </Button>
       </CardFooter>
 
-      <Dialog open={isSummaryDialogOpen} onOpenChange={setIsSummaryDialogOpen}>
+      <Dialog
+        open={isSummaryDialogOpen}
+        onOpenChange={(open) => {
+          // Don't allow closing the modal mid-flow in private mode — the user
+          // would lose visibility into a transaction that's still running and
+          // burning fees. They can close on success/error via the footer.
+          if (!open && usePrivacy === "yes" && (isLoading || privateStage)) return
+          setIsSummaryDialogOpen(open)
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-center">Loan Summary</DialogTitle>
+            <DialogTitle className="text-lg font-bold text-center">
+              {usePrivacy === "yes" && privateStage
+                ? privateStage === "success"
+                  ? "Private Loan Created"
+                  : privateStage === "error"
+                    ? "Private Flow Failed"
+                    : "Creating Private Loan"
+                : "Loan Summary"}
+            </DialogTitle>
             <DialogDescription className="text-center">
-              Review your loan details before submitting
+              {usePrivacy === "yes" && privateStage
+                ? privateStage === "success"
+                  ? "Stealth wallet funded and offer posted on-chain."
+                  : privateStage === "error"
+                    ? "Something went wrong during the private flow."
+                    : "Stealth wallet → Cloak shield/unshield → Anchor offer. Don't close."
+                : "Review your loan details before submitting"}
             </DialogDescription>
           </DialogHeader>
+
+          {/* Progress steps replace the loan summary while the private flow runs. */}
+          {usePrivacy === "yes" && privateStage ? (
+            <PrivateFlowProgress
+              stage={privateStage}
+              error={privateError}
+              txHash={privateTxHash}
+              loanTokenSymbol={mode === "lend" ? token : tokenCollateral}
+            />
+          ) : (
+          <>
+          {usePrivacy === "yes" && (
+            <PrivateCostPanel
+              loanAmount={loanAmount}
+              loanTokenSymbol={token}
+              tokenUsdPrice={getTokenPrice(token)}
+              solUsdPrice={getTokenPrice("SOL")}
+            />
+          )}
 
           <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-4 border border-blue-100 dark:border-blue-800 shadow-sm">
             <h3 className="text-sm font-bold mb-3 text-blue-800 dark:text-blue-300 flex items-center">
@@ -856,29 +917,49 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
               </div>
             </div>
           </div>
+          </>
+          )}
 
           <DialogFooter className="flex justify-center mt-4 gap-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsSummaryDialogOpen(false)}
-              className="bg-white dark:bg-blue-950 text-black dark:text-white hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleConfirmLoan}
-              className="bg-blue-600 text-white hover:bg-blue-700"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
+            {usePrivacy === "yes" && privateStage ? (
+              privateStage === "success" || privateStage === "error" ? (
+                <Button
+                  onClick={closePrivateModal}
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Close
+                </Button>
               ) : (
-                "Send Offer"
-              )}
-            </Button>
+                <Button disabled className="bg-blue-600 text-white opacity-70">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Don&apos;t close
+                </Button>
+              )
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsSummaryDialogOpen(false)}
+                  className="bg-white dark:bg-blue-950 text-black dark:text-white hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmLoan}
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    "Send Offer"
+                  )}
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -899,5 +980,150 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
         </DialogContent>
       </Dialog>
     </Card>
+  )
+}
+
+/**
+ * Cost breakdown panel for the privacy mode. Renders inside the Loan Summary
+ * modal above the public loan details so the user sees the privacy premium,
+ * proof costs, and relayer fees BEFORE confirming.
+ */
+function PrivateCostPanel(props: {
+  loanAmount: number
+  loanTokenSymbol: string
+  tokenUsdPrice: number
+  solUsdPrice: number
+}) {
+  const debtUsd = props.loanAmount * (props.tokenUsdPrice || 0)
+  const est = estimatePrivateLoanCost(props.solUsdPrice || 0)
+  const lines = formatCostLines(est, debtUsd)
+  return (
+    <div className="rounded-lg p-3 mb-3 border border-blue-200 dark:border-blue-900 bg-blue-50/60 dark:bg-blue-950/30 text-xs">
+      <div className="font-semibold text-blue-700 dark:text-blue-300 mb-2">
+        Privacy mode (Cloak ZK) — extra costs
+      </div>
+      <div className="space-y-1">
+        <div className="flex justify-between">
+          <span>Privacy premium</span>
+          <span>{lines.privacyPremium}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>ZK proofs ({est.proofCount}x)</span>
+          <span>{lines.zkProofs}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Relayer fees</span>
+          <span>{lines.relayer}</span>
+        </div>
+        <div className="flex justify-between font-semibold pt-1 border-t border-blue-200 dark:border-blue-900">
+          <span>Estimated total extra</span>
+          <span>{lines.totalExtra}</span>
+        </div>
+      </div>
+      <div className="text-muted-foreground mt-2 leading-snug">
+        Wallets hidden, amounts encrypted on-chain. Audit via viewing key.
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Step-by-step status panel that replaces the loan summary while the private
+ * flow is running. Drives off the same `PrivateLoanProgress` enum as the hook.
+ */
+function PrivateFlowProgress(props: {
+  stage: PrivateLoanProgress | "success" | "error"
+  error: string | null
+  txHash: string | null
+  loanTokenSymbol: string
+}) {
+  const STEPS: { key: PrivateLoanProgress; label: string; sub?: string }[] = [
+    { key: "init", label: "Initializing stealth wallet", sub: "Privy server-side wallet, indexed in Redis" },
+    { key: "shield-sol", label: "Shielding SOL via Cloak", sub: "Funds tx fees + ATA rent for the on-chain offer" },
+    { key: "shield-token", label: `Shielding ${props.loanTokenSymbol} via Cloak`, sub: "Loan principal / collateral round-trip" },
+    { key: "create-offer", label: "Posting offer on-chain", sub: "Stealth signs Anchor createLendOffer/createBorrowRequest" },
+  ]
+  // shield-token is skipped when SOL is the loan token (single combined round-trip).
+  const isSolOnly = props.loanTokenSymbol === "SOL"
+  const visibleSteps = isSolOnly ? STEPS.filter((s) => s.key !== "shield-token") : STEPS
+  const orderIdx = (k: PrivateLoanProgress) =>
+    visibleSteps.findIndex((s) => s.key === k)
+  const stageOrder =
+    props.stage === "success"
+      ? visibleSteps.length
+      : props.stage === "error"
+        ? -1
+        : orderIdx(props.stage as PrivateLoanProgress)
+
+  return (
+    <div className="space-y-3 py-2">
+      {visibleSteps.map((step, i) => {
+        const isDone = props.stage === "success" || i < stageOrder
+        const isActive = i === stageOrder && props.stage !== "success"
+        const isError = props.stage === "error" && i === stageOrder + 1
+        return (
+          <div key={step.key} className="flex items-start gap-3">
+            <div className="mt-0.5 h-5 w-5 flex items-center justify-center">
+              {isDone ? (
+                <Check className="h-5 w-5 text-green-600" />
+              ) : isError ? (
+                <X className="h-5 w-5 text-red-600" />
+              ) : isActive ? (
+                <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+              ) : (
+                <div className="h-2.5 w-2.5 rounded-full bg-gray-300 dark:bg-gray-600" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div
+                className={
+                  isActive
+                    ? "text-sm font-semibold text-blue-700 dark:text-blue-300"
+                    : isDone
+                      ? "text-sm text-green-700 dark:text-green-400"
+                      : isError
+                        ? "text-sm font-semibold text-red-700 dark:text-red-400"
+                        : "text-sm text-gray-500 dark:text-gray-400"
+                }
+              >
+                {step.label}
+              </div>
+              {step.sub && (
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  {step.sub}
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })}
+
+      {props.stage === "success" && props.txHash && (
+        <div className="mt-4 rounded-lg p-3 border border-green-200 dark:border-green-900 bg-green-50/60 dark:bg-green-950/30">
+          <div className="text-xs font-semibold text-green-700 dark:text-green-400 mb-1">
+            Loan tx
+          </div>
+          <a
+            href={`https://explorer.solana.com/tx/${props.txHash}?cluster=devnet`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-mono text-green-700 dark:text-green-400 underline break-all"
+          >
+            {props.txHash}
+          </a>
+        </div>
+      )}
+
+      {props.stage === "error" && props.error && (
+        <div className="mt-4 rounded-lg p-3 border border-red-200 dark:border-red-900 bg-red-50/60 dark:bg-red-950/30">
+          <div className="text-xs font-semibold text-red-700 dark:text-red-400 mb-1">
+            Error
+          </div>
+          <div className="text-xs text-red-700 dark:text-red-400 break-words leading-snug">
+            {props.error}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
