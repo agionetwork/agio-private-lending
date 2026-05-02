@@ -849,15 +849,6 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
             />
           ) : (
           <>
-          {usePrivacy === "yes" && (
-            <PrivateCostPanel
-              loanAmount={loanAmount}
-              loanTokenSymbol={token}
-              tokenUsdPrice={getTokenPrice(token)}
-              solUsdPrice={getTokenPrice("SOL")}
-            />
-          )}
-
           <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-4 border border-blue-100 dark:border-blue-800 shadow-sm">
             <h3 className="text-sm font-bold mb-3 text-blue-800 dark:text-blue-300 flex items-center">
               <svg
@@ -911,9 +902,59 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
                   {((loanAmount * (apy / 100)) / 365).toFixed(4)} {token} per day
                 </p>
               </div>
+
+              {usePrivacy === "yes" && (() => {
+                const tokenUsd = loanAmount * (getTokenPrice(token) || 0)
+                const solUsd = getTokenPrice("SOL") || 0
+                const est = estimatePrivateLoanCost(solUsd)
+                const lines = formatCostLines(est, tokenUsd)
+                const premiumUsd = (est.privacyPremiumBps / 10000) * tokenUsd
+                const totalSetupUsd = premiumUsd + est.totalUsd
+                return (
+                  <>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-white dark:bg-blue-950 p-2 rounded border border-blue-100 dark:border-blue-800">
+                        <p className="text-gray-500 dark:text-gray-300 mb-1">Privacy Premium:</p>
+                        <p className="font-semibold text-blue-700 dark:text-blue-300">
+                          {lines.privacyPremium}
+                        </p>
+                      </div>
+                      <div className="bg-white dark:bg-blue-950 p-2 rounded border border-blue-100 dark:border-blue-800">
+                        <p className="text-gray-500 dark:text-gray-300 mb-1">
+                          ZK Proofs ({est.proofCount}x):
+                        </p>
+                        <p className="font-semibold text-blue-700 dark:text-blue-300">
+                          {lines.zkProofs}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-white dark:bg-blue-950 p-2 rounded border border-blue-100 dark:border-blue-800">
+                      <p className="text-gray-500 dark:text-gray-300 mb-1">Cloak Relayer Fees:</p>
+                      <p className="font-semibold text-blue-700 dark:text-blue-300">
+                        {lines.relayer}
+                      </p>
+                    </div>
+                    <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded border-2 border-blue-300 dark:border-blue-700">
+                      <p className="text-gray-600 dark:text-gray-200 mb-1 font-semibold">
+                        Total Setup Cost:
+                      </p>
+                      <p className="font-bold text-blue-800 dark:text-blue-200">
+                        ${totalSetupUsd.toFixed(2)} USD
+                      </p>
+                    </div>
+                  </>
+                )
+              })()}
+
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
                 Note: You will lend {loanAmount} {token} for {loanTerm} days at {apy}% APY. The
                 borrower&apos;s collateral will be locked until repayment.
+                {usePrivacy === "yes" && (
+                  <>
+                    {" "}Wallet identity hidden via Cloak ZK; amounts visible on-chain.
+                    Audit available via viewing key.
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -980,50 +1021,6 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
         </DialogContent>
       </Dialog>
     </Card>
-  )
-}
-
-/**
- * Cost breakdown panel for the privacy mode. Renders inside the Loan Summary
- * modal above the public loan details so the user sees the privacy premium,
- * proof costs, and relayer fees BEFORE confirming.
- */
-function PrivateCostPanel(props: {
-  loanAmount: number
-  loanTokenSymbol: string
-  tokenUsdPrice: number
-  solUsdPrice: number
-}) {
-  const debtUsd = props.loanAmount * (props.tokenUsdPrice || 0)
-  const est = estimatePrivateLoanCost(props.solUsdPrice || 0)
-  const lines = formatCostLines(est, debtUsd)
-  return (
-    <div className="rounded-lg p-3 mb-3 border border-blue-200 dark:border-blue-900 bg-blue-50/60 dark:bg-blue-950/30 text-xs">
-      <div className="font-semibold text-blue-700 dark:text-blue-300 mb-2">
-        Privacy mode (Cloak ZK) — extra costs
-      </div>
-      <div className="space-y-1">
-        <div className="flex justify-between">
-          <span>Privacy premium</span>
-          <span>{lines.privacyPremium}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>ZK proofs ({est.proofCount}x)</span>
-          <span>{lines.zkProofs}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Relayer fees</span>
-          <span>{lines.relayer}</span>
-        </div>
-        <div className="flex justify-between font-semibold pt-1 border-t border-blue-200 dark:border-blue-900">
-          <span>Estimated total extra</span>
-          <span>{lines.totalExtra}</span>
-        </div>
-      </div>
-      <div className="text-muted-foreground mt-2 leading-snug">
-        Wallets hidden, amounts encrypted on-chain. Audit via viewing key.
-      </div>
-    </div>
   )
 }
 
