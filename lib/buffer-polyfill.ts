@@ -1,6 +1,10 @@
+"use client"
+
 /**
- * Top-level Buffer polyfill — must be the FIRST import in app/layout.tsx so
- * it runs before any module that captures `globalThis.Buffer` at init time.
+ * Top-level Buffer polyfill — runs in the client bundle. Imported as a
+ * side-effect from a "use client" component so it executes in the BROWSER
+ * (a side-effect import in a Server Component never reaches the client
+ * bundle, which is the bug that broke production deploy until now).
  *
  * Even after we replace `globalThis.Buffer` with the full `buffer@6.x`
  * implementation, bundlers like Turbopack may inline a SEPARATE Buffer

@@ -1,5 +1,10 @@
 "use client";
 
+// Side-effect import — installs Buffer BigInt polyfills on globalThis.Buffer
+// AND Uint8Array.prototype before any Cloak SDK code captures Buffer.
+// Must run in the client bundle, hence imported here (a "use client" module).
+import "@/lib/buffer-polyfill";
+
 import { createContext, useContext, useState, ReactNode } from "react";
 import { rateLimitedStorage } from '@/lib/secure-storage';
 
@@ -121,6 +126,17 @@ function WalletProviderInternal({ children }: { children: ReactNode }) {
       setAddress(publicKey);
       setProvider(walletProvider);
       setIsConnected(true);
+
+      // Award the +10 social-point connect bonus on first connect (server-side
+      // dedup via Redis SETNX, so retries are no-ops). Fire & forget; failure
+      // here must never block the wallet connection itself.
+      try {
+        fetch('/api/social-points/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ wallet: publicKey }),
+        }).catch(() => {});
+      } catch { /* ignore */ }
 
     } catch (error) {
       console.error('Error connecting wallet:', error);
