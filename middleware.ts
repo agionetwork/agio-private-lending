@@ -18,9 +18,12 @@ export function middleware(request: NextRequest) {
     `default-src 'self'`,
     // unsafe-inline required: Next.js RSC emits inline scripts (self.__next_f.push)
     // that cannot carry nonce attributes. Without unsafe-inline they are blocked by CSP.
+    // 'wasm-unsafe-eval' is required for Cloak's snarkjs ZK proof generation
+    // (WebAssembly.compile()). Dev's 'unsafe-eval' implies wasm; prod must
+    // grant it explicitly.
     isDev
       ? `script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:`
-      : `script-src 'self' 'unsafe-inline' blob:`,
+      : `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:`,
     // Cloak SDK (snarkjs) generates ZK proofs in a Web Worker spawned from a
     // blob URL. Without `worker-src 'self' blob:` the worker is blocked and
     // proof generation hangs around 30%.
