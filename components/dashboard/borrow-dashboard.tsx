@@ -14,10 +14,12 @@ import { useLoanContract } from "@/hooks/useLoanContract"
 import { useTapestryProfile } from "@/components/tapestry-profile-provider"
 import LoanViewModal from "./loan-view-modal"
 import { WalletNameCell } from "./wallet-name-cell"
+import { PrivateAcceptButton } from "./private-accept-button"
+import { useIsStealth } from "@/hooks/useIsStealth"
 
 export default function BorrowDashboard() {
   const { publicKey } = useWallet()
-  const { myBorrowedLoans, availableLendOffers, loading, refetch, isMyWallet } = useLoans()
+  const { myBorrowedLoans, availableLendOffers, loading, refetch, isMyWallet, isMyStealth } = useLoans()
   const { prices } = useTokenPrices()
   const { acceptBorrowOffer } = useLoanContract()
   const { postActivity } = useTapestryProfile()
@@ -200,9 +202,13 @@ export default function BorrowDashboard() {
                       {myLoans.map((loan) => {
                         const isLoanExpired = loan.status === LoanStatus.Accepted &&
                           loan.start != null && (Date.now() / 1000) > (loan.start + loan.duration)
+                        // I accepted privately on the borrower side → mask the
+                        // counterparty (lender) in my own dashboard regardless
+                        // of whether the lender themselves is also a stealth.
+                        const myBorrowerSideIsPrivate = isMyStealth(loan.borrower)
                         return (
                           <TableRow key={loan.publicKey} className={isLoanExpired ? "bg-red-500/5" : ""}>
-                            <WalletNameCell address={loan.lender} fallback="Pending" />
+                            <WalletNameCell address={loan.lender} fallback="Pending" forceMask={myBorrowerSideIsPrivate} />
                             <TableCell className="text-center font-medium">{loan.debtAmountUi.toFixed(2)} ${loan.debtTokenSymbol}</TableCell>
                             <TableCell className="text-center font-medium">{loan.collateralAmountUi.toFixed(2)} ${loan.collateralTokenSymbol}</TableCell>
                             <TableCell className="text-center font-medium text-red-500">{loan.apy}%</TableCell>
@@ -256,23 +262,13 @@ export default function BorrowDashboard() {
                     </TableHeader>
                     <TableBody>
                       {opportunities.map((loan) => (
-                        <TableRow key={loan.publicKey}>
-                          <WalletNameCell address={loan.lender} fallback="Open" />
-                          <TableCell className="text-center font-medium">{loan.debtAmountUi.toFixed(2)} ${loan.debtTokenSymbol}</TableCell>
-                          <TableCell className="text-center font-medium">{loan.collateralAmountUi.toFixed(2)} ${loan.collateralTokenSymbol}</TableCell>
-                          <TableCell className="text-center font-medium text-red-500">{loan.apy}%</TableCell>
-                          <TableCell className="text-center font-medium">{formatDuration(loan.duration)}</TableCell>
-                          <TableCell className="text-center">
-                            <Button
-                              size="sm"
-                              className="text-xs bg-red-500 hover:bg-red-600 text-white"
-                              disabled={acceptingLoanKey === loan.publicKey}
-                              onClick={() => handleAcceptOffer(loan)}
-                            >
-                              {acceptingLoanKey === loan.publicKey ? "Confirming..." : "Borrow"}
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                        <OpportunityRow
+                          key={loan.publicKey}
+                          loan={loan}
+                          accepting={acceptingLoanKey === loan.publicKey}
+                          onAcceptPublic={() => handleAcceptOffer(loan)}
+                          onPrivateSuccess={() => refetch()}
+                        />
                       ))}
                     </TableBody>
                   </Table>
@@ -303,5 +299,58 @@ export default function BorrowDashboard() {
         />
       )}
     </div>
+  )
+}
+
+/**
+ * Single opportunity row with the public + private accept buttons. We hide the
+ * public "Borrow" button when the offer's lender is a stealth — accepting that
+ * offer with a real wallet would defeat the lender's privacy by exposing the
+ * borrower↔stealth pairing forever on chain. Private accept (fresh stealth)
+ * stays available so the trade can still close.
+ */
+function OpportunityRow({
+  loan,
+  accepting,
+  onAcceptPublic,
+  onPrivateSuccess,
+}: {
+  loan: ParsedLoan
+  accepting: boolean
+  onAcceptPublic: () => void
+  onPrivateSuccess: () => void
+}) {
+  const lenderIsStealth = useIsStealth(loan.lender)
+
+  return (
+    <TableRow>
+      <WalletNameCell address={loan.lender} fallback="Open" />
+      <TableCell className="text-center font-medium">{loan.debtAmountUi.toFixed(2)} ${loan.debtTokenSymbol}</TableCell>
+      <TableCell className="text-center font-medium">{loan.collateralAmountUi.toFixed(2)} ${loan.collateralTokenSymbol}</TableCell>
+      <TableCell className="text-center font-medium text-red-500">{loan.apy}%</TableCell>
+      <TableCell className="text-center font-medium">{formatDuration(loan.duration)}</TableCell>
+      <TableCell className="text-center">
+        <div className="flex items-center justify-center gap-1">
+          {!lenderIsStealth && (
+            <Button
+              size="sm"
+              className="text-xs bg-red-500 hover:bg-red-600 text-white"
+              disabled={accepting}
+              onClick={onAcceptPublic}
+            >
+              {accepting ? "Confirming..." : "Borrow"}
+            </Button>
+          )}
+          <PrivateAcceptButton
+            loan={loan}
+            label="Borrow"
+            size="sm"
+            className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={accepting}
+            onSuccess={onPrivateSuccess}
+          />
+        </div>
+      </TableCell>
+    </TableRow>
   )
 }

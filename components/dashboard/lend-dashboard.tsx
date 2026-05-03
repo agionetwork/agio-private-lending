@@ -17,7 +17,7 @@ import { WalletNameCell } from "./wallet-name-cell"
 
 export default function LendDashboard() {
   const { publicKey } = useWallet()
-  const { myLentLoans, loading, refetch } = useLoans()
+  const { myLentLoans, loading, refetch, isMyStealth } = useLoans()
   const { prices } = useTokenPrices()
   const { acceptLendOffer } = useLoanContract()
   const { postActivity } = useTapestryProfile()
@@ -213,9 +213,13 @@ export default function LendDashboard() {
                       {myLoans.map((loan) => {
                         const isLoanExpired = loan.status === LoanStatus.Accepted &&
                           loan.start != null && (Date.now() / 1000) > (loan.start + loan.duration)
+                        // I lent privately → mask the borrower in my own
+                        // dashboard regardless of whether the borrower is also
+                        // a stealth (UX-only mask, on-chain data unchanged).
+                        const myLenderSideIsPrivate = isMyStealth(loan.lender)
                         return (
                           <TableRow key={loan.publicKey} className={isLoanExpired ? "bg-red-500/5" : ""}>
-                            <WalletNameCell address={loan.borrower} fallback="Pending" />
+                            <WalletNameCell address={loan.borrower} fallback="Pending" forceMask={myLenderSideIsPrivate} />
                             <TableCell className="text-center font-medium">{loan.debtAmountUi.toFixed(2)} ${loan.debtTokenSymbol}</TableCell>
                             <TableCell className="text-center font-medium">{loan.collateralAmountUi.toFixed(2)} ${loan.collateralTokenSymbol}</TableCell>
                             <TableCell className="text-center font-medium text-green-600">{loan.apy}%</TableCell>

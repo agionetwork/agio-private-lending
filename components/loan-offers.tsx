@@ -10,6 +10,7 @@ import Link from "next/link"
 import { useLoans, LoanStatus, formatDuration, type ParsedLoan } from "@/hooks/useLoans"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useWalletProfile } from "@/hooks/useWalletProfile"
+import { useIsStealth } from "@/hooks/useIsStealth"
 
 function shortenAddress(addr: string): string {
   if (!addr || addr.length < 10) return addr
@@ -87,7 +88,8 @@ function OfferCard({ offer, type }: { offer: ParsedLoan; type: "lend" | "borrow"
   const durationLabel = formatDuration(offer.duration)
   const expectedInterest = offer.debtAmountUi * offer.apy / 100 * offer.duration / (365 * 86400)
   const counterpartyAddress = type === "lend" ? offer.lender : offer.borrower
-  const { displayName: counterpartyName, profileWallet } = useWalletProfile(counterpartyAddress)
+  const { displayName: counterpartyName, profileWallet, isStealth } = useWalletProfile(counterpartyAddress)
+  const isPrivateOffer = isStealth
 
   return (
     <Card>
@@ -95,6 +97,11 @@ function OfferCard({ offer, type }: { offer: ParsedLoan; type: "lend" | "borrow"
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg flex items-center gap-2">
             {offer.debtTokenSymbol} Loan
+            {isPrivateOffer && (
+              <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20 text-[10px]">
+                Private
+              </Badge>
+            )}
           </CardTitle>
           <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
             {offer.apy}% APY
@@ -102,7 +109,9 @@ function OfferCard({ offer, type }: { offer: ParsedLoan; type: "lend" | "borrow"
         </div>
         <CardDescription>
           {type === "lend" ? "Lender" : "Borrower"}:{" "}
-          {profileWallet ? (
+          {isPrivateOffer ? (
+            <span className="text-muted-foreground italic">Anonymous</span>
+          ) : profileWallet ? (
             <Link href={`/socialfi/profile/${profileWallet}`} className="text-blue-600 dark:text-blue-400 hover:underline">
               {counterpartyName || 'Open'}
             </Link>

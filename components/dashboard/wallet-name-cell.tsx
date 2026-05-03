@@ -11,16 +11,35 @@ import { useWalletProfile } from "@/hooks/useWalletProfile"
 export function WalletNameCell({
   address,
   fallback = "Open",
+  forceMask = false,
 }: {
   address: string | null
   fallback?: string
+  /**
+   * Mask the address as "Anonymous (private)" even when the address itself is
+   * NOT a stealth. Use this on dashboards when the *current user* opted into
+   * privacy on their side of the loan — UX-wise the user expects a fully
+   * private view (the on-chain data is still public, but their dashboard
+   * shouldn't surface counterparty identities back at them).
+   */
+  forceMask?: boolean
 }) {
-  const { displayName, profileWallet } = useWalletProfile(address)
+  const { displayName, profileWallet, isStealth } = useWalletProfile(address)
 
   if (!address) {
     return (
       <TableCell className="text-center text-sm text-muted-foreground">
         {fallback}
+      </TableCell>
+    )
+  }
+
+  // Stealth wallets render as a non-clickable masked label so the cell can't
+  // de-anonymize the on-chain participant via a profile link or a name lookup.
+  if (isStealth || forceMask) {
+    return (
+      <TableCell className="text-center text-sm text-muted-foreground italic">
+        Anonymous
       </TableCell>
     )
   }

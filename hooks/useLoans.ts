@@ -23,14 +23,18 @@ export function useLoans() {
 
   // Resolve agent wallet (Privy wallet) so agent-created loans show as user's own
   const [agentWallet, setAgentWallet] = useState<string | null>(null)
+  // Resolve stealth wallets (Cloak privacy mode) so private loans show as user's own
+  const [stealthWallets, setStealthWallets] = useState<string[]>([])
 
   useEffect(() => {
     if (!publicKey) {
       setAgentWallet(null)
+      setStealthWallets([])
       return
     }
     const wallet = publicKey.toBase58()
     let cancelled = false
+
     fetch(`/api/agent/public-key?wallet=${wallet}`)
       .then(res => res.json())
       .then(data => {
@@ -39,17 +43,38 @@ export function useLoans() {
       .catch(() => {
         if (!cancelled) setAgentWallet(null)
       })
+
+    fetch(`/api/private-offer/list?wallet=${wallet}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!cancelled) setStealthWallets(Array.isArray(data?.stealthPublicKeys) ? data.stealthPublicKeys : [])
+      })
+      .catch(() => {
+        if (!cancelled) setStealthWallets([])
+      })
+
     return () => { cancelled = true }
   }, [publicKey])
 
-  // Check if an address belongs to the current user (owner wallet or agent wallet)
+  const stealthSet = useMemo(() => new Set(stealthWallets), [stealthWallets])
+
+  // True iff `addr` is a stealth wallet that the current user owns.
+  const isMyStealth = useCallback(
+    (addr: string | null) => !!addr && stealthSet.has(addr),
+    [stealthSet],
+  )
+
+  // Check if an address belongs to the current user (owner wallet, agent wallet, or any of their stealths)
   const isMyWallet = useCallback((addr: string | null) => {
     if (!publicKey || !addr) return false
     const pk = publicKey.toBase58()
-    return addr === pk || (agentWallet !== null && addr === agentWallet)
-  }, [publicKey, agentWallet])
+    if (addr === pk) return true
+    if (agentWallet !== null && addr === agentWallet) return true
+    if (stealthSet.has(addr)) return true
+    return false
+  }, [publicKey, agentWallet, stealthSet])
 
-  // Filter helpers — match both owner wallet and agent wallet
+  // Filter helpers — match owner, agent, and stealth wallets
   const myBorrowedLoans = useMemo(() => {
     if (!publicKey) return []
     return loans.filter(l => isMyWallet(l.borrower))
@@ -96,6 +121,8 @@ export function useLoans() {
     availableBorrowOffers,
     availableLendOffers,
     agentWallet,
+    stealthWallets,
     isMyWallet,
+    isMyStealth,
   }
 }

@@ -90,8 +90,8 @@ export async function POST(req: NextRequest) {
     for (let attempt = 1; attempt <= 2; attempt++) {
       const { collateralPriceUpdate, debtPriceUpdate, cleanup } = await postPricesForTokens(
         connection,
-        collateralTokenSymbol,
         debtTokenSymbol,
+        collateralTokenSymbol,
       )
       try {
         const serializedTx = await buildCreateBorrowRequestTx(

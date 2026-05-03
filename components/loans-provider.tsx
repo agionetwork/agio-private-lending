@@ -2,6 +2,7 @@
 
 import { createContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react'
 import type { ParsedLoan } from '@/lib/loan-utils'
+import { prefetchStealth } from '@/hooks/useIsStealth'
 
 const CACHE_KEY = 'agio_loans_cache'
 const CACHE_TTL = 30_000 // 30 seconds
@@ -53,6 +54,11 @@ export function LoansProvider({ children }: { children: ReactNode }) {
         throw new Error(body.error || `HTTP ${res.status}`)
       }
       const parsed: ParsedLoan[] = await res.json()
+      // Pre-populate the stealth-check cache so child WalletNameCells render
+      // their first frame with the correct masking instead of flashing the
+      // raw address (which would be a privacy leak for stealth participants).
+      const participantAddrs = parsed.flatMap((l) => [l.lender, l.borrower])
+      await prefetchStealth(participantAddrs)
       setLoans(parsed)
       saveCachedLoans(parsed)
     } catch (err: any) {
@@ -75,6 +81,14 @@ export function LoansProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    // Also prime the stealth-check cache from sessionStorage-cached loans
+    // (loadCachedLoans is sync at useState init, so prefetch can't await
+    // there). This covers the "page reload during cache TTL" path.
+    const cached = loadCachedLoans()
+    if (cached.length > 0) {
+      prefetchStealth(cached.flatMap((l) => [l.lender, l.borrower])).catch(() => {})
+    }
+
     fetchLoans()
     const interval = setInterval(fetchLoans, 30_000) // 30s polling
     return () => clearInterval(interval)

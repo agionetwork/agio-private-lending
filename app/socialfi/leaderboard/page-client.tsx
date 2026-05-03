@@ -24,6 +24,15 @@ interface LeaderboardEntry {
   points: number
 }
 
+// Display names hidden from the public leaderboard (test/seed accounts).
+// Filter happens after Tapestry resolution; these names disappear from the
+// list and ranks renumber to skip them.
+const EXCLUDED_DISPLAY_NAMES = new Set([
+  "Agio Test Agent",
+  "Lucas Ferreira",
+  "Marina Costa",
+])
+
 function shortenAddress(addr: string): string {
   if (!addr || addr.length < 10) return addr
   return addr.slice(0, 4) + '...' + addr.slice(-4)
@@ -78,6 +87,74 @@ async function mergeAgentPoints(
   }
 }
 
+interface SocialPointsResponse {
+  points: Record<string, { connect: number; profileEdit: number; friends: number; total: number }>
+  holders: string[]
+}
+
+/**
+ * Add off-chain social points (+10 connect, +10 profile edit, +5 per friend)
+ * onto on-chain entries, AND surface wallets that have only social activity
+ * (connected but never transacted) so they show on the leaderboard too.
+ */
+async function mergeSocialPoints(
+  entries: LeaderboardEntry[]
+): Promise<LeaderboardEntry[]> {
+  try {
+    // Union of on-chain wallets + social-point holders → ensures connect-only
+    // users appear in the leaderboard even with zero on-chain activity.
+    const initialHoldersRes = await fetch("/api/social-points/all?wallets=")
+    const initialBody = (await initialHoldersRes.json()) as SocialPointsResponse
+    const allHolders = new Set<string>(initialBody.holders ?? [])
+    const onChainSet = new Set(entries.map((e) => e.wallet))
+    const socialOnly = [...allHolders].filter((w) => !onChainSet.has(w))
+    const allWallets = [...onChainSet, ...socialOnly]
+    if (allWallets.length === 0) return entries
+
+    // Now request points for the full union (including social-only wallets).
+    const wallets = allWallets.join(",")
+    const res = await fetch(`/api/social-points/all?wallets=${encodeURIComponent(wallets)}`)
+    const body = (await res.json()) as SocialPointsResponse
+
+    const out: LeaderboardEntry[] = entries.map((e) => ({
+      ...e,
+      points: e.points + (body.points[e.wallet]?.total ?? 0),
+    }))
+    for (const w of socialOnly) {
+      const total = body.points[w]?.total ?? 0
+      if (total > 0) out.push({ rank: 0, wallet: w, points: total })
+    }
+    return out
+  } catch {
+    return entries
+  }
+}
+
+/**
+ * Resolve profiles for every entry and drop the test/seed accounts in a single
+ * async pass — applied BEFORE setMergedLeaderboard so the table never flashes
+ * the excluded entries before settling. Returning the resolved profiles too
+ * lets the renderer reuse them without a second resolve cycle.
+ */
+async function resolveAndFilter(
+  entries: LeaderboardEntry[]
+): Promise<{ entries: LeaderboardEntry[]; profileMap: Map<string, TapestryProfileResponse> }> {
+  if (entries.length === 0) return { entries, profileMap: new Map() }
+  let profileMap: Map<string, TapestryProfileResponse>
+  try {
+    profileMap = await resolveWalletProfiles(entries.map((e) => e.wallet))
+  } catch {
+    profileMap = new Map()
+  }
+  const kept = entries.filter((entry) => {
+    const tp = profileMap.get(entry.wallet)
+    if (!tp) return true
+    const name = getCustomProperty(tp.profile, "displayName") || tp.profile.username
+    return !name || !EXCLUDED_DISPLAY_NAMES.has(name)
+  })
+  return { entries: kept, profileMap }
+}
+
 export default function LeaderboardPageClient() {
   const { loans, loading } = useLoans()
   const { prices } = useTokenPrices()
@@ -95,16 +172,26 @@ export default function LeaderboardPageClient() {
 
   const rawLeaderboard = useMemo(() => buildLeaderboard(loans, tokenPrices), [loans, tokenPrices])
 
-  // Merge agent wallet points into owner entries
+  // Merge chain runs synchronously through agent → social → profile-resolve +
+  // exclusion filter, in a SINGLE pass. setMergedLeaderboard receives the
+  // final post-exclusion list, so the table never renders excluded entries
+  // and snaps to its final size. Cancellation token guards against stale
+  // late-arriving promises overwriting fresh data.
   useEffect(() => {
-    mergeAgentPoints(rawLeaderboard).then(setMergedLeaderboard).catch(() => setMergedLeaderboard(rawLeaderboard))
+    let cancelled = false
+    mergeAgentPoints(rawLeaderboard)
+      .then(mergeSocialPoints)
+      .then(resolveAndFilter)
+      .then(({ entries, profileMap: pm }) => {
+        if (cancelled) return
+        setMergedLeaderboard(entries)
+        setProfileMap(pm)
+      })
+      .catch(() => {
+        if (!cancelled) setMergedLeaderboard(rawLeaderboard)
+      })
+    return () => { cancelled = true }
   }, [rawLeaderboard])
-
-  useEffect(() => {
-    const wallets = mergedLeaderboard.map((e) => e.wallet)
-    if (wallets.length === 0) return
-    resolveWalletProfiles(wallets).then(setProfileMap).catch(() => {})
-  }, [mergedLeaderboard])
 
   const sorted = useMemo(() =>
     [...mergedLeaderboard]

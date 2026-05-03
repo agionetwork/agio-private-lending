@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input"
 import { type ParsedLoan, getStatusLabel, LoanStatus, formatDuration } from "@/hooks/useLoans"
 import { useLoans } from "@/hooks/useLoans"
 import { useLoanContract } from "@/hooks/useLoanContract"
+import { usePrivateLoanActions, type PrivateActionProgress } from "@/hooks/usePrivateLoanActions"
 import { useTapestryProfile } from "@/components/tapestry-profile-provider"
 import { useWallet, useConnection } from "@solana/wallet-adapter-react"
 import { solscanClusterParam } from "@/config/solana"
@@ -32,6 +33,7 @@ import Link from "next/link"
 import { Link2, Twitter, Share2 } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useWalletProfile } from "@/hooks/useWalletProfile"
+import { useIsStealth } from "@/hooks/useIsStealth"
 import { useTokenPrices } from "@/hooks/useTokenPrices"
 import { getBlinkUrl, getTwitterShareUrl } from "@/lib/blinks"
 
@@ -45,9 +47,25 @@ const getTokenDisplaySymbol = (symbol: string): string => {
   return symbol
 }
 
-function CounterpartyDisplay({ address }: { address: string | null }) {
-  const { displayName, profileWallet } = useWalletProfile(address)
+function CounterpartyDisplay({
+  address,
+  forceMask = false,
+}: {
+  address: string | null
+  forceMask?: boolean
+}) {
+  const { displayName, profileWallet, isStealth } = useWalletProfile(address)
   if (!address) return <p className="font-medium text-sm">Open</p>
+  if (isStealth || forceMask) {
+    // No profile link, no Tapestry/SNS lookup — either the counterparty is a
+    // stealth, or the user is on the private side of this loan and we mask
+    // the counterparty in their UI as a courtesy.
+    return (
+      <p className="font-medium text-sm text-muted-foreground italic">
+        Anonymous
+      </p>
+    )
+  }
   return (
     <Link
       href={`/socialfi/profile/${profileWallet || address}`}
@@ -55,6 +73,25 @@ function CounterpartyDisplay({ address }: { address: string | null }) {
     >
       {displayName || shortenAddress(address)}
     </Link>
+  )
+}
+
+function CounterpartyRow({
+  address,
+  forceMask = false,
+}: {
+  address: string | null
+  forceMask?: boolean
+}) {
+  // Hide the on-chain explorer link for stealth counterparts (or when the
+  // user is on the private side and asked us to mask counterparties): a
+  // Solscan link would expose tx history that could de-anonymize the trade.
+  const isStealth = useIsStealth(address)
+  return (
+    <div className="flex items-center">
+      <CounterpartyDisplay address={address} forceMask={forceMask} />
+      {address && !isStealth && !forceMask && <ExplorerLink address={address} />}
+    </div>
   )
 }
 
@@ -90,15 +127,18 @@ function RepayModal({ loan, isOpen, onClose, onRepaySuccess }: RepayModalProps) 
   const { repayLoan } = useLoanContract()
   const { publicKey } = useWallet()
   const { connection } = useConnection()
-  const { refetch, agentWallet } = useLoans()
+  const { refetch, agentWallet, isMyStealth } = useLoans()
+  const { repayPrivate } = usePrivateLoanActions()
   const { postActivity } = useTapestryProfile()
   const [repaymentType, setRepaymentType] = useState("full")
   const [repaymentAmount, setRepaymentAmount] = useState<number | string>(0)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [privateStep, setPrivateStep] = useState<PrivateActionProgress | null>(null)
   const busyRef = useRef(false)
 
   const interest = loan.debtAmountUi * loan.apy / 100 * loan.duration / (365 * 86400)
   const totalOwed = loan.debtAmountUi + interest
+  const isStealthLoan = isMyStealth(loan.borrower)
 
   const handleRepay = useCallback(async () => {
     if (busyRef.current) return
@@ -130,7 +170,7 @@ function RepayModal({ loan, isOpen, onClose, onRepaySuccess }: RepayModalProps) 
       const connectedWallet = publicKey?.toBase58()
       const isAgentLoan = agentWallet && loan.borrower === agentWallet && loan.borrower !== connectedWallet
 
-      if (isAgentLoan) {
+      if (isAgentLoan && !isStealthLoan) {
         const shortAgent = agentWallet.slice(0, 4) + '...' + agentWallet.slice(-4)
         toast.error("This loan belongs to your agent wallet", {
           description: `Send ${amount.toFixed(4)} ${getTokenDisplaySymbol(loan.debtTokenSymbol)} to your agent wallet (${shortAgent}) and use the agent to repay. You cannot repay directly from your connected wallet.`,
@@ -141,13 +181,26 @@ function RepayModal({ loan, isOpen, onClose, onRepaySuccess }: RepayModalProps) 
         return
       }
 
-      const txSig = await repayLoan({
-        loanPda: new PublicKey(loan.publicKey),
-        repayAmount: amount,
-        debtTokenSymbol: loan.debtTokenSymbol,
-        collateralTokenSymbol: loan.collateralTokenSymbol,
-        lender: new PublicKey(loan.lender),
-      })
+      let txSig: string | undefined
+      if (isStealthLoan && loan.borrower) {
+        const result = await repayPrivate(
+          {
+            loan,
+            stealthPublicKey: loan.borrower,
+            repayAmount: amount,
+          },
+          (step) => setPrivateStep(step),
+        )
+        txSig = result.txHash
+      } else {
+        txSig = await repayLoan({
+          loanPda: new PublicKey(loan.publicKey),
+          repayAmount: amount,
+          debtTokenSymbol: loan.debtTokenSymbol,
+          collateralTokenSymbol: loan.collateralTokenSymbol,
+          lender: new PublicKey(loan.lender),
+        })
+      }
 
       toast.success(
         repaymentType === "full" ? "Loan fully repaid!" : "Partial repayment successful!",
@@ -172,9 +225,10 @@ function RepayModal({ loan, isOpen, onClose, onRepaySuccess }: RepayModalProps) 
       })
     } finally {
       setIsProcessing(false)
+      setPrivateStep(null)
       busyRef.current = false
     }
-  }, [loan, repaymentType, repaymentAmount, totalOwed, repayLoan, refetch, onClose, onRepaySuccess])
+  }, [loan, repaymentType, repaymentAmount, totalOwed, repayLoan, repayPrivate, isStealthLoan, agentWallet, publicKey, connection, refetch, onClose, onRepaySuccess])
 
   const handleRepaymentTypeChange = (value: string) => {
     setRepaymentType(value)
@@ -243,6 +297,12 @@ function RepayModal({ loan, isOpen, onClose, onRepaySuccess }: RepayModalProps) 
           </div>
         </div>
 
+        {isStealthLoan && (
+          <div className="rounded-md border border-blue-500/30 bg-blue-500/5 p-3 text-xs text-blue-600 dark:text-blue-400">
+            Private loan — funds will be routed through your stealth wallet via Cloak (one shield+unshield round-trip, ~30s).
+          </div>
+        )}
+
         <DialogFooter className="flex justify-center gap-2">
           <Button variant="outline" onClick={onClose} disabled={isProcessing}>
             Cancel
@@ -252,7 +312,14 @@ function RepayModal({ loan, isOpen, onClose, onRepaySuccess }: RepayModalProps) 
             disabled={isProcessing || (repaymentType === "partial" && (!repaymentAmount || parseFloat(repaymentAmount.toString()) <= 0))}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            {isProcessing ? "Confirming..." : "Confirm Repayment"}
+            {isProcessing
+              ? privateStep === "auth" ? "Signing…"
+                : privateStep === "check-balance" ? "Checking stealth balance…"
+                : privateStep === "topup-sol" ? "Topping up SOL via Cloak…"
+                : privateStep === "topup-token" ? "Funding stealth via Cloak…"
+                : privateStep === "submit" ? "Submitting on-chain…"
+                : "Confirming..."
+              : "Confirm Repayment"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -371,8 +438,9 @@ function AddCollateralModal({ loan, isOpen, onClose, onSuccess }: AddCollateralM
 
 export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, onCancelSuccess, onAcceptSuccess }: LoanViewModalProps) {
   const { publicKey } = useWallet()
-  const { isMyWallet } = useLoans()
+  const { isMyWallet, isMyStealth } = useLoans()
   const { rescindBorrowOffer, rescindLendOffer, acceptBorrowOffer, acceptLendOffer, forecloseLoan } = useLoanContract()
+  const { cancelPrivate, foreclosePrivate } = usePrivateLoanActions()
   const { postActivity } = useTapestryProfile()
   const { prices } = useTokenPrices()
   const [isRepayModalOpen, setIsRepayModalOpen] = useState(false)
@@ -380,6 +448,7 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
   const [isCancelling, setIsCancelling] = useState(false)
   const [isAccepting, setIsAccepting] = useState(false)
   const [isForeclosing, setIsForeclosing] = useState(false)
+  const [privateActionStep, setPrivateActionStep] = useState<PrivateActionProgress | null>(null)
   const busyRef = useRef(false)
 
   if (!loan) return null
@@ -387,6 +456,12 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
   // Match both owner wallet and agent wallet for role detection
   const isBorrower = isMyWallet(loan.borrower)
   const isLender = isMyWallet(loan.lender)
+  // True iff the on-chain participant is one of our stealth wallets — these
+  // can't be signed by `useWallet()` directly, so we must route to the
+  // /api/private-loan/* endpoints which sign via Privy + the stealth keypair.
+  const stealthLenderPk = isMyStealth(loan.lender) ? loan.lender : null
+  const stealthBorrowerPk = isMyStealth(loan.borrower) ? loan.borrower : null
+  const isPrivateLoan = !!stealthLenderPk || !!stealthBorrowerPk
   const counterparty = isBorrower ? loan.lender : loan.borrower
   const isActive = loan.status === LoanStatus.Accepted
   const isPending = loan.status === LoanStatus.Pending
@@ -458,12 +533,19 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
           <div className="grid grid-cols-3 gap-4 py-4">
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Type</p>
-              <Badge variant="outline" className={
-                isBorrower ? "bg-orange-500/10 text-orange-500 border-orange-500/20" :
-                "bg-green-500/10 text-green-500 border-green-500/20"
-              }>
-                {isBorrower ? "Borrowed" : "Lent"}
-              </Badge>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" className={
+                  isBorrower ? "bg-orange-500/10 text-orange-500 border-orange-500/20" :
+                  "bg-green-500/10 text-green-500 border-green-500/20"
+                }>
+                  {isBorrower ? "Borrowed" : "Lent"}
+                </Badge>
+                {isPrivateLoan && (
+                  <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
+                    Private
+                  </Badge>
+                )}
+              </div>
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Status</p>
@@ -479,10 +561,7 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Counterparty</p>
-              <div className="flex items-center">
-                <CounterpartyDisplay address={counterparty} />
-                {counterparty && <ExplorerLink address={counterparty} />}
-              </div>
+              <CounterpartyRow address={counterparty} forceMask={isPrivateLoan} />
             </div>
 
             <div className="space-y-1">
@@ -534,10 +613,17 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
                     busyRef.current = true
                     setIsForeclosing(true)
                     try {
-                      await forecloseLoan({
-                        loanPda: new PublicKey(loan.publicKey),
-                        collateralTokenSymbol: loan.collateralTokenSymbol,
-                      })
+                      if (stealthLenderPk) {
+                        await foreclosePrivate(
+                          { loan, stealthPublicKey: stealthLenderPk },
+                          (s) => setPrivateActionStep(s),
+                        )
+                      } else {
+                        await forecloseLoan({
+                          loanPda: new PublicKey(loan.publicKey),
+                          collateralTokenSymbol: loan.collateralTokenSymbol,
+                        })
+                      }
                       toast.success("Loan foreclosed successfully!", {
                         description: `Collateral of ${loan.collateralAmountUi.toFixed(4)} ${getTokenDisplaySymbol(loan.collateralTokenSymbol)} has been transferred to your wallet.`
                       })
@@ -555,11 +641,18 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
                       })
                     } finally {
                       setIsForeclosing(false)
+                      setPrivateActionStep(null)
                       busyRef.current = false
                     }
                   }}
                 >
-                  {isForeclosing ? "Foreclosing..." : "Foreclose Loan"}
+                  {isForeclosing
+                    ? privateActionStep === "auth" ? "Signing…"
+                      : privateActionStep === "check-balance" ? "Checking stealth…"
+                      : privateActionStep === "topup-sol" ? "Topping up via Cloak…"
+                      : privateActionStep === "submit" ? "Foreclosing…"
+                      : "Foreclosing..."
+                    : "Foreclose Loan"}
                 </Button>
                 <Button onClick={onClose} variant="outline" className="px-6">Close</Button>
               </>
@@ -671,17 +764,25 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
                     busyRef.current = true
                     setIsCancelling(true)
                     try {
-                      const params = {
-                        loanPublicKey: loan.publicKey,
-                        debtMint: loan.debtMint,
-                        collateralMint: loan.collateralMint,
-                        debtTokenSymbol: loan.debtTokenSymbol,
-                        collateralTokenSymbol: loan.collateralTokenSymbol,
-                      }
-                      if (isLender) {
-                        await rescindBorrowOffer(params)
+                      const stealthCreator = stealthLenderPk || stealthBorrowerPk
+                      if (stealthCreator) {
+                        await cancelPrivate(
+                          { loan, stealthPublicKey: stealthCreator },
+                          (s) => setPrivateActionStep(s),
+                        )
                       } else {
-                        await rescindLendOffer(params)
+                        const params = {
+                          loanPublicKey: loan.publicKey,
+                          debtMint: loan.debtMint,
+                          collateralMint: loan.collateralMint,
+                          debtTokenSymbol: loan.debtTokenSymbol,
+                          collateralTokenSymbol: loan.collateralTokenSymbol,
+                        }
+                        if (isLender) {
+                          await rescindBorrowOffer(params)
+                        } else {
+                          await rescindLendOffer(params)
+                        }
                       }
                       toast.success("Offer cancelled successfully")
                       onClose()
@@ -693,11 +794,18 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
                       })
                     } finally {
                       setIsCancelling(false)
+                      setPrivateActionStep(null)
                       busyRef.current = false
                     }
                   }}
                 >
-                  {isCancelling ? "Cancelling..." : "Cancel Offer"}
+                  {isCancelling
+                    ? privateActionStep === "auth" ? "Signing…"
+                      : privateActionStep === "check-balance" ? "Checking stealth…"
+                      : privateActionStep === "topup-sol" ? "Topping up via Cloak…"
+                      : privateActionStep === "submit" ? "Cancelling…"
+                      : "Cancelling..."
+                    : "Cancel Offer"}
                 </Button>
                 <Button onClick={onClose} variant="outline" className="px-6">Close</Button>
               </>

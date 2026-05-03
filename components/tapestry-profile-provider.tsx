@@ -203,6 +203,15 @@ export function TapestryProfileProvider({ children }: { children: ReactNode }) {
           // Re-fetch to get the full normalized profile from Tapestry
           const refreshed = await getProfile(profile.profile.id)
           setProfile(refreshed)
+          // Award the +10 social-point profile-edit bonus on first successful
+          // remote save (Redis SETNX dedup; retries are no-ops). Fire & forget.
+          if (address) {
+            fetch("/api/social-points/profile-edited", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ wallet: address }),
+            }).catch(() => {})
+          }
           return
         } catch (err: any) {
           console.error("Failed to update Tapestry profile:", err)

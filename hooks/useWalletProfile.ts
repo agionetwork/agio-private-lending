@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { searchProfiles, getCustomProperty } from "@/lib/tapestry"
 import { useSolDomain } from "@/hooks/useSNS"
+import { useIsStealth } from "@/hooks/useIsStealth"
 
 function shortenAddress(addr: string): string {
   if (!addr || addr.length < 10) return addr
@@ -31,11 +32,23 @@ export function useWalletProfile(address: string | null | undefined) {
   // SNS domain for the original address (will be null if agent wallet has no domain)
   const solDomain = useSolDomain(address)
 
+  // Stealth wallets must NEVER resolve to a Tapestry profile, SNS domain, or
+  // agent owner — that would defeat the privacy of the on-chain offer. The
+  // server check is yes/no only, never the owner. See `/api/stealth/check`.
+  const isStealth = useIsStealth(address)
+
   useEffect(() => {
     addressRef.current = address
     if (!address) {
       setDisplayName(null)
       setProfileWallet(null)
+      return
+    }
+
+    if (isStealth) {
+      setDisplayName(null)
+      setProfileWallet(null)
+      setLoading(false)
       return
     }
 
@@ -116,7 +129,17 @@ export function useWalletProfile(address: string | null | undefined) {
 
     resolve()
     return () => { cancelled = true }
-  }, [address])
+  }, [address, isStealth])
+
+  // Stealth: never disclose anything beyond a fixed mask + no profile link.
+  if (isStealth) {
+    return {
+      displayName: "Anonymous",
+      profileWallet: null,
+      isStealth: true,
+      loading: false,
+    }
+  }
 
   const finalName = displayName || solDomain || (address ? shortenAddress(address) : null)
   const finalWallet = profileWallet || address || null
@@ -124,6 +147,7 @@ export function useWalletProfile(address: string | null | undefined) {
   return {
     displayName: finalName,
     profileWallet: finalWallet,
+    isStealth: false,
     loading,
   }
 }
