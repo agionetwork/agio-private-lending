@@ -1,10 +1,9 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "installCommand": "corepack enable && corepack prepare pnpm@10.29.2 --activate && pnpm install --no-frozen-lockfile",
-  "buildCommand": "pnpm exec next build",
+  "installCommand": "npm install --legacy-peer-deps --force",
+  "buildCommand": "next build",
   "env": {
-    "NODE_OPTIONS": "--max-old-space-size=4096",
-    "ENABLE_EXPERIMENTAL_COREPACK": "1"
+    "NODE_OPTIONS": "--max-old-space-size=4096"
   }
 }
