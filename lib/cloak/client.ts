@@ -118,6 +118,16 @@ async function ensureBufferPolyfill() {
   console.log("[cloak] Buffer polyfill installed (readBigInt64LE present)")
 }
 
+/**
+ * Public re-export so callers that need raw SDK exports (e.g. NATIVE_SOL_MINT)
+ * go through `ensureBufferPolyfill()` first. Otherwise direct `await import()`
+ * captures Buffer at SDK module-init time before our polyfill runs, and the
+ * relay later fails with "t.Buffer.from(...).readBigInt64LE is not a function".
+ */
+export async function loadCloakSdk() {
+  return loadSdk()
+}
+
 async function loadSdk() {
   if (!sdkPromise) {
     const network = resolveCloakNetwork()

@@ -4,6 +4,7 @@ import { useCallback } from "react"
 import { useWallet, useConnection } from "@solana/wallet-adapter-react"
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js"
 import { fundStealthWallet } from "@/lib/cloak/fund-stealth"
+import { loadCloakSdk } from "@/lib/cloak/client"
 import { getTokenMint, getTokenDecimals } from "@/lib/token-mints"
 
 /**
@@ -93,17 +94,11 @@ export function usePrivateLoanFlow() {
       // We pull it from the devnet SDK so the bundle picks up exactly one Cloak
       // package; the wrapper at lib/cloak/client.ts switches between
       // `@cloak.dev/sdk` (mainnet) and `@cloak.dev/sdk-devnet` based on the RPC.
-      const cloakNetwork =
-        process.env.NEXT_PUBLIC_CLOAK_NETWORK ||
-        ((process.env.NEXT_PUBLIC_SOLANA_RPC_URL || "")
-          .toLowerCase()
-          .match(/devnet|testnet|localhost|127\.0\.0\.1/)
-          ? "devnet"
-          : "mainnet")
-      const sdk =
-        cloakNetwork === "devnet"
-          ? await import("@cloak.dev/sdk-devnet")
-          : await import("@cloak.dev/sdk")
+      // Routed through loadCloakSdk so the Buffer polyfill runs BEFORE the SDK's
+      // module-init captures globalThis.Buffer (otherwise it grabs the broken
+      // copy and the relay later fails with "t.Buffer.from(...).readBigInt64LE
+      // is not a function" in production).
+      const sdk = await loadCloakSdk()
       const { NATIVE_SOL_MINT } = sdk
 
       // Compute the loan-token mint + amount once.
