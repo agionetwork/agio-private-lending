@@ -3,9 +3,40 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, type ComponentType } from "react"
+import {
+  BookOpen,
+  Rocket,
+  Compass,
+  HandCoins,
+  Banknote,
+  EyeOff,
+  UserCheck,
+  Users,
+  Repeat,
+  Bot,
+  Coins,
+  Plug,
+  ShieldAlert,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { LangProvider, useLang, LANGS, type Lang } from "./i18n"
+
+const ICON_BY_HREF: Record<string, ComponentType<{ className?: string }>> = {
+  "/docs": BookOpen,
+  "/docs/getting-started": Rocket,
+  "/docs/core-concepts": Compass,
+  "/docs/lending": HandCoins,
+  "/docs/borrowing": Banknote,
+  "/docs/private-mode": EyeOff,
+  "/docs/exclusive-counterparty": UserCheck,
+  "/docs/social": Users,
+  "/docs/lending-bot": Repeat,
+  "/docs/agents": Bot,
+  "/docs/agiosol": Coins,
+  "/docs/mcp": Plug,
+  "/docs/security": ShieldAlert,
+}
 
 const NAV: Record<Lang, { title: string; items: { title: string; href: string }[] }[]> = {
   en: [
@@ -183,22 +214,26 @@ function DocsLayoutInner({ children }: { children: React.ReactNode }) {
                   {group.title}
                 </h4>
                 <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                  {group.items.map((item) => (
-                    <li key={item.href} style={{ margin: 0 }}>
-                      <Link
-                        href={item.href}
-                        onClick={() => setMobileOpen(false)}
-                        className={cn(
-                          "block rounded-md px-3 py-1.5 text-sm transition-colors",
-                          pathname === item.href
-                            ? "bg-primary/10 font-medium text-primary"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                        )}
-                      >
-                        {item.title}
-                      </Link>
-                    </li>
-                  ))}
+                  {group.items.map((item) => {
+                    const Icon = ICON_BY_HREF[item.href]
+                    return (
+                      <li key={item.href} style={{ margin: 0 }}>
+                        <Link
+                          href={item.href}
+                          onClick={() => setMobileOpen(false)}
+                          className={cn(
+                            "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors",
+                            pathname === item.href
+                              ? "bg-primary/10 font-medium text-primary"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          )}
+                        >
+                          {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
+                          <span>{item.title}</span>
+                        </Link>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             ))}
