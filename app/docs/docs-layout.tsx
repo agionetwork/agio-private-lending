@@ -11,24 +11,28 @@ const NAV: Record<Lang, { title: string; items: { title: string; href: string }[
   en: [
     { title: "Getting Started", items: [{ title: "Introduction", href: "/docs" }, { title: "Quick Start", href: "/docs/getting-started" }] },
     { title: "Core Concepts", items: [{ title: "How It Works", href: "/docs/core-concepts" }, { title: "Lending", href: "/docs/lending" }, { title: "Borrowing", href: "/docs/borrowing" }] },
+    { title: "Privacy & Tokens", items: [{ title: "Private Mode", href: "/docs/private-mode" }, { title: "Exclusive Counterparty", href: "/docs/exclusive-counterparty" }, { title: "$agioSOL", href: "/docs/agiosol" }] },
     { title: "Features", items: [{ title: "Lending Bot", href: "/docs/lending-bot" }, { title: "AI Agents", href: "/docs/agents" }] },
     { title: "Developers", items: [{ title: "MCP Integration", href: "/docs/mcp" }, { title: "Security & Risk", href: "/docs/security" }] },
   ],
   es: [
     { title: "Inicio", items: [{ title: "Introducción", href: "/docs" }, { title: "Inicio Rápido", href: "/docs/getting-started" }] },
     { title: "Conceptos", items: [{ title: "Cómo Funciona", href: "/docs/core-concepts" }, { title: "Préstamos", href: "/docs/lending" }, { title: "Solicitar Préstamo", href: "/docs/borrowing" }] },
+    { title: "Privacidad & Tokens", items: [{ title: "Modo Privado", href: "/docs/private-mode" }, { title: "Contraparte Exclusiva", href: "/docs/exclusive-counterparty" }, { title: "$agioSOL", href: "/docs/agiosol" }] },
     { title: "Funciones", items: [{ title: "Bot de Préstamos", href: "/docs/lending-bot" }, { title: "Agentes IA", href: "/docs/agents" }] },
     { title: "Desarrolladores", items: [{ title: "Integración MCP", href: "/docs/mcp" }, { title: "Seguridad y Riesgo", href: "/docs/security" }] },
   ],
   pt: [
     { title: "Início", items: [{ title: "Introdução", href: "/docs" }, { title: "Início Rápido", href: "/docs/getting-started" }] },
     { title: "Conceitos", items: [{ title: "Como Funciona", href: "/docs/core-concepts" }, { title: "Empréstimos", href: "/docs/lending" }, { title: "Solicitar Empréstimo", href: "/docs/borrowing" }] },
+    { title: "Privacidade & Tokens", items: [{ title: "Modo Privado", href: "/docs/private-mode" }, { title: "Contraparte Exclusiva", href: "/docs/exclusive-counterparty" }, { title: "$agioSOL", href: "/docs/agiosol" }] },
     { title: "Recursos", items: [{ title: "Bot de Empréstimos", href: "/docs/lending-bot" }, { title: "Agentes IA", href: "/docs/agents" }] },
     { title: "Desenvolvedores", items: [{ title: "Integração MCP", href: "/docs/mcp" }, { title: "Segurança e Risco", href: "/docs/security" }] },
   ],
   zh: [
     { title: "开始", items: [{ title: "简介", href: "/docs" }, { title: "快速开始", href: "/docs/getting-started" }] },
     { title: "核心概念", items: [{ title: "工作原理", href: "/docs/core-concepts" }, { title: "出借", href: "/docs/lending" }, { title: "借款", href: "/docs/borrowing" }] },
+    { title: "隐私与代币", items: [{ title: "私密模式", href: "/docs/private-mode" }, { title: "独家对手方", href: "/docs/exclusive-counterparty" }, { title: "$agioSOL", href: "/docs/agiosol" }] },
     { title: "功能", items: [{ title: "借贷机器人", href: "/docs/lending-bot" }, { title: "AI 代理", href: "/docs/agents" }] },
     { title: "开发者", items: [{ title: "MCP 集成", href: "/docs/mcp" }, { title: "安全与风险", href: "/docs/security" }] },
   ],
