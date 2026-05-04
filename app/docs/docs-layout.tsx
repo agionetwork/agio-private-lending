@@ -42,11 +42,11 @@ const NAV: Record<Lang, { title: string; items: { title: string; href: string }[
   ],
 }
 
-const BOTTOM_LABELS: Record<Lang, { prev: string; next: string; backToApp: string }> = {
-  en: { prev: "Previous", next: "Next", backToApp: "Back to App" },
-  es: { prev: "Anterior", next: "Siguiente", backToApp: "Volver a la App" },
-  pt: { prev: "Anterior", next: "Próximo", backToApp: "Voltar ao App" },
-  zh: { prev: "上一页", next: "下一页", backToApp: "返回应用" },
+const BOTTOM_LABELS: Record<Lang, { prev: string; next: string }> = {
+  en: { prev: "Previous", next: "Next" },
+  es: { prev: "Anterior", next: "Siguiente" },
+  pt: { prev: "Anterior", next: "Próximo" },
+  zh: { prev: "上一页", next: "下一页" },
 }
 
 function LangToggle() {
@@ -202,18 +202,6 @@ function DocsLayoutInner({ children }: { children: React.ReactNode }) {
                 </ul>
               </div>
             ))}
-            <div className="border-t border-border/40" style={{ paddingTop: "1rem" }}>
-              <Link
-                href="https://agio.network"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                target="_blank"
-              >
-                {labels.backToApp}
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ opacity: 0.5 }}>
-                  <path d="M3 9l6-6M5 3h4v4" />
-                </svg>
-              </Link>
-            </div>
           </nav>
         </aside>
 
