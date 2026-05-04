@@ -24,6 +24,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { type ParsedLoan, getStatusLabel, LoanStatus, formatDuration } from "@/hooks/useLoans"
 import { LoanHealthBar } from "@/components/loan-health-badge"
+import { TermTooltip } from "@/components/term-tooltip"
 import { useLoans } from "@/hooks/useLoans"
 import { useLoanContract } from "@/hooks/useLoanContract"
 import { usePrivateLoanActions, type PrivateActionProgress } from "@/hooks/usePrivateLoanActions"
@@ -533,7 +534,9 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
 
           {(loan.status === LoanStatus.Accepted || loan.status === LoanStatus.Pending) && colPrice > 0 && debtPrice > 0 && (
             <div className="rounded-md border border-border/60 bg-card p-3">
-              <div className="text-xs font-medium text-muted-foreground mb-2">Loan health</div>
+              <div className="text-xs font-medium text-muted-foreground mb-2">
+                <TermTooltip term="collateral-ratio">Loan health</TermTooltip>
+              </div>
               <LoanHealthBar ratio={collateralRatio} isPending={loan.status === LoanStatus.Pending} />
             </div>
           )}
@@ -573,7 +576,9 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
             </div>
 
             <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">APY</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                <TermTooltip term="apy">APY</TermTooltip>
+              </p>
               <p className="font-medium">{loan.apy}%</p>
             </div>
             <div className="space-y-1">
@@ -581,7 +586,9 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
               <p className="font-medium text-red-500">{interest.toFixed(4)} {getTokenDisplaySymbol(loan.debtTokenSymbol)}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Duration</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                <TermTooltip term="duration">Duration</TermTooltip>
+              </p>
               <p className="font-medium">{formatDuration(loan.duration)}</p>
             </div>
 

@@ -18,6 +18,7 @@ import {
 import { Icons } from "@/components/ui/icons"
 import { HelpCircle as QuestionMarkCircledIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { TermTooltip } from "@/components/term-tooltip"
 import { useLoanContract } from "@/hooks/useLoanContract"
 import { usePrivateLoanFlow, type PrivateLoanProgress } from "@/hooks/usePrivateLoanFlow"
 import { useTokenPrices } from "@/hooks/useTokenPrices"
@@ -644,7 +645,7 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
               <div className="space-y-1">
                 <div className="flex items-center gap-1">
                   <Label htmlFor="apy" className="text-sm font-medium text-foreground">
-                    APY (%):
+                    <TermTooltip term="apy">APY (%)</TermTooltip>:
                   </Label>
                   <Input
                     type="number"
