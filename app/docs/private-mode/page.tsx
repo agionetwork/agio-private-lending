@@ -27,6 +27,9 @@ const t: Record<Lang, {
   tradeoffs: string
   tradeoffsDesc: string
   tradeoffsList: string[]
+  compliance: string
+  complianceDesc: string
+  complianceList: string[]
   learnMoreCloak: string
   learnMoreCloakDesc: string
   learnMoreCloakLinkText: string
@@ -72,6 +75,14 @@ const t: Record<Lang, {
       "Privacy strength depends on Cloak pool size and concurrent activity. Devnet pool is small.",
       "No timing jitter today: shield and unshield happen ~10-30s apart, observable to a careful watcher.",
       "Compliance: the user holds a viewing key over their stealth set, but no public reveal mechanism is shipped yet.",
+    ],
+    compliance: "Compliance & Audit",
+    complianceDesc: "Privacy is opt-in, but it does not have to be a black box. Every stealth wallet you create is bound to a viewing key under your control. The viewing key is a scoped read-only credential: handing it to a counterparty, auditor, or regulator lets them reconstruct the on-chain history of all your stealths without granting any authority to spend.",
+    complianceList: [
+      "The viewing key never leaves your client unless you explicitly export it.",
+      "Disclosure scope is your choice: a single loan, a single stealth wallet, or your full stealth set.",
+      "Recipients use Cloak's audit endpoint to enumerate transactions and decrypt amounts under that key.",
+      "A platform-wide compliance dashboard is on the roadmap (track in the project todo list).",
     ],
     learnMoreCloak: "Learn more about Cloak",
     learnMoreCloakDesc: "Private mode runs on top of Cloak's shielded pool, stealth addresses, and viewing-key infrastructure. For the underlying ZK protocol, pool design, and SDK reference, see ",
@@ -119,6 +130,14 @@ const t: Record<Lang, {
       "Sin jitter temporal hoy: shield y unshield ocurren con ~10-30s de diferencia, observable.",
       "Cumplimiento: el usuario tiene una viewing key sobre su set de stealths, pero aún no hay mecanismo público de revelación.",
     ],
+    compliance: "Cumplimiento y Auditoría",
+    complianceDesc: "La privacidad es opt-in, pero no tiene que ser una caja negra. Cada stealth wallet que creas está vinculada a una viewing key bajo tu control. La viewing key es una credencial de solo lectura con alcance: entregarla a una contraparte, auditor o regulador les permite reconstruir el historial on-chain de todas tus stealths sin otorgar ninguna autoridad para gastar.",
+    complianceList: [
+      "La viewing key nunca sale de tu cliente a menos que la exportes explícitamente.",
+      "El alcance de la divulgación es tu elección: un solo préstamo, una sola stealth wallet o todo tu set de stealths.",
+      "Los receptores usan el endpoint de auditoría de Cloak para enumerar transacciones y descifrar montos bajo esa key.",
+      "Un dashboard de cumplimiento a nivel de plataforma está en el roadmap (rastreado en el todo list del proyecto).",
+    ],
     learnMoreCloak: "Aprende más sobre Cloak",
     learnMoreCloakDesc: "El modo privado corre sobre el pool blindado, las direcciones stealth y la infraestructura de viewing keys de Cloak. Para el protocolo ZK subyacente, el diseño del pool y la referencia del SDK, ver ",
     learnMoreCloakLinkText: "docs.cloak.ag",
@@ -165,6 +184,14 @@ const t: Record<Lang, {
       "Sem jitter temporal hoje: shield e unshield acontecem com ~10-30s de diferença, observável.",
       "Compliance: o usuário tem uma viewing key sobre seu set de stealths, mas ainda não há mecanismo público de revelação.",
     ],
+    compliance: "Compliance & Auditoria",
+    complianceDesc: "Privacidade é opt-in, mas não precisa ser uma caixa-preta. Toda stealth wallet que você cria fica vinculada a uma viewing key sob seu controle. A viewing key é uma credencial somente-leitura com escopo: entregá-la a uma contraparte, auditor ou regulador permite reconstruir o histórico on-chain de todas as suas stealths sem dar qualquer autoridade para gastar.",
+    complianceList: [
+      "A viewing key nunca sai do seu cliente a menos que você exporte explicitamente.",
+      "O escopo da divulgação é sua escolha: um único empréstimo, uma única stealth wallet ou todo o seu set de stealths.",
+      "Receptores usam o endpoint de auditoria do Cloak para enumerar transações e decriptar valores sob essa key.",
+      "Um dashboard de compliance no nível da plataforma está no roadmap (rastreado no todo list do projeto).",
+    ],
     learnMoreCloak: "Saiba mais sobre Cloak",
     learnMoreCloakDesc: "O modo privado roda em cima do pool blindado, dos endereços stealth e da infraestrutura de viewing keys da Cloak. Para o protocolo ZK por baixo, o design do pool e a referência do SDK, veja ",
     learnMoreCloakLinkText: "docs.cloak.ag",
@@ -210,6 +237,14 @@ const t: Record<Lang, {
       "隐私强度取决于 Cloak 池大小和并发活动。devnet 池较小。",
       "目前没有时间抖动: shield 和 unshield 间隔约 10-30 秒，可观察。",
       "合规：用户持有其隐身集的查看密钥，但尚未提供公开揭示机制。",
+    ],
+    compliance: "合规与审计",
+    complianceDesc: "隐私是可选的，但不必是黑箱。您创建的每个隐身钱包都绑定了一个您控制的查看密钥（viewing key）。查看密钥是一个有范围的只读凭证：将其交给对手方、审计员或监管机构，使他们能够重建您所有隐身钱包的链上历史，而不授予任何花费权限。",
+    complianceList: [
+      "查看密钥永远不会离开您的客户端，除非您明确导出。",
+      "披露范围由您决定：单笔贷款、单个隐身钱包，或您的整个隐身集。",
+      "接收方使用 Cloak 的审计端点枚举交易并使用该密钥解密金额。",
+      "平台级合规仪表板在路线图上（在项目 todo list 中跟踪）。",
     ],
     learnMoreCloak: "了解更多关于 Cloak",
     learnMoreCloakDesc: "私密模式运行在 Cloak 的屏蔽池、隐身地址和查看密钥基础设施之上。有关底层 ZK 协议、池设计和 SDK 参考，请访问 ",
@@ -260,6 +295,12 @@ export default function PrivateModePage() {
       <p>{s.tradeoffsDesc}</p>
       <ul>
         {s.tradeoffsList.map((item, i) => <li key={i}>{item}</li>)}
+      </ul>
+
+      <h2>{s.compliance}</h2>
+      <p>{s.complianceDesc}</p>
+      <ul>
+        {s.complianceList.map((item, i) => <li key={i}>{item}</li>)}
       </ul>
 
       <h2>{s.learnMoreCloak}</h2>

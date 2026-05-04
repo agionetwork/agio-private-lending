@@ -10,8 +10,13 @@ const t: Record<Lang, {
   overviewDesc: string
   profiles: string
   profilesDesc: string
+  tapestryNote: string
+  tapestryLinkText: string
   connections: string
   connectionsDesc: string
+  reputation: string
+  reputationDesc: string
+  fairscaleLinkText: string
   offersFeed: string
   offersFeedDesc: string
   activityFeed: string
@@ -29,8 +34,13 @@ const t: Record<Lang, {
     overviewDesc: "Profiles, follows, friendships, and feeds are powered by Tapestry, a social graph protocol on Solana. Your wallet becomes a profile that other users can discover, follow, and friend. The Social page (/socialfi) is where you browse offers from your network, accept connection requests, and see what your counterparties have been up to.",
     profiles: "Profiles",
     profilesDesc: "Anyone with a connected wallet can claim a profile: pick a username, upload an avatar, write a short bio. Profiles are public and queryable on-chain via Tapestry. Other users see your profile when they hover an offer card or open your loan history.",
+    tapestryNote: "Tapestry is the open social graph protocol on Solana that backs Agio profiles, follows, and friendships. Anything you create here (profile, follow, friendship) is portable to other Tapestry-based apps. Spec and SDK at ",
+    tapestryLinkText: "docs.usetapestry.dev",
     connections: "Connections",
-    connectionsDesc: "Follow a user to subscribe to their activity. Send a friend request to upgrade the relationship to mutual: when both sides accept, you become friends. Friends rank higher in your feeds and are surfaced in suggestions. Each completed friendship grants both parties +5 social points.",
+    connectionsDesc: "Follow a user to subscribe to their activity. Send a friend request to upgrade the relationship to mutual: when both sides accept, you become friends. Friends rank higher in your feeds and are surfaced in suggestions.",
+    reputation: "Reputation & Leaderboard",
+    reputationDesc: "Every profile carries a reputation score from Fairscale, an external on-chain reputation provider. The score is derived from publicly verifiable signals: loans repaid on time, foreclosures, total volume, wallet age, and social connections. The Leaderboard at /socialfi orders profiles by Fairscale score, so you can quickly find the most active and trustworthy counterparties on the network. Because Fairscale is independent of Agio, the ranking is auditable and not under our control. Learn more at ",
+    fairscaleLinkText: "fairscale (docs)",
     offersFeed: "Offers feed",
     offersFeedDesc: "The Offers tab on /socialfi lists every public lending offer and borrow request created by people you follow or are friends with, refreshed in real time as new offers land on-chain. Filter by token, by APY, or by collateral ratio. Click any offer to inspect the full terms before accepting.",
     activityFeed: "Activity feed",
@@ -48,8 +58,13 @@ const t: Record<Lang, {
     overviewDesc: "Perfiles, seguimientos, amistades y feeds funcionan sobre Tapestry, un protocolo de grafo social en Solana. Tu wallet se vuelve un perfil que otros usuarios pueden descubrir, seguir y agregar como amigo. La página Social (/socialfi) es donde exploras ofertas de tu red, aceptas solicitudes de conexión y ves lo que tus contrapartes han estado haciendo.",
     profiles: "Perfiles",
     profilesDesc: "Cualquiera con una wallet conectada puede reclamar un perfil: elige un nombre de usuario, sube un avatar, escribe una bio corta. Los perfiles son públicos y consultables on-chain vía Tapestry. Otros usuarios ven tu perfil al pasar el cursor sobre una oferta o abrir tu historial de préstamos.",
+    tapestryNote: "Tapestry es el protocolo abierto de grafo social en Solana que respalda los perfiles, follows y amistades de Agio. Lo que crees aquí (perfil, follow, amistad) es portable a otras apps basadas en Tapestry. Spec y SDK en ",
+    tapestryLinkText: "docs.usetapestry.dev",
     connections: "Conexiones",
-    connectionsDesc: "Sigue a un usuario para suscribirte a su actividad. Envía una solicitud de amistad para elevar la relación a mutua: cuando ambos lados aceptan, se vuelven amigos. Los amigos aparecen primero en tus feeds y se destacan en las sugerencias. Cada amistad completada otorga +5 puntos sociales a ambas partes.",
+    connectionsDesc: "Sigue a un usuario para suscribirte a su actividad. Envía una solicitud de amistad para elevar la relación a mutua: cuando ambos lados aceptan, se vuelven amigos. Los amigos aparecen primero en tus feeds y se destacan en las sugerencias.",
+    reputation: "Reputación y Leaderboard",
+    reputationDesc: "Cada perfil tiene un score de reputación de Fairscale, un proveedor externo de reputación on-chain. El score se deriva de señales públicamente verificables: préstamos pagados a tiempo, ejecuciones, volumen total, antigüedad de la wallet y conexiones sociales. El Leaderboard en /socialfi ordena los perfiles por score Fairscale, para que encuentres rápido las contrapartes más activas y confiables de la red. Como Fairscale es independiente de Agio, el ranking es auditable y no está bajo nuestro control. Más información en ",
+    fairscaleLinkText: "fairscale (docs)",
     offersFeed: "Feed de ofertas",
     offersFeedDesc: "La pestaña Ofertas en /socialfi lista cada oferta pública de préstamo y solicitud de préstamo creada por personas que sigues o son tus amigos, actualizada en tiempo real conforme nuevas ofertas aparecen on-chain. Filtra por token, por APY o por ratio de garantía. Haz clic en cualquier oferta para inspeccionar los términos completos antes de aceptar.",
     activityFeed: "Feed de actividad",
@@ -67,8 +82,13 @@ const t: Record<Lang, {
     overviewDesc: "Perfis, follows, amizades e feeds rodam em cima do Tapestry, um protocolo de grafo social na Solana. Sua wallet vira um perfil que outros usuários podem descobrir, seguir e adicionar como amigo. A página Social (/socialfi) é onde você navega ofertas da sua rede, aceita pedidos de conexão e vê o que suas contrapartes andaram fazendo.",
     profiles: "Perfis",
     profilesDesc: "Qualquer um com uma wallet conectada pode reivindicar um perfil: escolhe um username, sobe um avatar, escreve uma bio curta. Perfis são públicos e consultáveis on-chain via Tapestry. Outros usuários veem seu perfil ao passar o mouse sobre um card de oferta ou abrir seu histórico de empréstimos.",
+    tapestryNote: "Tapestry é o protocolo aberto de grafo social na Solana que sustenta os perfis, follows e amizades da Agio. O que você cria aqui (perfil, follow, amizade) é portável pra outros apps baseados em Tapestry. Spec e SDK em ",
+    tapestryLinkText: "docs.usetapestry.dev",
     connections: "Conexões",
-    connectionsDesc: "Siga um usuário para se inscrever na atividade dele. Envie um pedido de amizade para elevar a relação a mútua: quando ambos os lados aceitam, vocês viram amigos. Amigos aparecem primeiro nos seus feeds e ficam em destaque nas sugestões. Cada amizade concluída concede +5 pontos sociais para ambas as partes.",
+    connectionsDesc: "Siga um usuário para se inscrever na atividade dele. Envie um pedido de amizade para elevar a relação a mútua: quando ambos os lados aceitam, vocês viram amigos. Amigos aparecem primeiro nos seus feeds e ficam em destaque nas sugestões.",
+    reputation: "Reputação & Leaderboard",
+    reputationDesc: "Todo perfil carrega um score de reputação do Fairscale, um provedor externo de reputação on-chain. O score é derivado de sinais publicamente verificáveis: empréstimos pagos no prazo, execuções, volume total, idade da wallet e conexões sociais. O Leaderboard em /socialfi ordena perfis pelo score Fairscale, então você acha rápido as contrapartes mais ativas e confiáveis da rede. Como o Fairscale é independente da Agio, o ranking é auditável e não está sob nosso controle. Mais info em ",
+    fairscaleLinkText: "fairscale (docs)",
     offersFeed: "Feed de ofertas",
     offersFeedDesc: "A aba Ofertas em /socialfi lista cada oferta pública de empréstimo e solicitação de empréstimo criada por pessoas que você segue ou são seus amigos, atualizada em tempo real conforme novas ofertas aparecem on-chain. Filtre por token, por APY ou por índice de garantia. Clique em qualquer oferta para inspecionar os termos completos antes de aceitar.",
     activityFeed: "Feed de atividade",
@@ -86,8 +106,13 @@ const t: Record<Lang, {
     overviewDesc: "档案、关注、好友关系和信息流由 Tapestry 提供支持，一个 Solana 上的社交图谱协议。您的钱包成为其他用户可以发现、关注和添加为好友的档案。社交页面 (/socialfi) 是您浏览来自网络的报价、接受连接请求并查看交易对手近期动态的地方。",
     profiles: "档案",
     profilesDesc: "任何连接钱包的用户都可以创建档案：选择用户名、上传头像、写一段简短的个人介绍。档案是公开的，可通过 Tapestry 在链上查询。其他用户在悬停在报价卡片或打开您的贷款历史时会看到您的档案。",
+    tapestryNote: "Tapestry 是 Solana 上的开放社交图谱协议，支持 Agio 的档案、关注和好友关系。您在这里创建的内容（档案、关注、好友关系）可移植到其他基于 Tapestry 的应用。规范和 SDK 见 ",
+    tapestryLinkText: "docs.usetapestry.dev",
     connections: "连接",
-    connectionsDesc: "关注用户以订阅其活动。发送好友请求将关系升级为相互关注：当双方都接受时，你们成为好友。好友在您的信息流中排名更高，并在建议中突出显示。每完成一次好友关系，双方都会获得 +5 社交积分。",
+    connectionsDesc: "关注用户以订阅其活动。发送好友请求将关系升级为相互关注：当双方都接受时，你们成为好友。好友在您的信息流中排名更高，并在建议中突出显示。",
+    reputation: "声誉与排行榜",
+    reputationDesc: "每个档案都有一个来自 Fairscale 的声誉分数，Fairscale 是一个外部链上声誉提供商。该分数源自可公开验证的信号：按时偿还的贷款、清算、总成交量、钱包年龄和社交连接。/socialfi 上的排行榜按 Fairscale 分数排序档案，让您快速找到网络上最活跃和最值得信赖的对手方。由于 Fairscale 独立于 Agio，排名可审计且不受我们控制。了解更多请访问 ",
+    fairscaleLinkText: "fairscale (docs)",
     offersFeed: "报价信息流",
     offersFeedDesc: "/socialfi 的报价标签页列出您关注的人或好友创建的每个公开借贷报价和借款请求，随着新报价在链上出现而实时刷新。按代币、APY 或抵押率筛选。点击任何报价可在接受前查看完整条款。",
     activityFeed: "活动信息流",
@@ -114,9 +139,19 @@ export default function SocialPage() {
 
       <h2>{s.profiles}</h2>
       <p>{s.profilesDesc}</p>
+      <p>
+        {s.tapestryNote}
+        <a href="https://docs.usetapestry.dev/" target="_blank" rel="noopener noreferrer">{s.tapestryLinkText}</a>.
+      </p>
 
       <h2>{s.connections}</h2>
       <p>{s.connectionsDesc}</p>
+
+      <h2>{s.reputation}</h2>
+      <p>
+        {s.reputationDesc}
+        <a href="https://www.fairscale.xyz/" target="_blank" rel="noopener noreferrer">{s.fairscaleLinkText}</a>.
+      </p>
 
       <h2>{s.offersFeed}</h2>
       <p>{s.offersFeedDesc}</p>
