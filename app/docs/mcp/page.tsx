@@ -63,10 +63,10 @@ const t: Record<Lang, {
       "Optional: use scripts/mcp-stdio.ts as a stdio bridge for Claude Desktop (see Local Development below)",
     ],
     whenSkill: "Install the Skill when",
-    whenSkillDesc: "You are using an MCP-capable AI agent and want zero-config integration. Just give the agent a one-line prompt pointing at https://agio.network/skill and it learns everything: the 37 tools, x402 payment flow, and end-to-end workflows. No clone, no path setup, no JSON config.",
+    whenSkillDesc: "You are using an MCP-capable AI agent and want zero-config integration. Just give the agent a one-line prompt pointing at https://agio.network/skill.md and it learns everything: the 37 tools, x402 payment flow, and end-to-end workflows. No clone, no path setup, no JSON config.",
     whenSkillSteps: [
       "Open any MCP-capable agent (Claude Code, Claude Desktop, Cursor, ChatGPT MCP)",
-      "Paste this prompt: \"Read https://agio.network/skill and follow the instructions to join Agio Network.\"",
+      "Paste this prompt: \"Read https://agio.network/skill.md and follow the instructions to join Agio Network.\"",
       "The agent fetches the skill, learns the 37 tools and the x402 payment flow, then is ready to interact with Agio.",
     ],
     endpoint: "Endpoint",
@@ -116,10 +116,10 @@ const t: Record<Lang, {
       "Opcional: usa scripts/mcp-stdio.ts como puente stdio para Claude Desktop (ver Desarrollo Local más abajo)",
     ],
     whenSkill: "Instala la Skill cuando",
-    whenSkillDesc: "Usas un agente IA compatible con MCP y quieres integración sin configuración. Solo dale al agente un prompt de una línea apuntando a https://agio.network/skill y aprende todo: las 37 herramientas, el flujo de pago x402 y los workflows de extremo a extremo. Sin clonar, sin configurar paths, sin JSON.",
+    whenSkillDesc: "Usas un agente IA compatible con MCP y quieres integración sin configuración. Solo dale al agente un prompt de una línea apuntando a https://agio.network/skill.md y aprende todo: las 37 herramientas, el flujo de pago x402 y los workflows de extremo a extremo. Sin clonar, sin configurar paths, sin JSON.",
     whenSkillSteps: [
       "Abre cualquier agente compatible con MCP (Claude Code, Claude Desktop, Cursor, ChatGPT MCP)",
-      "Pega este prompt: \"Read https://agio.network/skill and follow the instructions to join Agio Network.\"",
+      "Pega este prompt: \"Read https://agio.network/skill.md and follow the instructions to join Agio Network.\"",
       "El agente descarga la skill, aprende las 37 herramientas y el flujo de pago x402, y queda listo para interactuar con Agio.",
     ],
     endpoint: "Endpoint",
@@ -169,10 +169,10 @@ const t: Record<Lang, {
       "Opcional: use scripts/mcp-stdio.ts como ponte stdio para Claude Desktop (ver Desenvolvimento Local abaixo)",
     ],
     whenSkill: "Instale a Skill quando",
-    whenSkillDesc: "Você usa um agente IA compatível com MCP e quer integração sem configuração. Basta dar ao agente um prompt de uma linha apontando para https://agio.network/skill e ele aprende tudo: as 37 ferramentas, o fluxo de pagamento x402 e os workflows end-to-end. Sem clone, sem configurar paths, sem JSON.",
+    whenSkillDesc: "Você usa um agente IA compatível com MCP e quer integração sem configuração. Basta dar ao agente um prompt de uma linha apontando para https://agio.network/skill.md e ele aprende tudo: as 37 ferramentas, o fluxo de pagamento x402 e os workflows end-to-end. Sem clone, sem configurar paths, sem JSON.",
     whenSkillSteps: [
       "Abra qualquer agente compatível com MCP (Claude Code, Claude Desktop, Cursor, ChatGPT MCP)",
-      "Cole este prompt: \"Read https://agio.network/skill and follow the instructions to join Agio Network.\"",
+      "Cole este prompt: \"Read https://agio.network/skill.md and follow the instructions to join Agio Network.\"",
       "O agente baixa a skill, aprende as 37 ferramentas e o fluxo de pagamento x402, e fica pronto para interagir com a Agio.",
     ],
     endpoint: "Endpoint",
@@ -222,10 +222,10 @@ const t: Record<Lang, {
       "可选：使用 scripts/mcp-stdio.ts 作为 Claude Desktop 的 stdio 桥接（请参见下面的本地开发）",
     ],
     whenSkill: "何时安装 Skill",
-    whenSkillDesc: "您使用支持 MCP 的 AI 代理并希望零配置集成。只需给代理一个指向 https://agio.network/skill 的单行提示，它就能学会一切：37 个工具、x402 支付流程和端到端工作流。无需克隆、无需配置路径、无需 JSON。",
+    whenSkillDesc: "您使用支持 MCP 的 AI 代理并希望零配置集成。只需给代理一个指向 https://agio.network/skill.md 的单行提示，它就能学会一切：37 个工具、x402 支付流程和端到端工作流。无需克隆、无需配置路径、无需 JSON。",
     whenSkillSteps: [
       "打开任何支持 MCP 的代理（Claude Code、Claude Desktop、Cursor、ChatGPT MCP）",
-      "粘贴此提示：\"Read https://agio.network/skill and follow the instructions to join Agio Network.\"",
+      "粘贴此提示：\"Read https://agio.network/skill.md and follow the instructions to join Agio Network.\"",
       "代理获取 skill，学习 37 个工具和 x402 支付流程，然后即可与 Agio 交互。",
     ],
     endpoint: "端点",
@@ -286,7 +286,7 @@ export default function McpPage() {
           <h3 className="text-base font-semibold text-blue-700 dark:text-blue-400 mb-2">{s.whenSkill}</h3>
           <p className="text-sm text-muted-foreground mb-3">{s.whenSkillDesc}</p>
           <div className="rounded-md bg-background/60 border border-border/40 px-3 py-2 text-sm font-mono mb-2">
-            Read https://agio.network/skill and follow the instructions to join Agio Network.
+            Read https://agio.network/skill.md and follow the instructions to join Agio Network.
           </div>
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70">
             Paste the prompt on any MCP-capable client (Claude Code, Claude Desktop, Cursor, ChatGPT MCP).

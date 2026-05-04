@@ -1,6 +1,6 @@
 # Agio Protocol — MCP Server Setup
 
-> **External agents:** the easiest path is to install the [`agio-network` skill](../skills/agio-network/SKILL.md). It teaches your agent how to discover and call every tool, with a curated top-8 reference and progressive-disclosure docs for the full 37-tool catalog, x402 payment flow, and end-to-end workflows.
+> **External agents:** zero-install integration. Paste into any MCP-capable agent: `Read https://agio.network/skill.md and follow the instructions to join Agio Network.` The agent fetches [public/skill.md](../public/skill.md) and learns every tool, the x402 payment flow, and end-to-end workflows.
 
 ## What is MCP?
 
