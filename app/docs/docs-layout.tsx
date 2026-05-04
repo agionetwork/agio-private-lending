@@ -18,6 +18,8 @@ import {
   Coins,
   Plug,
   ShieldAlert,
+  HelpCircle,
+  Library,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { LangProvider, useLang, LANGS, type Lang } from "./i18n"
@@ -36,6 +38,8 @@ const ICON_BY_HREF: Record<string, ComponentType<{ className?: string }>> = {
   "/docs/agiosol": Coins,
   "/docs/mcp": Plug,
   "/docs/security": ShieldAlert,
+  "/docs/faq": HelpCircle,
+  "/docs/glossary": Library,
 }
 
 const NAV: Record<Lang, { title: string; items: { title: string; href: string }[] }[]> = {
@@ -46,6 +50,7 @@ const NAV: Record<Lang, { title: string; items: { title: string; href: string }[
     { title: "Features", items: [{ title: "Social", href: "/docs/social" }, { title: "Auto Loan", href: "/docs/lending-bot" }, { title: "AI Agents", href: "/docs/agents" }] },
     { title: "Tokenomics", items: [{ title: "$agioSOL", href: "/docs/agiosol" }] },
     { title: "Developers", items: [{ title: "AI Integration", href: "/docs/mcp" }, { title: "Security & Risk", href: "/docs/security" }] },
+    { title: "Reference", items: [{ title: "FAQ", href: "/docs/faq" }, { title: "Glossary", href: "/docs/glossary" }] },
   ],
   es: [
     { title: "Inicio", items: [{ title: "Introducción", href: "/docs" }, { title: "Inicio Rápido", href: "/docs/getting-started" }] },
@@ -54,6 +59,7 @@ const NAV: Record<Lang, { title: string; items: { title: string; href: string }[
     { title: "Funciones", items: [{ title: "Social", href: "/docs/social" }, { title: "Auto Loan", href: "/docs/lending-bot" }, { title: "Agentes IA", href: "/docs/agents" }] },
     { title: "Tokenomics", items: [{ title: "$agioSOL", href: "/docs/agiosol" }] },
     { title: "Desarrolladores", items: [{ title: "Integración IA", href: "/docs/mcp" }, { title: "Seguridad y Riesgo", href: "/docs/security" }] },
+    { title: "Referencia", items: [{ title: "FAQ", href: "/docs/faq" }, { title: "Glosario", href: "/docs/glossary" }] },
   ],
   pt: [
     { title: "Início", items: [{ title: "Introdução", href: "/docs" }, { title: "Início Rápido", href: "/docs/getting-started" }] },
@@ -62,6 +68,7 @@ const NAV: Record<Lang, { title: string; items: { title: string; href: string }[
     { title: "Recursos", items: [{ title: "Social", href: "/docs/social" }, { title: "Auto Loan", href: "/docs/lending-bot" }, { title: "Agentes IA", href: "/docs/agents" }] },
     { title: "Tokenomics", items: [{ title: "$agioSOL", href: "/docs/agiosol" }] },
     { title: "Desenvolvedores", items: [{ title: "Integração IA", href: "/docs/mcp" }, { title: "Segurança e Risco", href: "/docs/security" }] },
+    { title: "Referência", items: [{ title: "FAQ", href: "/docs/faq" }, { title: "Glossário", href: "/docs/glossary" }] },
   ],
   zh: [
     { title: "开始", items: [{ title: "简介", href: "/docs" }, { title: "快速开始", href: "/docs/getting-started" }] },
@@ -70,6 +77,7 @@ const NAV: Record<Lang, { title: string; items: { title: string; href: string }[
     { title: "功能", items: [{ title: "社交", href: "/docs/social" }, { title: "Auto Loan", href: "/docs/lending-bot" }, { title: "AI 代理", href: "/docs/agents" }] },
     { title: "Tokenomics", items: [{ title: "$agioSOL", href: "/docs/agiosol" }] },
     { title: "开发者", items: [{ title: "AI 集成", href: "/docs/mcp" }, { title: "安全与风险", href: "/docs/security" }] },
+    { title: "参考", items: [{ title: "FAQ", href: "/docs/faq" }, { title: "术语表", href: "/docs/glossary" }] },
   ],
 }
 
