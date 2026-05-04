@@ -31,7 +31,7 @@ const t: Record<Lang, {
     lead: "Send a loan offer that only one specific wallet can accept: a 1-to-1 deal off the public marketplace.",
     what: "What it does",
     whatDesc: "When you set an exclusive counterparty, the on-chain `loan.exclusive_counterparty` field stores the target wallet pubkey, and `loan.private_status` is flipped to `PrivateBorrower` (1) or `PrivateLender` (2). The Anchor program enforces that ONLY that pubkey can accept: every other wallet's accept transaction reverts with `LenderMismatch` / `BorrowerMismatch`. The marketplace UI hides the offer from public listings and surfaces it only on the recipient's “Available Offers” tab.",
-    vsPrivate: "vs Private Mode",
+    vsPrivate: "Counterparty X Privacy",
     vsPrivateDesc: "Exclusive counterparty and private mode solve different problems. They can be combined.",
     vsPrivateRows: [
       ["Hides offer from marketplace", "Yes", "No (offer is open)"],
@@ -70,7 +70,7 @@ const t: Record<Lang, {
     lead: "Envía una oferta de préstamo que solo una billetera específica puede aceptar: un acuerdo 1-a-1 fuera del marketplace público.",
     what: "Qué hace",
     whatDesc: "Cuando defines una contraparte exclusiva, el campo on-chain `loan.exclusive_counterparty` almacena la pubkey objetivo, y `loan.private_status` se vuelve `PrivateBorrower` (1) o `PrivateLender` (2). El programa Anchor obliga que SOLO esa pubkey pueda aceptar: cualquier otra billetera intentando aceptar revierte con `LenderMismatch` / `BorrowerMismatch`. La UI del marketplace oculta la oferta de los listados públicos y la muestra solo en la pestaña “Available Offers” del receptor.",
-    vsPrivate: "vs Modo Privado",
+    vsPrivate: "Contraparte X Privacidad",
     vsPrivateDesc: "Contraparte exclusiva y modo privado resuelven problemas distintos. Pueden combinarse.",
     vsPrivateRows: [
       ["Oculta oferta del marketplace", "Sí", "No (oferta es abierta)"],
@@ -109,7 +109,7 @@ const t: Record<Lang, {
     lead: "Envie uma oferta de empréstimo que apenas uma carteira específica pode aceitar: um acordo 1-a-1 fora do marketplace público.",
     what: "O que faz",
     whatDesc: "Quando você define uma contraparte exclusiva, o campo on-chain `loan.exclusive_counterparty` armazena a pubkey alvo, e `loan.private_status` vira `PrivateBorrower` (1) ou `PrivateLender` (2). O programa Anchor garante que SOMENTE aquela pubkey possa aceitar: qualquer outra carteira tentando aceitar reverte com `LenderMismatch` / `BorrowerMismatch`. A UI do marketplace esconde a oferta dos listings públicos e mostra apenas na aba “Available Offers” do destinatário.",
-    vsPrivate: "vs Modo Privado",
+    vsPrivate: "Contraparte X Privacidade",
     vsPrivateDesc: "Contraparte exclusiva e modo privado resolvem problemas diferentes. Podem ser combinados.",
     vsPrivateRows: [
       ["Esconde oferta do marketplace", "Sim", "Não (oferta é aberta)"],
@@ -148,7 +148,7 @@ const t: Record<Lang, {
     lead: "发送一个仅特定钱包可以接受的贷款报价: 在公开市场之外的 1 对 1 交易。",
     what: "功能说明",
     whatDesc: "当您设置独家对手方时，链上 `loan.exclusive_counterparty` 字段存储目标钱包公钥，`loan.private_status` 翻转为 `PrivateBorrower` (1) 或 `PrivateLender` (2)。Anchor 程序强制只有该公钥可以接受: 任何其他钱包尝试接受都会以 `LenderMismatch` / `BorrowerMismatch` 回退。市场 UI 从公开列表中隐藏报价，仅在接收者的“Available Offers”标签中显示。",
-    vsPrivate: "对比私密模式",
+    vsPrivate: "对手方 X 隐私",
     vsPrivateDesc: "独家对手方和私密模式解决不同问题。可以组合使用。",
     vsPrivateRows: [
       ["从市场隐藏报价", "是", "否（报价开放）"],

@@ -206,7 +206,7 @@ export default function SecurityPage() {
             </tr>
             <tr className="border-b border-border/40">
               <td className="py-2 font-medium text-foreground">{s.foreclosure}</td>
-              <td>&lt; 130%</td>
+              <td>&lt; 120%</td>
               <td>{s.foreclosureEnforcement}</td>
             </tr>
           </tbody>
