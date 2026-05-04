@@ -5,6 +5,9 @@ import { useT, type Lang } from "../i18n"
 const t: Record<Lang, {
   title: string
   lead: string
+  agentSkill: string
+  agentSkillDesc: string
+  agentSkillInstall: string
   endpoint: string
   endpointDesc: string
   freeTools: string
@@ -37,7 +40,10 @@ const t: Record<Lang, {
 }> = {
   en: {
     title: "MCP Integration",
-    lead: "14-tool Model Context Protocol server that lets any AI assistant interact with Agio programmatically. Paid tools use x402 USDC payments as auth.",
+    lead: "37-tool Model Context Protocol server that lets any AI assistant interact with Agio programmatically. Paid tools use x402 USDC payments as auth.",
+    agentSkill: "External agents — install our skill",
+    agentSkillDesc: "If your agent supports Claude Agent SDK skills, install the agio-network skill so it auto-discovers this MCP and knows how to call every tool. The skill ships with progressive-disclosure docs (top-8 quick reference + full 37-tool catalog + x402 payment flow + end-to-end workflows).",
+    agentSkillInstall: "Skill repo: skills/agio-network/SKILL.md inside agionetwork/agio-private-lending",
     endpoint: "Endpoint",
     endpointDesc: "Stateless, Web Standard Streamable HTTP transport. Compatible with any MCP client.",
     freeTools: "Free Tools (Read-Only)",
@@ -70,7 +76,10 @@ const t: Record<Lang, {
   },
   es: {
     title: "Integración MCP",
-    lead: "Servidor del Protocolo de Contexto de Modelo con 14 herramientas que permite a cualquier asistente IA interactuar con Agio programáticamente. Las herramientas de pago usan pagos x402 USDC como autenticación.",
+    lead: "Servidor del Protocolo de Contexto de Modelo con 37 herramientas que permite a cualquier asistente IA interactuar con Agio programáticamente. Las herramientas de pago usan pagos x402 USDC como autenticación.",
+    agentSkill: "Agentes externos — instala nuestra skill",
+    agentSkillDesc: "Si tu agente soporta skills del Claude Agent SDK, instala la skill agio-network para que descubra automáticamente este MCP y sepa cómo llamar cada herramienta. La skill incluye documentación con divulgación progresiva (referencia de las 8 herramientas principales + catálogo completo de 37 + flujo de pago x402 + workflows de extremo a extremo).",
+    agentSkillInstall: "Repo de la skill: skills/agio-network/SKILL.md dentro de agionetwork/agio-private-lending",
     endpoint: "Endpoint",
     endpointDesc: "Transporte HTTP Streamable estándar web sin estado. Compatible con cualquier cliente MCP.",
     freeTools: "Herramientas Gratuitas (Solo Lectura)",
@@ -103,7 +112,10 @@ const t: Record<Lang, {
   },
   pt: {
     title: "Integração MCP",
-    lead: "Servidor do Protocolo de Contexto de Modelo com 14 ferramentas que permite a qualquer assistente IA interagir com o Agio programaticamente. Ferramentas pagas usam pagamentos x402 USDC como autenticação.",
+    lead: "Servidor do Protocolo de Contexto de Modelo com 37 ferramentas que permite a qualquer assistente IA interagir com o Agio programaticamente. Ferramentas pagas usam pagamentos x402 USDC como autenticação.",
+    agentSkill: "Agentes externos — instale nossa skill",
+    agentSkillDesc: "Se seu agente suporta skills do Claude Agent SDK, instale a skill agio-network para ele descobrir automaticamente esse MCP e saber como chamar cada ferramenta. A skill vem com documentação progressive-disclosure (referência das 8 principais + catálogo completo de 37 + fluxo de pagamento x402 + workflows end-to-end).",
+    agentSkillInstall: "Repo da skill: skills/agio-network/SKILL.md dentro de agionetwork/agio-private-lending",
     endpoint: "Endpoint",
     endpointDesc: "Transporte HTTP Streamable padrão web sem estado. Compatível com qualquer cliente MCP.",
     freeTools: "Ferramentas Gratuitas (Somente Leitura)",
@@ -136,7 +148,10 @@ const t: Record<Lang, {
   },
   zh: {
     title: "MCP 集成",
-    lead: "14 工具模型上下文协议服务器，让任何 AI 助手都能以编程方式与 Agio 交互。付费工具使用 x402 USDC 支付作为身份验证。",
+    lead: "37 工具模型上下文协议服务器，让任何 AI 助手都能以编程方式与 Agio 交互。付费工具使用 x402 USDC 支付作为身份验证。",
+    agentSkill: "外部代理 — 安装我们的 skill",
+    agentSkillDesc: "如果您的代理支持 Claude Agent SDK skills，请安装 agio-network skill，以便它自动发现此 MCP 并知道如何调用每个工具。该 skill 附带渐进式披露文档（前 8 个工具快速参考 + 完整 37 工具目录 + x402 支付流程 + 端到端工作流）。",
+    agentSkillInstall: "Skill 仓库：agionetwork/agio-private-lending 内的 skills/agio-network/SKILL.md",
     endpoint: "端点",
     endpointDesc: "无状态 Web 标准流式 HTTP 传输。兼容任何 MCP 客户端。",
     freeTools: "免费工具（只读）",
@@ -177,6 +192,14 @@ export default function McpPage() {
       <p className="lead text-lg text-muted-foreground">
         {s.lead}
       </p>
+
+      <div className="not-prose my-6 rounded-lg border border-blue-500/30 bg-blue-500/5 p-4">
+        <h3 className="text-base font-semibold text-blue-700 dark:text-blue-400">{s.agentSkill}</h3>
+        <p className="mt-2 text-sm text-muted-foreground">{s.agentSkillDesc}</p>
+        <p className="mt-2 text-sm">
+          <code>{s.agentSkillInstall}</code>
+        </p>
+      </div>
 
       <h2>{s.endpoint}</h2>
       <div className="not-prose my-4 rounded-lg border border-border/60 bg-card p-4">

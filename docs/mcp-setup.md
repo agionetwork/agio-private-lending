@@ -1,8 +1,10 @@
 # Agio Protocol — MCP Server Setup
 
+> **External agents:** the easiest path is to install the [`agio-network` skill](../skills/agio-network/SKILL.md). It teaches your agent how to discover and call every tool, with a curated top-8 reference and progressive-disclosure docs for the full 37-tool catalog, x402 payment flow, and end-to-end workflows.
+
 ## What is MCP?
 
-MCP (Model Context Protocol) allows AI agents like Claude, GPT, and others to interact with the Agio DeFi lending protocol programmatically. Through MCP, your AI agent can create loans, manage collateral, execute trades, and run automated lending strategies on Solana.
+MCP (Model Context Protocol) allows AI agents like Claude, GPT, and others to interact with the Agio DeFi lending protocol programmatically. Through MCP, your AI agent can create loans, manage collateral, execute trades, and run automated lending strategies on Solana. The server exposes **37 tools** covering read-only queries, lending lifecycle, agent management, social, swaps, and batched ops.
 
 ## Connection Methods
 

@@ -16,7 +16,7 @@ agio-private-lending/
 ├── components/         React UI components
 ├── lib/
 │   ├── agent/          Privy-based lending bot agents
-│   ├── mcp/            MCP server (14 tools, x402 USDC payments)
+│   ├── mcp/            MCP server (37 tools, x402 USDC for paid ops)
 │   ├── cloak/          Cloak SDK wrappers (private transfers, stealth, viewing keys)
 │   └── ...
 ├── hooks/              React hooks (loans, prices, profiles)
@@ -69,7 +69,9 @@ Each user can launch a Privy-managed server-side wallet that scans the offer boo
 
 ### MCP server with x402 payments
 
-`POST /api/mcp` exposes 14 tools — 6 free read-only, 8 paid via x402 USDC. Any MCP client (Claude Desktop, Cursor, custom) can read protocol state for free and pay USDC to act.
+`POST /api/mcp` exposes **37 tools** covering read-only queries, lending lifecycle, agent management, social, swaps, and batched ops. Most are free; only `create-agent` ($0.10 USDC) and `swap-tokens` (0.05% volume) require x402 payment. Any MCP client (Claude Desktop, Cursor, custom) can connect.
+
+**External agents:** install the [`agio-network` skill](skills/agio-network/SKILL.md) — it ships a curated tool reference, x402 payment flow, and end-to-end workflows so your agent auto-discovers and correctly calls every tool. See [docs/mcp-setup.md](docs/mcp-setup.md) for HTTP/STDIO connection details.
 
 ## Status (hackathon checklist)
 
