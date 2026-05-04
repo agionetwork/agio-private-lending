@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { type ParsedLoan, getStatusLabel, LoanStatus, formatDuration } from "@/hooks/useLoans"
+import { LoanHealthBar } from "@/components/loan-health-badge"
 import { useLoans } from "@/hooks/useLoans"
 import { useLoanContract } from "@/hooks/useLoanContract"
 import { usePrivateLoanActions, type PrivateActionProgress } from "@/hooks/usePrivateLoanActions"
@@ -527,6 +528,13 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
           {isPending && isWarningRatio && (
             <div className="rounded-md border border-yellow-500/50 bg-yellow-500/10 p-3 text-sm text-yellow-600 dark:text-yellow-400">
               Collateral ratio is {collateralRatio.toFixed(1)}% (below the 150% creation threshold but still acceptable). If it drops below 130%, this offer will be automatically cancelled.
+            </div>
+          )}
+
+          {(loan.status === LoanStatus.Accepted || loan.status === LoanStatus.Pending) && colPrice > 0 && debtPrice > 0 && (
+            <div className="rounded-md border border-border/60 bg-card p-3">
+              <div className="text-xs font-medium text-muted-foreground mb-2">Loan health</div>
+              <LoanHealthBar ratio={collateralRatio} isPending={loan.status === LoanStatus.Pending} />
             </div>
           )}
 
