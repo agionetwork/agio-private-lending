@@ -12,8 +12,10 @@ import {
   Loader2,
   ArrowDownToLine,
   ArrowUpToLine,
+  EyeOff,
 } from "lucide-react"
 import { toast } from "sonner"
+import { Switch } from "@/components/ui/switch"
 import { AgentConfigForm } from "./agent-config-form"
 import { AgentHistory } from "./agent-history"
 import { AgentWithdrawDialog } from "./agent-withdraw-dialog"
@@ -33,11 +35,13 @@ interface Props {
 export function AgentDashboard({ wallet, status, onRefresh, authQuery }: Props) {
   const { signMessage } = useWallet()
   const [toggling, setToggling] = useState(false)
+  const [togglingPrivacy, setTogglingPrivacy] = useState(false)
   const [copied, setCopied] = useState(false)
   const [showWithdraw, setShowWithdraw] = useState(false)
   const [showFund, setShowFund] = useState(false)
 
   const isActive = status.config.enabled
+  const isPrivate = !!status.config.privacyEnabled
   const cycleRunningRef = useRef(false)
 
   // Auto-polling with exponential backoff: 1s on success, doubles on failure (max 30s)
@@ -77,6 +81,39 @@ export function AgentDashboard({ wallet, status, onRefresh, authQuery }: Props) 
     setCopied(true)
     toast.success("Agent address copied")
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleTogglePrivacy = async (next: boolean) => {
+    if (!signMessage) return
+    setTogglingPrivacy(true)
+    try {
+      const message = `agio-auth:${wallet}`
+      const messageBytes = new TextEncoder().encode(message)
+      const signatureBytes = await signMessage(messageBytes)
+      const signature = Buffer.from(signatureBytes).toString("base64")
+
+      const res = await fetch("/api/agent/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          wallet,
+          signature,
+          message,
+          config: {
+            privacyEnabled: next,
+            privacyMode: next ? "always" : "never",
+          },
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`)
+      toast.success(next ? "Privacy mode enabled" : "Privacy mode disabled")
+      onRefresh()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to toggle privacy")
+    } finally {
+      setTogglingPrivacy(false)
+    }
   }
 
   const handleToggle = async () => {
@@ -130,6 +167,24 @@ export function AgentDashboard({ wallet, status, onRefresh, authQuery }: Props) 
             >
               <img src="/images/orbmarkets.png" alt="OrbMarkets" className="h-5 w-5 rounded hover:opacity-80 transition-opacity" />
             </a>
+            <div
+              className="flex items-center gap-1.5 flex-shrink-0 ml-1 pl-2 border-l border-border/40"
+              title={
+                isPrivate
+                  ? "Privacy mode: every loan the agent creates or accepts is routed through Cloak (stealth wallets, ZK proofs)."
+                  : "Privacy mode is off. Agent transactions are public on-chain."
+              }
+            >
+              <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Private</span>
+              <Switch
+                checked={isPrivate}
+                disabled={togglingPrivacy}
+                onCheckedChange={handleTogglePrivacy}
+                aria-label="Toggle privacy mode"
+              />
+              {togglingPrivacy && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+            </div>
           </div>
 
           {/* Balances */}
