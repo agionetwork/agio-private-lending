@@ -27,13 +27,16 @@ const t: Record<Lang, {
   tradeoffs: string
   tradeoffsDesc: string
   tradeoffsList: string[]
+  learnMoreCloak: string
+  learnMoreCloakDesc: string
+  learnMoreCloakLinkText: string
 }> = {
   en: {
     title: "Private Mode",
     lead: "Create and accept loan offers without exposing your wallet identity, powered by Cloak ZK proofs.",
     what: "What it does",
     whatDesc: "Private mode breaks the on-chain link between your wallet and a loan you create or accept. Your funds travel through Cloak's shielded pool to a fresh stealth wallet, and the stealth becomes the lender or borrower on chain. Outside observers see only the stealth pubkey: they cannot prove it belongs to you.",
-    how: "How it works (Option A2: stealth funding + Anchor unchanged)",
+    how: "How it works",
     step1: "You toggle “Private” on the create-offer form.",
     step2: "Server mints a fresh Privy stealth wallet bound to your account in Redis (never on chain).",
     step3: "Your wallet shields funds into the Cloak pool (publicly visible deposit).",
@@ -70,13 +73,16 @@ const t: Record<Lang, {
       "No timing jitter today: shield and unshield happen ~10-30s apart, observable to a careful watcher.",
       "Compliance: the user holds a viewing key over their stealth set, but no public reveal mechanism is shipped yet.",
     ],
+    learnMoreCloak: "Learn more about Cloak",
+    learnMoreCloakDesc: "Private mode runs on top of Cloak's shielded pool, stealth addresses, and viewing-key infrastructure. For the underlying ZK protocol, pool design, and SDK reference, see ",
+    learnMoreCloakLinkText: "docs.cloak.ag",
   },
   es: {
     title: "Modo Privado",
     lead: "Crea y acepta ofertas de préstamo sin exponer tu identidad on-chain, usando pruebas ZK de Cloak.",
     what: "Qué hace",
     whatDesc: "El modo privado rompe el vínculo on-chain entre tu billetera y un préstamo que creas o aceptas. Tus fondos viajan por el pool blindado de Cloak hasta una billetera stealth fresca, y la stealth se vuelve el prestamista o prestatario on-chain. Los observadores externos ven solo la pubkey de la stealth: no pueden probar que te pertenece.",
-    how: "Cómo funciona (Opción A2: financiamiento stealth + Anchor sin cambios)",
+    how: "Cómo funciona",
     step1: "Activas “Private” en el formulario de crear oferta.",
     step2: "El servidor crea una billetera stealth Privy nueva, ligada a tu cuenta en Redis (nunca on-chain).",
     step3: "Tu billetera blinda fondos en el pool de Cloak (depósito públicamente visible).",
@@ -113,13 +119,16 @@ const t: Record<Lang, {
       "Sin jitter temporal hoy: shield y unshield ocurren con ~10-30s de diferencia, observable.",
       "Cumplimiento: el usuario tiene una viewing key sobre su set de stealths, pero aún no hay mecanismo público de revelación.",
     ],
+    learnMoreCloak: "Aprende más sobre Cloak",
+    learnMoreCloakDesc: "El modo privado corre sobre el pool blindado, las direcciones stealth y la infraestructura de viewing keys de Cloak. Para el protocolo ZK subyacente, el diseño del pool y la referencia del SDK, ver ",
+    learnMoreCloakLinkText: "docs.cloak.ag",
   },
   pt: {
     title: "Modo Privado",
     lead: "Crie e aceite ofertas de empréstimo sem expor sua identidade on-chain, usando provas ZK do Cloak.",
     what: "O que faz",
     whatDesc: "O modo privado quebra a ligação on-chain entre sua wallet e um empréstimo que você cria ou aceita. Seus fundos passam pelo pool blindado da Cloak até uma stealth wallet fresca, e a stealth vira o lender ou borrower on-chain. Observadores externos veem apenas a pubkey stealth: não conseguem provar que ela pertence a você.",
-    how: "Como funciona (Opção A2: funding stealth + Anchor inalterado)",
+    how: "Como funciona",
     step1: "Você ativa “Private” no formulário de criar oferta.",
     step2: "O servidor cria uma stealth wallet Privy fresca, vinculada à sua conta no Redis (nunca on-chain).",
     step3: "Sua wallet blinda fundos no pool Cloak (depósito visível publicamente).",
@@ -156,13 +165,16 @@ const t: Record<Lang, {
       "Sem jitter temporal hoje: shield e unshield acontecem com ~10-30s de diferença, observável.",
       "Compliance: o usuário tem uma viewing key sobre seu set de stealths, mas ainda não há mecanismo público de revelação.",
     ],
+    learnMoreCloak: "Saiba mais sobre Cloak",
+    learnMoreCloakDesc: "O modo privado roda em cima do pool blindado, dos endereços stealth e da infraestrutura de viewing keys da Cloak. Para o protocolo ZK por baixo, o design do pool e a referência do SDK, veja ",
+    learnMoreCloakLinkText: "docs.cloak.ag",
   },
   zh: {
     title: "私密模式",
     lead: "通过 Cloak ZK 证明创建和接受贷款报价，无需暴露您的钱包身份。",
     what: "功能说明",
     whatDesc: "私密模式打破您的钱包与您创建或接受的贷款之间的链上关联。您的资金通过 Cloak 的屏蔽池流向一个新的隐身钱包，由该隐身钱包成为链上的出借人或借款人。外部观察者只看到隐身公钥: 无法证明它属于您。",
-    how: "工作原理（方案 A2: 隐身资金 + Anchor 不变）",
+    how: "工作原理",
     step1: "在创建报价表单中开启“私密”。",
     step2: "服务器铸造一个新的 Privy 隐身钱包，在 Redis 中绑定到您的账户（永远不在链上）。",
     step3: "您的钱包将资金屏蔽到 Cloak 池（公开可见的存款）。",
@@ -199,6 +211,9 @@ const t: Record<Lang, {
       "目前没有时间抖动: shield 和 unshield 间隔约 10-30 秒，可观察。",
       "合规：用户持有其隐身集的查看密钥，但尚未提供公开揭示机制。",
     ],
+    learnMoreCloak: "了解更多关于 Cloak",
+    learnMoreCloakDesc: "私密模式运行在 Cloak 的屏蔽池、隐身地址和查看密钥基础设施之上。有关底层 ZK 协议、池设计和 SDK 参考，请访问 ",
+    learnMoreCloakLinkText: "docs.cloak.ag",
   },
 }
 
@@ -246,6 +261,12 @@ export default function PrivateModePage() {
       <ul>
         {s.tradeoffsList.map((item, i) => <li key={i}>{item}</li>)}
       </ul>
+
+      <h2>{s.learnMoreCloak}</h2>
+      <p>
+        {s.learnMoreCloakDesc}
+        <a href="https://docs.cloak.ag/" target="_blank" rel="noopener noreferrer">{s.learnMoreCloakLinkText}</a>.
+      </p>
     </>
   )
 }
