@@ -7,17 +7,10 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Force every `buffer` import (including the Cloak SDK's bundled copy) to
-  // resolve to a single instance of `buffer@6.x`. Without this Turbopack ships
-  // multiple copies, and our `ensureBufferPolyfill` monkey-patch on
-  // globalThis.Buffer.prototype doesn't reach the SDK's internal `t.Buffer`.
-  // The error surfaces in production as
-  //   "Relay returned an error: t.Buffer.from(...).readBigInt64LE is not a function".
-  turbopack: {
-    resolveAlias: {
-      buffer: 'buffer',
-    },
-  },
+  // Turbopack is default in Next.js 16. The Cloak SDK Buffer dedup is handled
+  // by `lib/buffer-polyfill.ts` patching Uint8Array.prototype (works regardless
+  // of how many Buffer constructors the bundle ships).
+  turbopack: {},
   // Externalize Pyth sub-modules with Node.js-specific requires
   serverExternalPackages: [
     "@pythnetwork/price-service-sdk",

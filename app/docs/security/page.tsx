@@ -33,11 +33,6 @@ const t: Record<Lang, {
   key2: string
   key3: string
   key4: string
-  antiGaming: string
-  selfLoans: string
-  pairCap: string
-  highWater: string
-  x402AntiReplay: string
   smartContract: string
   smartContractDesc: string
 }> = {
@@ -72,11 +67,6 @@ const t: Record<Lang, {
     key2: "Private keys never exposed to the Agio application",
     key3: "Isolated per-user keypairs",
     key4: "User can deactivate + withdraw at any time",
-    antiGaming: "Anti-Gaming",
-    selfLoans: "Self-loans = 0 points",
-    pairCap: "Pair cap = 10 loans per counterparty pair",
-    highWater: "High-water-mark scoring — points only go up",
-    x402AntiReplay: "x402 anti-replay — payment nonces prevent replay attacks",
     smartContract: "Smart Contract",
     smartContractDesc: "Built with Anchor: automatic account validation, PDA derivation, signer verification, and rent-exempt account management. Program ID:",
   },
@@ -111,11 +101,6 @@ const t: Record<Lang, {
     key2: "Las claves privadas nunca se exponen a la aplicación Agio",
     key3: "Pares de claves aislados por usuario",
     key4: "El usuario puede desactivar + retirar en cualquier momento",
-    antiGaming: "Anti-Manipulación",
-    selfLoans: "Auto-préstamos = 0 puntos",
-    pairCap: "Límite por par = 10 préstamos por par de contrapartes",
-    highWater: "Puntuación de marca de agua alta — los puntos solo suben",
-    x402AntiReplay: "Anti-replay x402 — los nonces de pago previenen ataques de repetición",
     smartContract: "Contrato Inteligente",
     smartContractDesc: "Construido con Anchor: validación automática de cuentas, derivación de PDA, verificación de firmantes y gestión de cuentas exentas de renta. Program ID:",
   },
@@ -150,11 +135,6 @@ const t: Record<Lang, {
     key2: "Chaves privadas nunca expostas à aplicação Agio",
     key3: "Pares de chaves isolados por usuário",
     key4: "O usuário pode desativar + sacar a qualquer momento",
-    antiGaming: "Anti-Manipulação",
-    selfLoans: "Auto-empréstimos = 0 pontos",
-    pairCap: "Limite por par = 10 empréstimos por par de contrapartes",
-    highWater: "Pontuação de marca d'água alta — pontos só sobem",
-    x402AntiReplay: "Anti-replay x402 — nonces de pagamento previnem ataques de repetição",
     smartContract: "Contrato Inteligente",
     smartContractDesc: "Construído com Anchor: validação automática de contas, derivação de PDA, verificação de assinantes e gerenciamento de contas isentas de aluguel. Program ID:",
   },
@@ -189,11 +169,6 @@ const t: Record<Lang, {
     key2: "私钥永远不会暴露给 Agio 应用",
     key3: "按用户隔离的密钥对",
     key4: "用户可以随时停用 + 提取资金",
-    antiGaming: "反作弊",
-    selfLoans: "自我贷款 = 0 积分",
-    pairCap: "配对上限 = 每对交易对手 10 笔贷款",
-    highWater: "高水位线计分——积分只升不降",
-    x402AntiReplay: "x402 防重放——支付 nonce 防止重放攻击",
     smartContract: "智能合约",
     smartContractDesc: "使用 Anchor 构建：自动账户验证、PDA 派生、签名者验证和免租账户管理。Program ID：",
   },
@@ -259,14 +234,6 @@ export default function SecurityPage() {
         <li>{s.key2}</li>
         <li>{s.key3}</li>
         <li>{s.key4}</li>
-      </ul>
-
-      <h2>{s.antiGaming}</h2>
-      <ul>
-        <li><strong>{s.selfLoans}</strong></li>
-        <li><strong>{s.pairCap}</strong></li>
-        <li><strong>{s.highWater}</strong></li>
-        <li><strong>{s.x402AntiReplay}</strong></li>
       </ul>
 
       <h2>{s.smartContract}</h2>

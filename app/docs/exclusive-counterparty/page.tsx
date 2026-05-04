@@ -28,9 +28,9 @@ const t: Record<Lang, {
 }> = {
   en: {
     title: "Exclusive Counterparty",
-    lead: "Send a loan offer that only one specific wallet can accept — a 1-to-1 deal off the public marketplace.",
+    lead: "Send a loan offer that only one specific wallet can accept: a 1-to-1 deal off the public marketplace.",
     what: "What it does",
-    whatDesc: "When you set an exclusive counterparty, the on-chain `loan.exclusive_counterparty` field stores the target wallet pubkey, and `loan.private_status` is flipped to `PrivateBorrower` (1) or `PrivateLender` (2). The Anchor program enforces that ONLY that pubkey can accept — every other wallet's accept transaction reverts with `LenderMismatch` / `BorrowerMismatch`. The marketplace UI hides the offer from public listings and surfaces it only on the recipient's “Available Offers” tab.",
+    whatDesc: "When you set an exclusive counterparty, the on-chain `loan.exclusive_counterparty` field stores the target wallet pubkey, and `loan.private_status` is flipped to `PrivateBorrower` (1) or `PrivateLender` (2). The Anchor program enforces that ONLY that pubkey can accept: every other wallet's accept transaction reverts with `LenderMismatch` / `BorrowerMismatch`. The marketplace UI hides the offer from public listings and surfaces it only on the recipient's “Available Offers” tab.",
     vsPrivate: "vs Private Mode",
     vsPrivateDesc: "Exclusive counterparty and private mode solve different problems. They can be combined.",
     vsPrivateRows: [
@@ -45,11 +45,11 @@ const t: Record<Lang, {
     thPrivate: "Private (Cloak)",
     how: "How it works",
     step1: "Create an offer and toggle “Set exclusive counterparty”. Paste the target wallet's pubkey.",
-    step2: "On-chain `private_status` becomes `1` (PrivateBorrower — lender posted, only the named borrower may accept) or `2` (PrivateLender — borrower posted, only the named lender may accept).",
+    step2: "On-chain `private_status` becomes `1` (PrivateBorrower: lender posted, only the named borrower may accept) or `2` (PrivateLender: borrower posted, only the named lender may accept).",
     step3: "Marketplace listings filter out offers with `private_status > 0`. The target's dashboard shows the offer in “Available Offers”.",
     step4: "When the target wallet accepts, the program verifies `signer == loan.exclusive_counterparty` before transferring funds. Anyone else gets a CounterpartyMismatch error.",
     enforcement: "Cancellation rules",
-    enforcementDesc: "Only the offer creator can rescind. The target cannot cancel — they can only ignore the offer.",
+    enforcementDesc: "Only the offer creator can rescind. The target cannot cancel: they can only ignore the offer.",
     enforcementList: [
       "PrivateBorrower (1): lender posted, only lender can rescind",
       "PrivateLender (2): borrower posted, only borrower can rescind",
@@ -67,9 +67,9 @@ const t: Record<Lang, {
   },
   es: {
     title: "Contraparte Exclusiva",
-    lead: "Envía una oferta de préstamo que solo una billetera específica puede aceptar — un acuerdo 1-a-1 fuera del marketplace público.",
+    lead: "Envía una oferta de préstamo que solo una billetera específica puede aceptar: un acuerdo 1-a-1 fuera del marketplace público.",
     what: "Qué hace",
-    whatDesc: "Cuando defines una contraparte exclusiva, el campo on-chain `loan.exclusive_counterparty` almacena la pubkey objetivo, y `loan.private_status` se vuelve `PrivateBorrower` (1) o `PrivateLender` (2). El programa Anchor obliga que SOLO esa pubkey pueda aceptar — cualquier otra billetera intentando aceptar revierte con `LenderMismatch` / `BorrowerMismatch`. La UI del marketplace oculta la oferta de los listados públicos y la muestra solo en la pestaña “Available Offers” del receptor.",
+    whatDesc: "Cuando defines una contraparte exclusiva, el campo on-chain `loan.exclusive_counterparty` almacena la pubkey objetivo, y `loan.private_status` se vuelve `PrivateBorrower` (1) o `PrivateLender` (2). El programa Anchor obliga que SOLO esa pubkey pueda aceptar: cualquier otra billetera intentando aceptar revierte con `LenderMismatch` / `BorrowerMismatch`. La UI del marketplace oculta la oferta de los listados públicos y la muestra solo en la pestaña “Available Offers” del receptor.",
     vsPrivate: "vs Modo Privado",
     vsPrivateDesc: "Contraparte exclusiva y modo privado resuelven problemas distintos. Pueden combinarse.",
     vsPrivateRows: [
@@ -84,11 +84,11 @@ const t: Record<Lang, {
     thPrivate: "Privado (Cloak)",
     how: "Cómo funciona",
     step1: "Crea una oferta y activa “Definir contraparte exclusiva”. Pega la pubkey de la billetera objetivo.",
-    step2: "On-chain `private_status` se vuelve `1` (PrivateBorrower — prestamista publicó, solo el prestatario nombrado puede aceptar) o `2` (PrivateLender — prestatario publicó, solo el prestamista nombrado puede aceptar).",
+    step2: "On-chain `private_status` se vuelve `1` (PrivateBorrower: prestamista publicó, solo el prestatario nombrado puede aceptar) o `2` (PrivateLender: prestatario publicó, solo el prestamista nombrado puede aceptar).",
     step3: "Listados del marketplace filtran ofertas con `private_status > 0`. El dashboard del objetivo muestra la oferta en “Available Offers”.",
     step4: "Cuando la billetera objetivo acepta, el programa verifica `signer == loan.exclusive_counterparty` antes de transferir fondos. Cualquier otro recibe un error CounterpartyMismatch.",
     enforcement: "Reglas de cancelación",
-    enforcementDesc: "Solo el creador de la oferta puede rescindir. El objetivo no puede cancelar — solo puede ignorar la oferta.",
+    enforcementDesc: "Solo el creador de la oferta puede rescindir. El objetivo no puede cancelar: solo puede ignorar la oferta.",
     enforcementList: [
       "PrivateBorrower (1): prestamista publicó, solo el prestamista puede rescindir",
       "PrivateLender (2): prestatario publicó, solo el prestatario puede rescindir",
@@ -106,9 +106,9 @@ const t: Record<Lang, {
   },
   pt: {
     title: "Contraparte Exclusiva",
-    lead: "Envie uma oferta de empréstimo que apenas uma carteira específica pode aceitar — um acordo 1-a-1 fora do marketplace público.",
+    lead: "Envie uma oferta de empréstimo que apenas uma carteira específica pode aceitar: um acordo 1-a-1 fora do marketplace público.",
     what: "O que faz",
-    whatDesc: "Quando você define uma contraparte exclusiva, o campo on-chain `loan.exclusive_counterparty` armazena a pubkey alvo, e `loan.private_status` vira `PrivateBorrower` (1) ou `PrivateLender` (2). O programa Anchor garante que SOMENTE aquela pubkey possa aceitar — qualquer outra carteira tentando aceitar reverte com `LenderMismatch` / `BorrowerMismatch`. A UI do marketplace esconde a oferta dos listings públicos e mostra apenas na aba “Available Offers” do destinatário.",
+    whatDesc: "Quando você define uma contraparte exclusiva, o campo on-chain `loan.exclusive_counterparty` armazena a pubkey alvo, e `loan.private_status` vira `PrivateBorrower` (1) ou `PrivateLender` (2). O programa Anchor garante que SOMENTE aquela pubkey possa aceitar: qualquer outra carteira tentando aceitar reverte com `LenderMismatch` / `BorrowerMismatch`. A UI do marketplace esconde a oferta dos listings públicos e mostra apenas na aba “Available Offers” do destinatário.",
     vsPrivate: "vs Modo Privado",
     vsPrivateDesc: "Contraparte exclusiva e modo privado resolvem problemas diferentes. Podem ser combinados.",
     vsPrivateRows: [
@@ -123,11 +123,11 @@ const t: Record<Lang, {
     thPrivate: "Privado (Cloak)",
     how: "Como funciona",
     step1: "Crie uma oferta e ative “Definir contraparte exclusiva”. Cole a pubkey da carteira alvo.",
-    step2: "On-chain `private_status` vira `1` (PrivateBorrower — lender postou, só o borrower nomeado pode aceitar) ou `2` (PrivateLender — borrower postou, só o lender nomeado pode aceitar).",
+    step2: "On-chain `private_status` vira `1` (PrivateBorrower: lender postou, só o borrower nomeado pode aceitar) ou `2` (PrivateLender: borrower postou, só o lender nomeado pode aceitar).",
     step3: "Listings do marketplace filtram ofertas com `private_status > 0`. O dashboard do alvo mostra a oferta em “Available Offers”.",
     step4: "Quando a carteira alvo aceita, o programa verifica `signer == loan.exclusive_counterparty` antes de transferir fundos. Qualquer outra carteira recebe erro CounterpartyMismatch.",
     enforcement: "Regras de cancelamento",
-    enforcementDesc: "Só o criador da oferta pode rescindir. O alvo não pode cancelar — só pode ignorar a oferta.",
+    enforcementDesc: "Só o criador da oferta pode rescindir. O alvo não pode cancelar: só pode ignorar a oferta.",
     enforcementList: [
       "PrivateBorrower (1): lender postou, só o lender pode rescindir",
       "PrivateLender (2): borrower postou, só o borrower pode rescindir",
@@ -145,9 +145,9 @@ const t: Record<Lang, {
   },
   zh: {
     title: "独家对手方",
-    lead: "发送一个仅特定钱包可以接受的贷款报价 — 在公开市场之外的 1 对 1 交易。",
+    lead: "发送一个仅特定钱包可以接受的贷款报价: 在公开市场之外的 1 对 1 交易。",
     what: "功能说明",
-    whatDesc: "当您设置独家对手方时，链上 `loan.exclusive_counterparty` 字段存储目标钱包公钥，`loan.private_status` 翻转为 `PrivateBorrower` (1) 或 `PrivateLender` (2)。Anchor 程序强制只有该公钥可以接受 — 任何其他钱包尝试接受都会以 `LenderMismatch` / `BorrowerMismatch` 回退。市场 UI 从公开列表中隐藏报价，仅在接收者的“Available Offers”标签中显示。",
+    whatDesc: "当您设置独家对手方时，链上 `loan.exclusive_counterparty` 字段存储目标钱包公钥，`loan.private_status` 翻转为 `PrivateBorrower` (1) 或 `PrivateLender` (2)。Anchor 程序强制只有该公钥可以接受: 任何其他钱包尝试接受都会以 `LenderMismatch` / `BorrowerMismatch` 回退。市场 UI 从公开列表中隐藏报价，仅在接收者的“Available Offers”标签中显示。",
     vsPrivate: "对比私密模式",
     vsPrivateDesc: "独家对手方和私密模式解决不同问题。可以组合使用。",
     vsPrivateRows: [
@@ -162,11 +162,11 @@ const t: Record<Lang, {
     thPrivate: "私密 (Cloak)",
     how: "工作原理",
     step1: "创建报价并切换“设置独家对手方”。粘贴目标钱包公钥。",
-    step2: "链上 `private_status` 变为 `1`（PrivateBorrower — 出借人发布，仅指定借款人可接受）或 `2`（PrivateLender — 借款人发布，仅指定出借人可接受）。",
+    step2: "链上 `private_status` 变为 `1`（PrivateBorrower: 出借人发布，仅指定借款人可接受）或 `2`（PrivateLender: 借款人发布，仅指定出借人可接受）。",
     step3: "市场列表过滤掉 `private_status > 0` 的报价。目标的仪表板在“Available Offers”中显示报价。",
     step4: "当目标钱包接受时，程序在转账前验证 `signer == loan.exclusive_counterparty`。任何其他人都会得到 CounterpartyMismatch 错误。",
     enforcement: "取消规则",
-    enforcementDesc: "只有报价创建者可以撤销。目标不能取消 — 只能忽略报价。",
+    enforcementDesc: "只有报价创建者可以撤销。目标不能取消: 只能忽略报价。",
     enforcementList: [
       "PrivateBorrower (1)：出借人发布，仅出借人可撤销",
       "PrivateLender (2)：借款人发布，仅借款人可撤销",

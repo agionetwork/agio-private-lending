@@ -16,10 +16,10 @@
  * Side-effect import. No exports.
  */
 
-if (typeof window !== "undefined") {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Buffer: PolyBuffer } = require("buffer") as { Buffer: typeof globalThis.Buffer }
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import { Buffer as PolyBuffer } from "buffer"
 
+if (typeof window !== "undefined") {
   // Replace globalThis.Buffer with the full buffer@6.x implementation.
   ;(globalThis as any).Buffer = PolyBuffer
 

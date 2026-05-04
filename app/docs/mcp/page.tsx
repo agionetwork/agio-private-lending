@@ -8,6 +8,14 @@ const t: Record<Lang, {
   agentSkill: string
   agentSkillDesc: string
   agentSkillInstall: string
+  whenToUse: string
+  whenToUseLead: string
+  whenMcp: string
+  whenMcpDesc: string
+  whenMcpSteps: string[]
+  whenSkill: string
+  whenSkillDesc: string
+  whenSkillSteps: string[]
   endpoint: string
   endpointDesc: string
   freeTools: string
@@ -41,9 +49,27 @@ const t: Record<Lang, {
   en: {
     title: "MCP Integration",
     lead: "37-tool Model Context Protocol server that lets any AI assistant interact with Agio programmatically. Paid tools use x402 USDC payments as auth.",
-    agentSkill: "External agents — install our skill",
+    agentSkill: "External agents: install our skill",
     agentSkillDesc: "If your agent supports Claude Agent SDK skills, install the agio-network skill so it auto-discovers this MCP and knows how to call every tool. The skill ships with progressive-disclosure docs (top-8 quick reference + full 37-tool catalog + x402 payment flow + end-to-end workflows).",
     agentSkillInstall: "Skill repo: skills/agio-network/SKILL.md inside agionetwork/agio-private-lending",
+    whenToUse: "Choose your integration",
+    whenToUseLead: "Two ways to interact with Agio. Pick MCP if you are writing your own client and want full control over JSON-RPC calls. Pick the Skill if you are using an MCP-capable AI agent (Claude Code, Claude Desktop, Cursor) and want it to discover, learn, and use Agio automatically with zero glue code.",
+    whenMcp: "Use MCP directly when",
+    whenMcpDesc: "You are writing custom code that calls Agio programmatically. You handle the JSON-RPC envelope, manage state, and decide which tools to call.",
+    whenMcpSteps: [
+      "Send POST requests to https://app.agio.network/api/mcp with Accept: application/json, text/event-stream",
+      "Run tools/list to enumerate the 37 tools, then tools/call with name and arguments",
+      "For paid tools (create-agent, swap-tokens), build a Solana payment transaction and pass it as paymentProof. See the x402 Protocol section below",
+      "Optional: use scripts/mcp-stdio.ts as a stdio bridge for Claude Desktop (see Local Development below)",
+    ],
+    whenSkill: "Install the Skill when",
+    whenSkillDesc: "You are using an MCP-capable AI agent and want zero-config integration. The Skill is a markdown bundle (SKILL.md plus references) that teaches the agent how to discover, connect, and call every tool. The agent activates it automatically when the user mentions lending, borrowing, or yield on Solana.",
+    whenSkillSteps: [
+      "Clone or download the agio-network skill from skills/agio-network/ in the agionetwork/agio-private-lending repository",
+      "Place it under your agent's skills directory (e.g. ~/.agents/skills/agio-network/ for Claude Code)",
+      "Restart your agent. The Skill auto-loads and the agent gains the ability to discover Agio without you wiring anything",
+      "When you ask 'find me a USDC loan with 10% APY', the agent uses the Skill to call list-loans, filter, and present results",
+    ],
     endpoint: "Endpoint",
     endpointDesc: "Stateless, Web Standard Streamable HTTP transport. Compatible with any MCP client.",
     freeTools: "Free Tools (Read-Only)",
@@ -67,9 +93,9 @@ const t: Record<Lang, {
     repayLoanDesc: "Repay active loan",
     swapTokensDesc: "Swap via Jupiter aggregator",
     x402Protocol: "x402 Protocol",
-    antiReplay: "Anti-replay — each payment nonce used once",
-    rateLimiting: "Rate limiting — 1 request per wallet per 60s",
-    dynamicPricing: "Dynamic pricing — tool prices configurable via Redis",
+    antiReplay: "Anti-replay: each payment nonce used once",
+    rateLimiting: "Rate limiting: 1 request per wallet per 60s",
+    dynamicPricing: "Dynamic pricing: tool prices configurable via Redis",
     devnetMode: "Devnet mode",
     localDev: "Local Development",
     localDevDesc: "For Claude Desktop or other local MCP clients, use the stdio transport wrapper:",
@@ -77,9 +103,27 @@ const t: Record<Lang, {
   es: {
     title: "Integración MCP",
     lead: "Servidor del Protocolo de Contexto de Modelo con 37 herramientas que permite a cualquier asistente IA interactuar con Agio programáticamente. Las herramientas de pago usan pagos x402 USDC como autenticación.",
-    agentSkill: "Agentes externos — instala nuestra skill",
+    agentSkill: "Agentes externos: instala nuestra skill",
     agentSkillDesc: "Si tu agente soporta skills del Claude Agent SDK, instala la skill agio-network para que descubra automáticamente este MCP y sepa cómo llamar cada herramienta. La skill incluye documentación con divulgación progresiva (referencia de las 8 herramientas principales + catálogo completo de 37 + flujo de pago x402 + workflows de extremo a extremo).",
     agentSkillInstall: "Repo de la skill: skills/agio-network/SKILL.md dentro de agionetwork/agio-private-lending",
+    whenToUse: "Elige tu integración",
+    whenToUseLead: "Dos formas de interactuar con Agio. Elige MCP si escribes tu propio cliente y quieres control total sobre las llamadas JSON-RPC. Elige la Skill si usas un agente IA compatible con MCP (Claude Code, Claude Desktop, Cursor) y quieres que descubra, aprenda y use Agio automáticamente sin código de pegamento.",
+    whenMcp: "Usa MCP directamente cuando",
+    whenMcpDesc: "Escribes código que llama a Agio programáticamente. Tú gestionas el sobre JSON-RPC, mantienes estado y decides qué herramientas llamar.",
+    whenMcpSteps: [
+      "Envía POST a https://app.agio.network/api/mcp con Accept: application/json, text/event-stream",
+      "Ejecuta tools/list para enumerar las 37 herramientas, luego tools/call con name y arguments",
+      "Para herramientas pagas (create-agent, swap-tokens), construye una transacción Solana de pago y pásala como paymentProof. Ver la sección Protocolo x402 más abajo",
+      "Opcional: usa scripts/mcp-stdio.ts como puente stdio para Claude Desktop (ver Desarrollo Local más abajo)",
+    ],
+    whenSkill: "Instala la Skill cuando",
+    whenSkillDesc: "Usas un agente IA compatible con MCP y quieres integración sin configuración. La Skill es un paquete markdown (SKILL.md más referencias) que enseña al agente cómo descubrir, conectar y llamar cada herramienta. El agente la activa automáticamente cuando el usuario menciona préstamos o yield en Solana.",
+    whenSkillSteps: [
+      "Clona o descarga la skill agio-network de skills/agio-network/ en el repo agionetwork/agio-private-lending",
+      "Colócala en el directorio de skills de tu agente (p.ej. ~/.agents/skills/agio-network/ para Claude Code)",
+      "Reinicia tu agente. La Skill se carga sola y el agente gana la capacidad de descubrir Agio sin que tengas que cablear nada",
+      "Cuando preguntas 'encuentra un préstamo USDC al 10% APY', el agente usa la Skill para llamar list-loans, filtrar y presentar resultados",
+    ],
     endpoint: "Endpoint",
     endpointDesc: "Transporte HTTP Streamable estándar web sin estado. Compatible con cualquier cliente MCP.",
     freeTools: "Herramientas Gratuitas (Solo Lectura)",
@@ -103,9 +147,9 @@ const t: Record<Lang, {
     repayLoanDesc: "Pagar préstamo activo",
     swapTokensDesc: "Intercambiar vía agregador Jupiter",
     x402Protocol: "Protocolo x402",
-    antiReplay: "Anti-replay — cada nonce de pago se usa una vez",
-    rateLimiting: "Límite de tasa — 1 solicitud por wallet cada 60s",
-    dynamicPricing: "Precios dinámicos — precios de herramientas configurables vía Redis",
+    antiReplay: "Anti-replay: cada nonce de pago se usa una vez",
+    rateLimiting: "Límite de tasa: 1 solicitud por wallet cada 60s",
+    dynamicPricing: "Precios dinámicos: precios de herramientas configurables vía Redis",
     devnetMode: "Modo Devnet",
     localDev: "Desarrollo Local",
     localDevDesc: "Para Claude Desktop u otros clientes MCP locales, usa el wrapper de transporte stdio:",
@@ -113,9 +157,27 @@ const t: Record<Lang, {
   pt: {
     title: "Integração MCP",
     lead: "Servidor do Protocolo de Contexto de Modelo com 37 ferramentas que permite a qualquer assistente IA interagir com o Agio programaticamente. Ferramentas pagas usam pagamentos x402 USDC como autenticação.",
-    agentSkill: "Agentes externos — instale nossa skill",
+    agentSkill: "Agentes externos: instale nossa skill",
     agentSkillDesc: "Se seu agente suporta skills do Claude Agent SDK, instale a skill agio-network para ele descobrir automaticamente esse MCP e saber como chamar cada ferramenta. A skill vem com documentação progressive-disclosure (referência das 8 principais + catálogo completo de 37 + fluxo de pagamento x402 + workflows end-to-end).",
     agentSkillInstall: "Repo da skill: skills/agio-network/SKILL.md dentro de agionetwork/agio-private-lending",
+    whenToUse: "Escolha sua integração",
+    whenToUseLead: "Duas formas de interagir com a Agio. Escolha MCP se você está escrevendo seu próprio cliente e quer controle total sobre as chamadas JSON-RPC. Escolha a Skill se está usando um agente IA compatível com MCP (Claude Code, Claude Desktop, Cursor) e quer que ele descubra, aprenda e use a Agio automaticamente sem código de cola.",
+    whenMcp: "Use MCP diretamente quando",
+    whenMcpDesc: "Você escreve código que chama a Agio programaticamente. Você gerencia o envelope JSON-RPC, mantém estado e decide quais ferramentas chamar.",
+    whenMcpSteps: [
+      "Envie POST para https://app.agio.network/api/mcp com Accept: application/json, text/event-stream",
+      "Rode tools/list para enumerar as 37 ferramentas, depois tools/call com name e arguments",
+      "Para ferramentas pagas (create-agent, swap-tokens), construa uma transação Solana de pagamento e passe como paymentProof. Veja a seção Protocolo x402 abaixo",
+      "Opcional: use scripts/mcp-stdio.ts como ponte stdio para Claude Desktop (ver Desenvolvimento Local abaixo)",
+    ],
+    whenSkill: "Instale a Skill quando",
+    whenSkillDesc: "Você usa um agente IA compatível com MCP e quer integração sem configuração. A Skill é um pacote markdown (SKILL.md mais referências) que ensina o agente a descobrir, conectar e chamar cada ferramenta. O agente ativa automaticamente quando o usuário menciona empréstimos ou yield em Solana.",
+    whenSkillSteps: [
+      "Clone ou baixe a skill agio-network de skills/agio-network/ no repo agionetwork/agio-private-lending",
+      "Coloque no diretório de skills do seu agente (ex: ~/.agents/skills/agio-network/ para Claude Code)",
+      "Reinicie o agente. A Skill carrega sozinha e o agente ganha a capacidade de descobrir a Agio sem você precisar cabear nada",
+      "Quando você pergunta 'acha um empréstimo USDC a 10% APY', o agente usa a Skill para chamar list-loans, filtrar e apresentar os resultados",
+    ],
     endpoint: "Endpoint",
     endpointDesc: "Transporte HTTP Streamable padrão web sem estado. Compatível com qualquer cliente MCP.",
     freeTools: "Ferramentas Gratuitas (Somente Leitura)",
@@ -139,9 +201,9 @@ const t: Record<Lang, {
     repayLoanDesc: "Pagar empréstimo ativo",
     swapTokensDesc: "Trocar via agregador Jupiter",
     x402Protocol: "Protocolo x402",
-    antiReplay: "Anti-replay — cada nonce de pagamento usado uma vez",
-    rateLimiting: "Limite de taxa — 1 solicitação por wallet a cada 60s",
-    dynamicPricing: "Preços dinâmicos — preços das ferramentas configuráveis via Redis",
+    antiReplay: "Anti-replay: cada nonce de pagamento usado uma vez",
+    rateLimiting: "Limite de taxa: 1 solicitação por wallet a cada 60s",
+    dynamicPricing: "Preços dinâmicos: preços das ferramentas configuráveis via Redis",
     devnetMode: "Modo Devnet",
     localDev: "Desenvolvimento Local",
     localDevDesc: "Para Claude Desktop ou outros clientes MCP locais, use o wrapper de transporte stdio:",
@@ -149,9 +211,27 @@ const t: Record<Lang, {
   zh: {
     title: "MCP 集成",
     lead: "37 工具模型上下文协议服务器，让任何 AI 助手都能以编程方式与 Agio 交互。付费工具使用 x402 USDC 支付作为身份验证。",
-    agentSkill: "外部代理 — 安装我们的 skill",
+    agentSkill: "外部代理: 安装我们的 skill",
     agentSkillDesc: "如果您的代理支持 Claude Agent SDK skills，请安装 agio-network skill，以便它自动发现此 MCP 并知道如何调用每个工具。该 skill 附带渐进式披露文档（前 8 个工具快速参考 + 完整 37 工具目录 + x402 支付流程 + 端到端工作流）。",
     agentSkillInstall: "Skill 仓库：agionetwork/agio-private-lending 内的 skills/agio-network/SKILL.md",
+    whenToUse: "选择您的集成方式",
+    whenToUseLead: "与 Agio 交互的两种方式。如果您正在编写自己的客户端并希望完全控制 JSON-RPC 调用，请选择 MCP。如果您使用支持 MCP 的 AI 代理（Claude Code、Claude Desktop、Cursor）并希望它自动发现、学习和使用 Agio，无需粘合代码，请选择 Skill。",
+    whenMcp: "何时直接使用 MCP",
+    whenMcpDesc: "您编写以编程方式调用 Agio 的代码。您管理 JSON-RPC 信封，维护状态，并决定调用哪些工具。",
+    whenMcpSteps: [
+      "向 https://app.agio.network/api/mcp 发送 POST 请求，带 Accept: application/json, text/event-stream",
+      "运行 tools/list 枚举 37 个工具，然后用 name 和 arguments 调用 tools/call",
+      "对于付费工具（create-agent、swap-tokens），构建 Solana 支付交易并作为 paymentProof 传递。请参见下面的 x402 协议部分",
+      "可选：使用 scripts/mcp-stdio.ts 作为 Claude Desktop 的 stdio 桥接（请参见下面的本地开发）",
+    ],
+    whenSkill: "何时安装 Skill",
+    whenSkillDesc: "您使用支持 MCP 的 AI 代理并希望零配置集成。Skill 是一个 markdown 包（SKILL.md 加参考资料），教代理如何发现、连接和调用每个工具。当用户提到 Solana 上的借贷或收益时，代理会自动激活它。",
+    whenSkillSteps: [
+      "从 agionetwork/agio-private-lending 仓库的 skills/agio-network/ 克隆或下载 agio-network skill",
+      "将其放在您代理的 skills 目录下（例如 Claude Code 的 ~/.agents/skills/agio-network/）",
+      "重启您的代理。Skill 会自动加载，代理无需您接线即可获得发现 Agio 的能力",
+      "当您问'帮我找 10% APY 的 USDC 贷款'时，代理使用 Skill 调用 list-loans、过滤并呈现结果",
+    ],
     endpoint: "端点",
     endpointDesc: "无状态 Web 标准流式 HTTP 传输。兼容任何 MCP 客户端。",
     freeTools: "免费工具（只读）",
@@ -175,9 +255,9 @@ const t: Record<Lang, {
     repayLoanDesc: "偿还活跃贷款",
     swapTokensDesc: "通过 Jupiter 聚合器兑换",
     x402Protocol: "x402 协议",
-    antiReplay: "防重放——每个支付 nonce 仅使用一次",
-    rateLimiting: "速率限制——每个钱包每 60 秒 1 个请求",
-    dynamicPricing: "动态定价——工具价格可通过 Redis 配置",
+    antiReplay: "防重放::每个支付 nonce 仅使用一次",
+    rateLimiting: "速率限制::每个钱包每 60 秒 1 个请求",
+    dynamicPricing: "动态定价::工具价格可通过 Redis 配置",
     devnetMode: "Devnet 模式",
     localDev: "本地开发",
     localDevDesc: "对于 Claude Desktop 或其他本地 MCP 客户端，使用 stdio 传输包装器：",
@@ -193,12 +273,28 @@ export default function McpPage() {
         {s.lead}
       </p>
 
-      <div className="not-prose my-6 rounded-lg border border-blue-500/30 bg-blue-500/5 p-4">
-        <h3 className="text-base font-semibold text-blue-700 dark:text-blue-400">{s.agentSkill}</h3>
-        <p className="mt-2 text-sm text-muted-foreground">{s.agentSkillDesc}</p>
-        <p className="mt-2 text-sm">
-          <code>{s.agentSkillInstall}</code>
-        </p>
+      <h2>{s.whenToUse}</h2>
+      <p>{s.whenToUseLead}</p>
+
+      <div className="not-prose my-6 grid gap-4 md:grid-cols-2">
+        <div className="rounded-lg border border-border/60 bg-card p-4">
+          <h3 className="text-base font-semibold mb-2">{s.whenMcp}</h3>
+          <p className="text-sm text-muted-foreground mb-3">{s.whenMcpDesc}</p>
+          <ol className="text-sm pl-5 list-decimal space-y-1 text-muted-foreground">
+            {s.whenMcpSteps.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+        </div>
+        <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-4">
+          <h3 className="text-base font-semibold text-blue-700 dark:text-blue-400 mb-2">{s.whenSkill}</h3>
+          <p className="text-sm text-muted-foreground mb-3">{s.whenSkillDesc}</p>
+          <ol className="text-sm pl-5 list-decimal space-y-1 text-muted-foreground">
+            {s.whenSkillSteps.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+        </div>
       </div>
 
       <h2>{s.endpoint}</h2>
@@ -312,7 +408,7 @@ export default function McpPage() {
         <li><strong>{s.antiReplay}</strong></li>
         <li><strong>{s.rateLimiting}</strong></li>
         <li><strong>{s.dynamicPricing}</strong></li>
-        <li><strong>{s.devnetMode}</strong> — <code>DEVNET_FREE_TOOLS=true</code> bypasses payment with API key auth</li>
+        <li><strong>{s.devnetMode}</strong>: <code>DEVNET_FREE_TOOLS=true</code> bypasses payment with API key auth</li>
       </ul>
 
       <h2>{s.localDev}</h2>
