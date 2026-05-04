@@ -10,7 +10,7 @@ import { LangProvider, useLang, LANGS, type Lang } from "./i18n"
 const NAV: Record<Lang, { title: string; items: { title: string; href: string }[] }[]> = {
   en: [
     { title: "Getting Started", items: [{ title: "Introduction", href: "/docs" }, { title: "Quick Start", href: "/docs/getting-started" }] },
-    { title: "Core Concepts", items: [{ title: "How It Works", href: "/docs/core-concepts" }, { title: "Lending", href: "/docs/lending" }, { title: "Borrowing", href: "/docs/borrowing" }] },
+    { title: "Core Concepts", items: [{ title: "How It Works?", href: "/docs/core-concepts" }, { title: "Lending", href: "/docs/lending" }, { title: "Borrowing", href: "/docs/borrowing" }] },
     { title: "Privacy", items: [{ title: "Private Mode", href: "/docs/private-mode" }, { title: "Exclusive Counterparty", href: "/docs/exclusive-counterparty" }] },
     { title: "Tokenomics", items: [{ title: "$agioSOL", href: "/docs/agiosol" }] },
     { title: "Features", items: [{ title: "Auto Loan", href: "/docs/lending-bot" }, { title: "AI Agents", href: "/docs/agents" }] },
@@ -18,7 +18,7 @@ const NAV: Record<Lang, { title: string; items: { title: string; href: string }[
   ],
   es: [
     { title: "Inicio", items: [{ title: "Introducción", href: "/docs" }, { title: "Inicio Rápido", href: "/docs/getting-started" }] },
-    { title: "Conceptos", items: [{ title: "Cómo Funciona", href: "/docs/core-concepts" }, { title: "Préstamos", href: "/docs/lending" }, { title: "Solicitar Préstamo", href: "/docs/borrowing" }] },
+    { title: "Conceptos", items: [{ title: "¿Cómo Funciona?", href: "/docs/core-concepts" }, { title: "Préstamos", href: "/docs/lending" }, { title: "Solicitar Préstamo", href: "/docs/borrowing" }] },
     { title: "Privacidad", items: [{ title: "Modo Privado", href: "/docs/private-mode" }, { title: "Contraparte Exclusiva", href: "/docs/exclusive-counterparty" }] },
     { title: "Tokenomics", items: [{ title: "$agioSOL", href: "/docs/agiosol" }] },
     { title: "Funciones", items: [{ title: "Auto Loan", href: "/docs/lending-bot" }, { title: "Agentes IA", href: "/docs/agents" }] },
@@ -26,7 +26,7 @@ const NAV: Record<Lang, { title: string; items: { title: string; href: string }[
   ],
   pt: [
     { title: "Início", items: [{ title: "Introdução", href: "/docs" }, { title: "Início Rápido", href: "/docs/getting-started" }] },
-    { title: "Conceitos", items: [{ title: "Como Funciona", href: "/docs/core-concepts" }, { title: "Empréstimos", href: "/docs/lending" }, { title: "Solicitar Empréstimo", href: "/docs/borrowing" }] },
+    { title: "Conceitos", items: [{ title: "Como Funciona?", href: "/docs/core-concepts" }, { title: "Empréstimos", href: "/docs/lending" }, { title: "Solicitar Empréstimo", href: "/docs/borrowing" }] },
     { title: "Privacidade", items: [{ title: "Modo Privado", href: "/docs/private-mode" }, { title: "Contraparte Exclusiva", href: "/docs/exclusive-counterparty" }] },
     { title: "Tokenomics", items: [{ title: "$agioSOL", href: "/docs/agiosol" }] },
     { title: "Recursos", items: [{ title: "Auto Loan", href: "/docs/lending-bot" }, { title: "Agentes IA", href: "/docs/agents" }] },
@@ -34,7 +34,7 @@ const NAV: Record<Lang, { title: string; items: { title: string; href: string }[
   ],
   zh: [
     { title: "开始", items: [{ title: "简介", href: "/docs" }, { title: "快速开始", href: "/docs/getting-started" }] },
-    { title: "核心概念", items: [{ title: "工作原理", href: "/docs/core-concepts" }, { title: "出借", href: "/docs/lending" }, { title: "借款", href: "/docs/borrowing" }] },
+    { title: "核心概念", items: [{ title: "工作原理？", href: "/docs/core-concepts" }, { title: "出借", href: "/docs/lending" }, { title: "借款", href: "/docs/borrowing" }] },
     { title: "隐私", items: [{ title: "私密模式", href: "/docs/private-mode" }, { title: "独家对手方", href: "/docs/exclusive-counterparty" }] },
     { title: "Tokenomics", items: [{ title: "$agioSOL", href: "/docs/agiosol" }] },
     { title: "功能", items: [{ title: "Auto Loan", href: "/docs/lending-bot" }, { title: "AI 代理", href: "/docs/agents" }] },

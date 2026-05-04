@@ -46,7 +46,7 @@ const t: Record<Lang, {
   priceFeedPDA: string
 }> = {
   en: {
-    title: "How It Works",
+    title: "How It Works?",
     lead: "The core mechanics behind Agio\u2019s P2P lending protocol.",
     p2pVsPooled: "P2P vs Pooled Lending",
     thAgio: "Agio (P2P)",
@@ -89,7 +89,7 @@ const t: Record<Lang, {
     priceFeedPDA: "cached Pyth oracle data per token mint.",
   },
   es: {
-    title: "Cómo Funciona",
+    title: "¿Cómo Funciona?",
     lead: "Los mecanismos fundamentales del protocolo de préstamos P2P de Agio.",
     p2pVsPooled: "P2P vs Préstamos en Pool",
     thAgio: "Agio (P2P)",
@@ -132,7 +132,7 @@ const t: Record<Lang, {
     priceFeedPDA: "datos de oráculo Pyth en caché por token mint.",
   },
   pt: {
-    title: "Como Funciona",
+    title: "Como Funciona?",
     lead: "Os mecanismos fundamentais por trás do protocolo de empréstimos P2P da Agio.",
     p2pVsPooled: "P2P vs Empréstimos em Pool",
     thAgio: "Agio (P2P)",
@@ -175,7 +175,7 @@ const t: Record<Lang, {
     priceFeedPDA: "dados de oráculo Pyth em cache por token mint.",
   },
   zh: {
-    title: "工作原理",
+    title: "工作原理？",
     lead: "Agio P2P 借贷协议的核心机制。",
     p2pVsPooled: "P2P 与池化借贷对比",
     thAgio: "Agio (P2P)",
