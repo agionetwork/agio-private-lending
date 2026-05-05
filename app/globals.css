@@ -61,6 +61,19 @@ html { scroll-behavior: smooth; }
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  /* Match the typographic system used on the landing page across every
+     page in the app: Space Grotesk for headlines, Inter for body, JetBrains
+     Mono for code/inline literals. The font CSS variables come from
+     app/layout.tsx (next/font). */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.015em;
+  }
+  code, kbd, samp, pre {
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   }
   
   /* Garantir que o html e body tenham altura total */
