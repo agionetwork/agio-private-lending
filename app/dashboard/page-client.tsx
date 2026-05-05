@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense, useMemo } from "react"
 import { useTheme } from "next-themes"
 import { useWalletTokens } from "../../hooks/useWalletTokens"
 import { useTokenPrices } from "../../hooks/useTokenPrices"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
 import { Badge, type BadgeProps } from "../../components/ui/badge"
 import { Button, type ButtonProps } from "../../components/ui/button"
@@ -45,6 +45,31 @@ const getTokenDisplaySymbol = (symbol: string): string => {
 function shortenAddress(addr: string): string {
   if (!addr || addr.length < 10) return addr
   return addr.slice(0, 4) + '...' + addr.slice(-4)
+}
+
+/**
+ * Small `?` superscript next to an overview-card title. On hover it surfaces
+ * the description text that previously lived in <CardDescription>, so the
+ * card header reads as a single tight line of title + icon + help glyph.
+ */
+function TitleHelp({ description }: { description: string }) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            className="ml-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold cursor-help align-super select-none transition-colors bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-600 dark:text-blue-200"
+            aria-label={description}
+          >
+            ?
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs">
+          <p>{description}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
 }
 
 function CounterpartyName({ address }: { address: string | null }) {
@@ -302,10 +327,8 @@ function DashboardContent() {
                     <CardTitle className={`text-2xl font-bold flex items-center gap-2 ${titleColor}`}>
                       <LiquidityIcon size={36} />
                       Your Liquidity
+                      <TitleHelp description="Your assets available for loans and investments" />
                     </CardTitle>
-                    <CardDescription className={descriptionColor}>
-                      Your assets available for loans and investments
-                    </CardDescription>
                   </div>
                   <GetFaucetsButton />
                 </div>
@@ -392,8 +415,8 @@ function DashboardContent() {
                   <CardTitle className={`text-xl font-bold flex items-center gap-2 ${titleColor}`}>
                     <AssetDonutIcon size={32} />
                     Asset Distribution
+                    <TitleHelp description="Composition of your portfolio" />
                   </CardTitle>
-                  <CardDescription className={descriptionColor}>Composition of your portfolio</CardDescription>
                 </CardHeader>
                 <CardContent className="relative z-10">
                   <div className="h-56">
@@ -484,8 +507,8 @@ function DashboardContent() {
                   <CardTitle className={`text-xl font-bold flex items-center gap-2 ${titleColor}`}>
                     <LoanChartIcon size={32} />
                     Loan Overview
+                    <TitleHelp description="Summary of your loan activity" />
                   </CardTitle>
-                  <CardDescription className={descriptionColor}>Summary of your loan activity</CardDescription>
                 </CardHeader>
                 <CardContent className="relative z-10">
                   {loansLoading ? (
@@ -506,7 +529,7 @@ function DashboardContent() {
                         margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
                         xScale={{ type: 'point' }}
                         yScale={{ type: 'linear', min: 0, max: 'auto', stacked: false }}
-                        curve="monotoneX"
+                        curve="catmullRom"
                         axisBottom={{
                           tickSize: 4,
                           tickPadding: 6,
@@ -669,8 +692,8 @@ function DashboardContent() {
                 <CardTitle className={`text-xl font-bold flex items-center gap-2 ${titleColor}`}>
                   <ActivityPulseIcon size={32} />
                   Recent Activity
+                  <TitleHelp description="Your most recent loan activity" />
                 </CardTitle>
-                <CardDescription className={descriptionColor}>Your most recent loan activity</CardDescription>
               </CardHeader>
               <CardContent className="relative z-10">
                 {loansLoading ? (
