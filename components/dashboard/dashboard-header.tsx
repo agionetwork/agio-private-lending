@@ -108,7 +108,7 @@ export default function DashboardHeader({ onConnectWallet }: DashboardHeaderProp
   // Render skeleton during SSR to avoid hydration errors
   if (!mounted) {
     return (
-      <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-blue-900 to-blue-800 dark:from-blue-950 dark:to-blue-900 backdrop-blur supports-[backdrop-filter]:bg-gradient-to-r supports-[backdrop-filter]:from-blue-900/95 supports-[backdrop-filter]:to-blue-800/95 dark:supports-[backdrop-filter]:from-blue-950/60 dark:supports-[backdrop-filter]:to-blue-900/60">
+      <header className="agio-glass-header sticky top-0 z-50 w-full">
         <div className="container flex h-14 items-center">
           <div className="mr-4 hidden md:flex">
             <Link href="/" className="mr-6 flex items-center space-x-2">
@@ -142,7 +142,7 @@ export default function DashboardHeader({ onConnectWallet }: DashboardHeaderProp
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200/10 bg-gradient-to-r from-blue-900 to-blue-800 dark:from-blue-950 dark:to-blue-900 backdrop-blur supports-[backdrop-filter]:bg-gradient-to-r supports-[backdrop-filter]:from-blue-900/95 supports-[backdrop-filter]:to-blue-800/95 dark:supports-[backdrop-filter]:from-blue-950/60 dark:supports-[backdrop-filter]:to-blue-900/60">
+    <header className="agio-glass-header sticky top-0 z-50 w-full">
       <div className="container flex h-14 items-center">
         <div className="hidden md:flex items-center mr-4">
           <Link href="/" className="flex items-center space-x-2">
@@ -326,7 +326,7 @@ export default function DashboardHeader({ onConnectWallet }: DashboardHeaderProp
       </div>
       
       {mobileMenuOpen && (
-        <nav className="md:hidden border-t border-white/10 bg-blue-900 dark:bg-blue-950 px-4 py-3 space-y-1">
+        <nav className="agio-glass-header md:hidden px-4 py-3 space-y-1">
           {[
             { href: "/dashboard", label: "Dashboard" },
             { href: "/socialfi", label: "Social" },
