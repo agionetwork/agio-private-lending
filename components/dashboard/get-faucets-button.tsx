@@ -27,7 +27,7 @@ export function GetFaucetsButton() {
           className="text-xs gap-1.5 font-mono uppercase tracking-[0.06em]"
         >
           <Droplets className="h-3.5 w-3.5" />
-          Get Faucets to Try Devnet
+          Get Free Tokens to Try Devnet
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[460px]">
@@ -47,9 +47,11 @@ export function GetFaucetsButton() {
             className="block p-4 rounded-lg border border-foreground/10 hover:border-foreground/25 hover:bg-foreground/[0.03] transition"
           >
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                <Droplets className="h-5 w-5 text-white" />
-              </div>
+              <img
+                src="/brands/solana.svg"
+                alt="Solana"
+                className="w-10 h-10 flex-shrink-0"
+              />
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-sm flex items-center gap-1.5">
                   Solana faucet
@@ -72,8 +74,12 @@ export function GetFaucetsButton() {
             className="block p-4 rounded-lg border border-blue-500/30 hover:border-blue-400 hover:bg-blue-500/[0.06] transition"
           >
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0">
-                <Droplets className="h-5 w-5 text-white" />
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm ring-1 ring-foreground/5">
+                <img
+                  src="/brands/circle.svg"
+                  alt="Circle"
+                  className="w-7 h-7"
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-sm flex items-center gap-1.5">
