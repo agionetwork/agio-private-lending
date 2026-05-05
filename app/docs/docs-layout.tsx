@@ -4,6 +4,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { useState, useRef, useEffect, type ComponentType } from "react"
+import { useTheme } from "next-themes"
+import { Sun, Moon } from "lucide-react"
 import {
   BookOpen,
   Rocket,
@@ -88,6 +90,30 @@ const BOTTOM_LABELS: Record<Lang, { prev: string; next: string }> = {
   es: { prev: "Anterior", next: "Siguiente" },
   pt: { prev: "Anterior", next: "Próximo" },
   zh: { prev: "上一页", next: "下一页" },
+}
+
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
+  if (!mounted) {
+    // Avoid SSR hydration mismatch — placeholder same size as the real button.
+    return <div className="w-9 h-9" aria-hidden />
+  }
+
+  const isDark = resolvedTheme === "dark"
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+      className="relative flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+    >
+      <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+    </button>
+  )
 }
 
 function LangToggle() {
@@ -206,7 +232,10 @@ function DocsLayoutInner({ children }: { children: React.ReactNode }) {
         </a>
 
         <div style={{ flex: 1 }} />
-        <LangToggle />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <LangToggle />
+        </div>
         <Link
           href="/borrow-lend"
           className="ml-3 inline-flex h-9 items-center justify-center rounded-md px-4 font-display text-[13px] font-medium tracking-wider uppercase text-white"
