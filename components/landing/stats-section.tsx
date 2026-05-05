@@ -139,12 +139,12 @@ export function StatsSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#1C2A52] border border-[#1C2A52]">
           {stats.map((s, i) => (
-            <div key={s.label} className="bg-[#0A1230] p-7 md:p-10 text-center">
-              <div className="font-mono text-[10px] tracking-[0.14em] uppercase text-[#8FA8D8]">{s.label}</div>
-              <div className="font-display text-[clamp(32px,3.5vw,44px)] font-medium tracking-[-0.025em] text-white mt-2.5">
+            <div key={s.label} className="bg-[#0A1230] py-14 md:py-24 px-6 md:px-10 text-center">
+              <div className="font-mono text-xs tracking-[0.14em] uppercase text-[#8FA8D8]">{s.label}</div>
+              <div className="font-display text-[clamp(44px,5.2vw,68px)] font-medium tracking-[-0.025em] text-white mt-4">
                 {visible ? <SlotNumber value={s.value} duration={1200 + i * 400} /> : "0"}
               </div>
-              <div className="font-mono text-[11px] text-[#8FA8D8] mt-1.5">
+              <div className="font-mono text-[13px] text-[#8FA8D8] mt-3">
                 {s.href ? (
                   <Link href={s.href} target="_blank" rel="noopener noreferrer" className="hover:text-[#4A90FF] transition-colors">
                     {s.meta}
