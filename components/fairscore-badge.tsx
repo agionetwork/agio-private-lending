@@ -102,8 +102,13 @@ export function FairScoreBadge({
           <SubScoreLine label="On-chain" value={subOnchain} />
           <SubScoreLine label="Social" value={subSocial} />
           <SubScoreLine label="Behavioral" value={subBehavioral} />
-          <div className="pt-1 mt-1 border-t border-border/30 text-[10px] text-muted-foreground">
-            Powered by Fairscale
+          <div className="pt-1 mt-1 border-t border-border/30 flex items-center gap-1 text-[10px] text-muted-foreground">
+            <span>Powered by</span>
+            <img
+              src="/fairscale-logo.svg"
+              alt="Fairscale"
+              className="h-3 w-auto dark:invert"
+            />
           </div>
         </TooltipContent>
       </Tooltip>
@@ -167,10 +172,17 @@ export function FairScoreCard({
         <SubBar label="Behavioral" value={subBehavioral} />
       </div>
 
-      <p className="text-[10px] text-muted-foreground pt-1">
-        External, on-chain reputation provider. Scores are derived from publicly verifiable signals
-        and refresh roughly every 6 hours.
-      </p>
+      <div className="flex items-center justify-between gap-2 pt-1">
+        <p className="text-[10px] text-muted-foreground">
+          External, on-chain reputation provider. Scores derive from publicly verifiable signals
+          and refresh roughly every 6 hours.
+        </p>
+        <img
+          src="/fairscale-logo.svg"
+          alt="Fairscale"
+          className="h-3.5 w-auto flex-shrink-0 opacity-80 dark:invert"
+        />
+      </div>
     </div>
   )
 }

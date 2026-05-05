@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/table"
 import { Trophy, Award } from "lucide-react"
 import Link from "next/link"
-import { useLoans, type ParsedLoan } from "@/hooks/useLoans"
 import { resolveWalletProfiles, getCustomProperty, type TapestryProfileResponse } from "@/lib/tapestry"
 import { FairScoreBadge } from "@/components/fairscore-badge"
 import type { FairScore } from "@/lib/fairscale"
@@ -40,40 +39,15 @@ function getRankDisplay(rank: number) {
   return <span className="text-muted-foreground font-medium">{rank}</span>
 }
 
-/** Walk loans and pull every distinct lender + borrower pubkey. */
-function collectLoanParties(loans: ParsedLoan[]): Set<string> {
-  const out = new Set<string>()
-  for (const loan of loans) {
-    if (loan.lender) out.add(loan.lender)
-    if (loan.borrower) out.add(loan.borrower)
-  }
-  return out
-}
-
-async function resolveAgentOwners(wallets: string[]): Promise<string[]> {
-  if (wallets.length === 0) return []
+async function fetchTapestryHolders(): Promise<string[]> {
+  // Universe of leaderboard candidates is every wallet that has claimed a
+  // Tapestry profile in the Agio namespace. A user without a profile is not
+  // discoverable in the social layer, so they don't belong on the public
+  // leaderboard either.
   try {
-    const res = await fetch("/api/agent-owners", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ wallets }),
-    })
-    const { mapping } = (await res.json()) as { mapping: Record<string, string | null> }
-    return wallets.map((w) => mapping[w] || w)
-  } catch {
-    return wallets
-  }
-}
-
-async function fetchHolders(): Promise<string[]> {
-  // /api/social-points/all still returns the canonical holder set for the
-  // platform: connect-only users that never transacted on chain. We use it
-  // strictly as a "who shows up on the leaderboard" universe; the actual
-  // ranking is FairScale.
-  try {
-    const res = await fetch("/api/social-points/all?wallets=")
-    const body = (await res.json()) as { holders?: string[] }
-    return body.holders ?? []
+    const res = await fetch("/api/tapestry/profiles/all")
+    const body = (await res.json()) as { wallets?: string[] }
+    return body.wallets ?? []
   } catch {
     return []
   }
@@ -114,23 +88,15 @@ async function resolveAndFilter(
 }
 
 export default function LeaderboardPageClient() {
-  const { loans, loading } = useLoans()
   const [profileMap, setProfileMap] = useState<Map<string, TapestryProfileResponse>>(new Map())
   const [scores, setScores] = useState<FairScore[]>([])
-  const [loadingScores, setLoadingScores] = useState(false)
-
-  const onChainWallets = useMemo(() => collectLoanParties(loans), [loans])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
-    setLoadingScores(true)
+    setLoading(true)
     ;(async () => {
-      // Universe of leaderboard candidates: distinct loan parties + holders
-      // tracked in the social-points registry (connect-only users count too).
-      const onChain = Array.from(onChainWallets)
-      const owners = await resolveAgentOwners(onChain)
-      const holders = await fetchHolders()
-      const universe = Array.from(new Set([...owners, ...holders]))
+      const universe = await fetchTapestryHolders()
       if (cancelled) return
 
       const fetched = await fetchScores(universe)
@@ -141,12 +107,12 @@ export default function LeaderboardPageClient() {
 
       setScores(filtered)
       setProfileMap(pm)
-      setLoadingScores(false)
+      setLoading(false)
     })().catch(() => {
-      if (!cancelled) setLoadingScores(false)
+      if (!cancelled) setLoading(false)
     })
     return () => { cancelled = true }
-  }, [onChainWallets])
+  }, [])
 
   const sorted: LeaderboardEntry[] = useMemo(
     () =>
@@ -160,14 +126,23 @@ export default function LeaderboardPageClient() {
     <div className="flex-1 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-center gap-2">
-            <Award className="h-5 w-5 text-yellow-500" />
-            Leaderboard
-            <span className="text-xs font-normal text-muted-foreground ml-2">powered by Fairscale</span>
+          <CardTitle className="flex items-center justify-center gap-3 flex-wrap">
+            <span className="inline-flex items-center gap-2">
+              <Award className="h-5 w-5 text-yellow-500" />
+              Leaderboard
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-normal text-muted-foreground">
+              powered by
+              <img
+                src="/fairscale-logo.svg"
+                alt="Fairscale"
+                className="h-4 w-auto dark:invert"
+              />
+            </span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {loading || loadingScores ? (
+          {loading ? (
             <div className="flex items-center justify-center py-16">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
