@@ -781,3 +781,59 @@ html { scroll-behavior: smooth; }
 .agio-glass-page [data-slot="input"]::placeholder {
   color: hsl(var(--muted-foreground));
 }
+
+/* ────────────────────────────────────────────────────────────────────────
+   Glass slider — replaces the flat 2D blue track with a layered glass
+   surface so range pickers (Loan Offers APY/Period, Auto-Loan, Create
+   Offer) feel like part of the same elevated chrome family.
+
+   Track is a recessed glass groove. Range is a brand-blue gradient
+   with an inner sheen and outer accent glow. Thumb is a glass dome
+   with a top-edge highlight and accent ring.
+   ──────────────────────────────────────────────────────────────────── */
+.agio-glass-page [data-slot="slider-track"] {
+  background:
+    linear-gradient(180deg, hsl(var(--foreground) / 0.08) 0%, hsl(var(--foreground) / 0.02) 100%),
+    hsl(var(--background) / 0.5) !important;
+  border: 1px solid hsl(var(--foreground) / 0.10) !important;
+  box-shadow:
+    0 1px 0 hsl(var(--foreground) / 0.04) inset,
+    0 2px 6px -3px rgba(0, 0, 0, 0.25) inset;
+  height: 8px;
+}
+.agio-glass-page [data-slot="slider-range"] {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 60%),
+    linear-gradient(90deg, hsl(var(--primary) / 0.85) 0%, hsl(var(--primary)) 100%) !important;
+  box-shadow:
+    0 0 8px -2px rgba(74, 144, 255, 0.45),
+    0 0 0 1px rgba(74, 144, 255, 0.15) inset;
+}
+.agio-glass-page [data-slot="slider-thumb"] {
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 30%, rgba(255, 255, 255, 0.4) 60%, rgba(255, 255, 255, 0.1) 100%),
+    linear-gradient(180deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.85) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 2px 6px -1px rgba(74, 144, 255, 0.5),
+    0 4px 10px -4px rgba(0, 0, 0, 0.4);
+  height: 18px;
+  width: 18px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.agio-glass-page [data-slot="slider-thumb"]:hover {
+  transform: scale(1.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 3px 10px -2px rgba(74, 144, 255, 0.6),
+    0 5px 14px -4px rgba(0, 0, 0, 0.45);
+}
+.agio-glass-page [data-slot="slider-thumb"]:focus-visible {
+  outline: none;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 0 0 3px rgba(74, 144, 255, 0.25),
+    0 3px 10px -2px rgba(74, 144, 255, 0.6),
+    0 5px 14px -4px rgba(0, 0, 0, 0.45);
+}
