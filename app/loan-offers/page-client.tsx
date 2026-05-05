@@ -361,7 +361,8 @@ function OfferCard({ offer, onAccepted }: { offer: ParsedLoan; onAccepted: () =>
           <p className="text-xs text-red-500 text-center w-full">{error}</p>
         )}
         <Button
-          className={`${isLendOffer ? "bg-red-500 hover:bg-red-600" : "bg-blue-600 hover:bg-blue-700"} text-white w-full disabled:opacity-50`}
+          variant={isLendOffer ? "destructive" : "default"}
+          className="w-full"
           onClick={handleAccept}
           disabled={accepting || !connected}
         >

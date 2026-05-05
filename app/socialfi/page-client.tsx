@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { CircleDollarSign, Users, UserPlus, Sparkles, Loader2, ArrowRight, Clock, Wallet, Search } from "lucide-react"
+import { CircleDollarSign, Users, UserPlus, Sparkles, Loader2, Clock, Wallet, Search } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
@@ -333,7 +333,6 @@ export default function SocialFiPageClient() {
                   onClick={() => { setActiveNav("network"); setNetworkFilter("all-profiles") }}
                 >
                   View All Profiles
-                  <ArrowRight className="h-3.5 w-3.5 ml-1" />
                 </Button>
               </CardContent>
             </Card>

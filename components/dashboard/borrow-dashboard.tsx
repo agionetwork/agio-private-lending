@@ -168,8 +168,8 @@ export default function BorrowDashboard() {
 
       <Tabs defaultValue="myloans" className="space-y-6">
         <TabsList className="inline-flex h-10 w-full max-w-md mx-auto mb-4 bg-muted/50 border dark:border-white/10">
-          <TabsTrigger value="myloans" className="flex-1 data-[state=active]:!bg-red-600 data-[state=active]:!text-white">My Loans</TabsTrigger>
-          <TabsTrigger value="opportunities" className="flex-1 data-[state=active]:!bg-red-600 data-[state=active]:!text-white">Available Offers</TabsTrigger>
+          <TabsTrigger value="myloans" className="flex-1">My Loans</TabsTrigger>
+          <TabsTrigger value="opportunities" className="flex-1">Available Offers</TabsTrigger>
         </TabsList>
 
         <TabsContent value="myloans">

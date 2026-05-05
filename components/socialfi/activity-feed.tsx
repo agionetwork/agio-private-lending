@@ -181,7 +181,7 @@ function ActivityFeedCard({
                 </Button>
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="destructive"
                   className="text-xs"
                   onClick={onDecline}
                   disabled={accepting}

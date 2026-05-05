@@ -95,8 +95,8 @@ function FriendCard({ profile }: { profile: TapestryProfileResponse }) {
           </Link>
           <Button
             size="sm"
-            variant="outline"
-            className={`w-full min-h-[36px] py-2 text-xs ${confirmRemove ? "border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10" : ""}`}
+            variant="destructive"
+            className="w-full min-h-[36px] py-2 text-xs"
             onClick={handleRemove}
             disabled={removing}
           >
