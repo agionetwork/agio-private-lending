@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ArrowLeft, Save, Loader2, Camera, BadgeCheck, Bell } from "lucide-react"
-import Link from "next/link"
+import { Save, Loader2, Camera, BadgeCheck, Bell } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 import { Notifications } from "@dialectlabs/react-ui"
@@ -211,15 +210,6 @@ export default function EditProfilePage() {
 
   return (
     <div className="flex-1 p-4 md:p-8 pt-6 max-w-2xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/socialfi">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-        </Button>
-        <h2 className="text-2xl font-bold tracking-tight">Edit Profile</h2>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Profile Information</CardTitle>
