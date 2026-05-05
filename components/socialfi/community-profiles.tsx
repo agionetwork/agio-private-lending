@@ -146,14 +146,14 @@ export function ProfileCard({
           {!isMe && myProfileId && (
             <button
               onClick={handleToggleFavorite}
-              className="absolute -top-1 -right-1 p-0.5 rounded-full bg-white dark:bg-gray-800 shadow-sm hover:scale-110 transition-transform"
+              className="absolute -top-1 -right-1 p-1 rounded-full bg-[#0A1230] border border-white/15 shadow-md hover:scale-110 transition-transform"
               title={favorited ? "Remove from favourites" : "Add to favourites"}
             >
               <Star
-                className={`h-4 w-4 ${
+                className={`h-3.5 w-3.5 ${
                   favorited
                     ? "text-yellow-400 fill-yellow-400"
-                    : "text-gray-300 hover:text-yellow-300"
+                    : "text-white/70 hover:text-yellow-300"
                 }`}
               />
             </button>

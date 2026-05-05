@@ -456,7 +456,7 @@ html { scroll-behavior: smooth; }
 /* Glassify shadcn Cards inside a glass page. The surface sits over the
    ambient gradient so the blue glow shows through. Inner highlight along
    the top edge mimics a curved-glass reflection. */
-.agio-glass-page [data-slot="card"] {
+.agio-glass-page [data-slot="card"]:not(.bg-gradient-to-r):not(.bg-gradient-to-br):not(.bg-gradient-to-b):not(.bg-gradient-to-l) {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.015) 100%),
     hsl(var(--card) / 0.55);
@@ -473,7 +473,7 @@ html { scroll-behavior: smooth; }
   overflow: hidden;
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
-.agio-glass-page [data-slot="card"]::before {
+.agio-glass-page [data-slot="card"]:not(.bg-gradient-to-r):not(.bg-gradient-to-br):not(.bg-gradient-to-b):not(.bg-gradient-to-l)::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -481,7 +481,7 @@ html { scroll-behavior: smooth; }
   background: linear-gradient(160deg, rgba(74, 144, 255, 0.08) 0%, transparent 45%);
   border-radius: inherit;
 }
-.agio-glass-page [data-slot="card"]:hover {
+.agio-glass-page [data-slot="card"]:not(.bg-gradient-to-r):not(.bg-gradient-to-br):not(.bg-gradient-to-b):not(.bg-gradient-to-l):hover {
   border-color: rgba(74, 144, 255, 0.25);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.08) inset,
@@ -520,8 +520,10 @@ html { scroll-behavior: smooth; }
     0 2px 8px -4px rgba(74, 144, 255, 0.1);
 }
 
-/* Light-mode degradation: less translucency, white wash so cards stay legible. */
-:root:not(.dark) .agio-glass-page [data-slot="card"] {
+/* Light-mode degradation: less translucency, white wash so cards stay legible.
+   Same opt-out as dark mode — cards with explicit gradient classes keep
+   their bespoke design (used for branded blue avatar / CTA cards). */
+:root:not(.dark) .agio-glass-page [data-slot="card"]:not(.bg-gradient-to-r):not(.bg-gradient-to-br):not(.bg-gradient-to-b):not(.bg-gradient-to-l) {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.6) 100%),
     hsl(var(--card));
@@ -531,7 +533,7 @@ html { scroll-behavior: smooth; }
     0 8px 24px -10px rgba(15, 30, 80, 0.18),
     0 2px 8px -4px rgba(74, 144, 255, 0.1);
 }
-:root:not(.dark) .agio-glass-page [data-slot="card"]::before {
+:root:not(.dark) .agio-glass-page [data-slot="card"]:not(.bg-gradient-to-r):not(.bg-gradient-to-br):not(.bg-gradient-to-b):not(.bg-gradient-to-l)::before {
   background: linear-gradient(160deg, rgba(74, 144, 255, 0.05) 0%, transparent 45%);
 }
 
@@ -540,9 +542,9 @@ html { scroll-behavior: smooth; }
    is brand-tinted dark regardless of theme — matches the existing design). */
 .agio-glass-header {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 60%),
-    linear-gradient(135deg, rgba(74, 144, 255, 0.10) 0%, transparent 55%),
-    rgba(8, 14, 36, 0.78);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 60%),
+    linear-gradient(135deg, rgba(74, 144, 255, 0.12) 0%, transparent 55%),
+    linear-gradient(180deg, #0A1230 0%, #060B22 100%);
   backdrop-filter: blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -692,17 +694,30 @@ html { scroll-behavior: smooth; }
    ──────────────────────────────────────────────────────────────────── */
 .agio-glass-page [data-slot="tabs-list"] {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%),
-    rgba(8, 14, 36, 0.4);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 60%),
+    linear-gradient(135deg, rgba(74, 144, 255, 0.10) 0%, transparent 55%),
+    linear-gradient(180deg, #0A1230 0%, #060B22 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
     0 4px 14px -8px rgba(0, 0, 0, 0.45);
   border-radius: 12px;
   padding: 4px;
   height: auto;
+}
+/* Tabs strip is brand-tinted dark in BOTH modes (matches the header).
+   Inactive triggers stay readable on top of the dark surface. */
+.agio-glass-page [data-slot="tabs-trigger"] {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.agio-glass-page [data-slot="tabs-trigger"]:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+.agio-glass-page [data-slot="tabs-trigger"][data-state="active"] {
+  color: #fff !important;
 }
 .agio-glass-page [data-slot="tabs-trigger"] {
   color: hsl(var(--foreground) / 0.65);

@@ -4,15 +4,17 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Loader2, UserMinus, Users, Eye } from "lucide-react"
+import { Loader2, UserMinus, Users, Eye, Star } from "lucide-react"
 import Link from "next/link"
 import { useFriends } from "@/components/friends-provider"
 import { getCustomProperty, type TapestryProfileResponse } from "@/lib/tapestry"
 import { useSolDomain } from "@/hooks/useSNS"
+import { useFavorites } from "@/hooks/useFavorites"
 import { toast } from "sonner"
 
 function FriendCard({ profile }: { profile: TapestryProfileResponse }) {
   const { removeFriend } = useFriends()
+  const { isFavorite, toggleFavorite } = useFavorites()
   const [removing, setRemoving] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
 
@@ -21,6 +23,18 @@ function FriendCard({ profile }: { profile: TapestryProfileResponse }) {
   const displayName = customName || p.username
   const pfp = getCustomProperty(p, "profileImage") || p.image
   const solDomain = useSolDomain(p.walletAddress)
+  const favorited = isFavorite(p.id)
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const nowFavorited = await toggleFavorite(p.id)
+    if (nowFavorited) {
+      toast.success(`Added ${displayName} to favourites`)
+    } else {
+      toast.success(`Removed ${displayName} from favourites`)
+    }
+  }
 
   const handleRemove = async () => {
     if (!confirmRemove) {
@@ -42,14 +56,27 @@ function FriendCard({ profile }: { profile: TapestryProfileResponse }) {
   return (
     <Card className="bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-200/10 hover:shadow-lg transition-all duration-200">
       <CardContent className="p-6 flex flex-col items-center text-center space-y-3">
-        <Link href={`/socialfi/profile/${p.walletAddress}`}>
-          <Avatar className="h-16 w-16 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all">
-            {pfp ? <AvatarImage src={pfp} alt={displayName} /> : null}
-            <AvatarFallback className="bg-blue-600 text-white text-lg">
-              {displayName.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </Link>
+        <div className="relative">
+          <Link href={`/socialfi/profile/${p.walletAddress}`}>
+            <Avatar className="h-16 w-16 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all">
+              {pfp ? <AvatarImage src={pfp} alt={displayName} /> : null}
+              <AvatarFallback className="bg-blue-600 text-white text-lg">
+                {displayName.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+          <button
+            onClick={handleToggleFavorite}
+            className="absolute -top-1 -right-1 p-1 rounded-full bg-[#0A1230] border border-white/15 shadow-md hover:scale-110 transition-transform"
+            title={favorited ? "Remove from favourites" : "Add to favourites"}
+          >
+            <Star
+              className={`h-3.5 w-3.5 ${
+                favorited ? "text-yellow-400 fill-yellow-400" : "text-white/70 hover:text-yellow-300"
+              }`}
+            />
+          </button>
+        </div>
 
         <div className="space-y-1">
           <Link href={`/socialfi/profile/${p.walletAddress}`} className="hover:text-blue-600 transition-colors">

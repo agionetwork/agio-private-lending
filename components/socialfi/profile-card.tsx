@@ -84,7 +84,7 @@ export function ProfileCard() {
       <Card className="mb-6 bg-gradient-to-r from-blue-600 to-blue-800 text-white border-0 relative">
         <Link
           href="/socialfi/edit-profile"
-          className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors"
+          className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
         >
           <Settings className="h-5 w-5" />
         </Link>
@@ -97,29 +97,29 @@ export function ProfileCard() {
               </AvatarFallback>
             </Avatar>
 
-            <div className="flex-1 space-y-2">
-              <h3 className="text-xl font-bold">{myDisplayName}</h3>
+            <div className="flex-1 space-y-2 text-white">
+              <h3 className="text-xl font-bold text-white">{myDisplayName}</h3>
               {(myBio || solDomain) && (
-                <p className="text-white/70 text-sm line-clamp-2">
+                <p className="text-white/80 text-sm line-clamp-2">
                   {myBio || solDomain}
                 </p>
               )}
               <div className="flex flex-wrap gap-4 text-sm">
                 <div>
-                  <span className="text-white/60">Network: </span>
-                  <span className="font-semibold">{friends.length}</span>
+                  <span className="text-white/70">Network: </span>
+                  <span className="font-semibold text-white">{friends.length}</span>
                 </div>
                 <div>
-                  <span className="text-white/60">Loans: </span>
-                  <span className="font-semibold">{myTotalLoans}</span>
+                  <span className="text-white/70">Loans: </span>
+                  <span className="font-semibold text-white">{myTotalLoans}</span>
                 </div>
                 <div>
-                  <span className="text-white/60">Lent: </span>
-                  <span className="font-semibold">{(myStats?.totalLent || 0).toFixed(2)}</span>
+                  <span className="text-white/70">Lent: </span>
+                  <span className="font-semibold text-white">{(myStats?.totalLent || 0).toFixed(2)}</span>
                 </div>
                 <div>
-                  <span className="text-white/60">Borrowed: </span>
-                  <span className="font-semibold">{(myStats?.totalBorrowed || 0).toFixed(2)}</span>
+                  <span className="text-white/70">Borrowed: </span>
+                  <span className="font-semibold text-white">{(myStats?.totalBorrowed || 0).toFixed(2)}</span>
                 </div>
               </div>
             </div>
