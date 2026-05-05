@@ -225,10 +225,10 @@ function DocsLayoutInner({ children }: { children: React.ReactNode }) {
           </svg>
         </button>
 
-        <a href="https://agio.network" className="flex items-center gap-2.5" target="_blank" rel="noopener noreferrer">
-          <Image src="/agio-logo-3d.png" alt="Agio" width={32} height={32} className="object-contain" />
-          <span className="font-display text-[15px] font-medium tracking-tight">Agio Network</span>
-          <span className="text-muted-foreground text-xs font-normal">Docs</span>
+        <a href="https://agio.network" className="flex items-center gap-2.5 min-w-0" target="_blank" rel="noopener noreferrer">
+          <Image src="/agio-logo-3d.png" alt="Agio" width={32} height={32} className="object-contain shrink-0" />
+          <span className="hidden sm:inline font-display text-[15px] font-medium tracking-tight">Agio Network</span>
+          <span className="hidden sm:inline text-muted-foreground text-xs font-normal">Docs</span>
         </a>
 
         <div style={{ flex: 1 }} />
@@ -238,7 +238,7 @@ function DocsLayoutInner({ children }: { children: React.ReactNode }) {
         </div>
         <Link
           href="/borrow-lend"
-          className="ml-3 inline-flex h-9 items-center justify-center rounded-md px-4 font-display text-[13px] font-medium tracking-wider uppercase text-white"
+          className="ml-3 inline-flex h-9 items-center justify-center rounded-md px-4 font-display text-[13px] font-medium tracking-wider uppercase text-white whitespace-nowrap shrink-0"
           data-slot="button"
           data-variant="default"
         >

@@ -176,9 +176,6 @@ export default function DashboardHeader({ onConnectWallet }: DashboardHeaderProp
             Loan Offers
           </Link>
         </nav>
-        <Link href="/" className="md:hidden flex items-center mr-2">
-          <img src="/agio-logo-3d.png" alt="AGIO" className="h-8 w-8" />
-        </Link>
         <Button
           variant="ghost"
           className="mr-2 px-0 text-base text-white hover:bg-transparent hover:text-white/80 focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
@@ -187,6 +184,9 @@ export default function DashboardHeader({ onConnectWallet }: DashboardHeaderProp
           {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           <span className="sr-only">Toggle Menu</span>
         </Button>
+        <Link href="/" className="md:hidden flex items-center mr-2">
+          <img src="/agio-logo-3d.png" alt="AGIO" className="h-8 w-8" />
+        </Link>
         <div className="flex flex-1 md:flex-none items-center justify-end gap-2">
           <Button
             variant="ghost"
