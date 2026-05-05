@@ -729,8 +729,15 @@ html { scroll-behavior: smooth; }
 .agio-glass-header [data-slot="button"][data-variant="ghost"] {
   color: #fff;
 }
-.agio-glass-header [data-slot="button"][data-variant="ghost"]:hover {
-  color: #fff;
+/* Header ghost icon buttons (theme toggle, notifications, mobile menu)
+   stay flat on hover — no glass wash — but the icon glyph picks up a
+   bright sky-blue tint to signal interactivity against the navy /
+   blue header surface. */
+.agio-glass-header [data-slot="button"][data-variant="ghost"]:hover,
+.agio-glass-header [data-slot="button"][data-variant="ghost"]:focus-visible {
+  background: transparent !important;
+  background-image: none !important;
+  color: #60A5FA !important;
 }
 
 /* Light mode: outline / secondary buttons need a visible border + a
