@@ -258,7 +258,7 @@ function DocsLayoutInner({ children }: { children: React.ReactNode }) {
           </nav>
         </aside>
 
-        <main style={{ minWidth: 0 }}>
+        <main style={{ minWidth: 0 }} className="agio-glass-page">
           <div className="docs-body-content">
             <article className="docs-content" style={{ maxWidth: "48rem" }}>
               {children}

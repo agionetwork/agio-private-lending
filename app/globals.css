@@ -490,6 +490,36 @@ html { scroll-behavior: smooth; }
     0 6px 20px -4px rgba(74, 144, 255, 0.18);
 }
 
+/* Inline card-like boxes used directly in docs pages (MCP integration card,
+   sub-blocks, FAQ rows, etc). They use the Tailwind bg-card / bg-background/X
+   classes instead of the shadcn <Card> primitive, so we target by class name
+   so they pick up the same glass treatment as the data-slot="card" rule. */
+.agio-glass-page .docs-content .bg-card,
+.agio-glass-page .docs-content [class*="bg-background/"] {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.015) 100%),
+    hsl(var(--card) / 0.55);
+  border-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 10px 30px -12px rgba(0, 0, 0, 0.55),
+    0 4px 12px -4px rgba(74, 144, 255, 0.08);
+  border-radius: 14px;
+}
+:root:not(.dark) .agio-glass-page .docs-content .bg-card,
+:root:not(.dark) .agio-glass-page .docs-content [class*="bg-background/"] {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.6) 100%),
+    hsl(var(--card));
+  border-color: rgba(74, 144, 255, 0.14);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 8px 24px -10px rgba(15, 30, 80, 0.18),
+    0 2px 8px -4px rgba(74, 144, 255, 0.1);
+}
+
 /* Light-mode degradation: less translucency, white wash so cards stay legible. */
 :root:not(.dark) .agio-glass-page [data-slot="card"] {
   background:
