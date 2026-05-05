@@ -18,7 +18,6 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { WalletConnectModal } from "@/components/wallet-connect-modal"
-import { DevnetFaucetButton } from "@/components/devnet-faucet-button"
 import { toast } from "sonner"
 import { useTapestryProfile } from "@/components/tapestry-profile-provider"
 import { getCustomProperty } from "@/lib/tapestry"
@@ -189,8 +188,6 @@ export default function DashboardHeader({ onConnectWallet }: DashboardHeaderProp
           <span className="sr-only">Toggle Menu</span>
         </Button>
         <div className="flex flex-1 md:flex-none items-center justify-end gap-2">
-          {isConnected && <DevnetFaucetButton />}
-
           <Button
             variant="ghost"
             size="icon"

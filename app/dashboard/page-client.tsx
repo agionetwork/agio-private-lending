@@ -20,6 +20,7 @@ import {
 import BorrowDashboard from "../../components/dashboard/borrow-dashboard"
 import LendDashboard from "../../components/dashboard/lend-dashboard"
 import LoanViewModal from "../../components/dashboard/loan-view-modal"
+import { GetFaucetsButton } from "../../components/dashboard/get-faucets-button"
 import Link from "next/link"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useWalletContext } from "@/components/wallet-provider"
@@ -287,19 +288,24 @@ function DashboardContent() {
             <Card className="border-2 border-gray-200 dark:border-white/20 shadow-lg bg-transparent hover:shadow-xl transition-all duration-300 overflow-hidden relative">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-blue-100/20 to-blue-200/30 dark:from-blue-900/20 dark:via-blue-800/20 dark:to-blue-700/20 pointer-events-none"></div>
               <CardHeader className="relative z-10">
-                <CardTitle className={`text-2xl font-bold flex items-center gap-2 ${titleColor}`}>
-                  <span className="w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <rect x="2" y="7" width="20" height="10" rx="2"/>
-                      <path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/>
-                      <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                  </span>
-                  Your Liquidity
-                </CardTitle>
-                <CardDescription className={descriptionColor}>
-                  Your assets available for loans and investments
-                </CardDescription>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <CardTitle className={`text-2xl font-bold flex items-center gap-2 ${titleColor}`}>
+                      <span className="w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <rect x="2" y="7" width="20" height="10" rx="2"/>
+                          <path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      </span>
+                      Your Liquidity
+                    </CardTitle>
+                    <CardDescription className={descriptionColor}>
+                      Your assets available for loans and investments
+                    </CardDescription>
+                  </div>
+                  <GetFaucetsButton />
+                </div>
               </CardHeader>
               <CardContent className="relative z-10">
                 {isLoading ? (

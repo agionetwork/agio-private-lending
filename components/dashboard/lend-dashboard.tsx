@@ -14,6 +14,8 @@ import { useLoanContract } from "@/hooks/useLoanContract"
 import { useTapestryProfile } from "@/components/tapestry-profile-provider"
 import LoanViewModal from "./loan-view-modal"
 import { WalletNameCell } from "./wallet-name-cell"
+import { AcceptOfferModal } from "./accept-offer-modal"
+import { useIsStealth } from "@/hooks/useIsStealth"
 
 export default function LendDashboard() {
   const { publicKey } = useWallet()
@@ -177,13 +179,13 @@ export default function LendDashboard() {
         </Card>
       </div>
 
-      <Tabs defaultValue="myloans" className="space-y-6">
+      <Tabs defaultValue="lend-myloans" className="space-y-6">
         <TabsList className="inline-flex h-10 w-full max-w-md mx-auto mb-4 bg-muted/50 border dark:border-white/10">
-          <TabsTrigger value="myloans" className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white">My Loans</TabsTrigger>
-          <TabsTrigger value="requests" className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white">Available Offers</TabsTrigger>
+          <TabsTrigger value="lend-myloans" className="flex-1">My Loans</TabsTrigger>
+          <TabsTrigger value="lend-requests" className="flex-1">Available Offers</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="myloans">
+        <TabsContent value="lend-myloans">
           <Card className="border-2 border-gray-200 dark:border-gray-800 shadow-lg bg-transparent">
             <CardHeader>
               <CardTitle className="text-base font-medium">My Loans</CardTitle>
@@ -246,7 +248,7 @@ export default function LendDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="requests">
+        <TabsContent value="lend-requests">
           <Card className="border-2 border-gray-200 dark:border-gray-800 shadow-lg bg-transparent">
             <CardHeader>
               <CardTitle className="text-base font-medium">Available Offers</CardTitle>
@@ -273,23 +275,13 @@ export default function LendDashboard() {
                     </TableHeader>
                     <TableBody>
                       {offersForMe.map((loan) => (
-                        <TableRow key={loan.publicKey}>
-                          <WalletNameCell address={loan.borrower} fallback="Open" />
-                          <TableCell className="text-center font-medium">{loan.debtAmountUi.toFixed(2)} ${loan.debtTokenSymbol}</TableCell>
-                          <TableCell className="text-center font-medium">{loan.collateralAmountUi.toFixed(2)} ${loan.collateralTokenSymbol}</TableCell>
-                          <TableCell className="text-center font-medium text-green-600">{loan.apy}%</TableCell>
-                          <TableCell className="text-center font-medium">{formatDuration(loan.duration)}</TableCell>
-                          <TableCell className="text-center">
-                            <Button
-                              size="sm"
-                              className="text-xs bg-green-600 hover:bg-green-700 text-white"
-                              disabled={acceptingLoanKey === loan.publicKey}
-                              onClick={() => handleAcceptOffer(loan)}
-                            >
-                              {acceptingLoanKey === loan.publicKey ? "Confirming..." : "Lend"}
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                        <LendOfferRow
+                          key={loan.publicKey}
+                          loan={loan}
+                          accepting={acceptingLoanKey === loan.publicKey}
+                          onAcceptPublic={() => handleAcceptOffer(loan)}
+                          onPrivateSuccess={() => refetch()}
+                        />
                       ))}
                     </TableBody>
                   </Table>
@@ -320,5 +312,48 @@ export default function LendDashboard() {
         />
       )}
     </div>
+  )
+}
+
+/**
+ * Single row for the lender's "Available Offers" table. Hides the public
+ * accept option when the borrower posted via a stealth wallet — accepting
+ * publicly would tie the borrower's stealth back to the lender's main wallet
+ * forever on chain.
+ */
+function LendOfferRow({
+  loan,
+  accepting,
+  onAcceptPublic,
+  onPrivateSuccess,
+}: {
+  loan: ParsedLoan
+  accepting: boolean
+  onAcceptPublic: () => void
+  onPrivateSuccess: () => void
+}) {
+  const borrowerIsStealth = useIsStealth(loan.borrower)
+
+  return (
+    <TableRow>
+      <WalletNameCell address={loan.borrower} fallback="Open" />
+      <TableCell className="text-center font-medium">{loan.debtAmountUi.toFixed(2)} ${loan.debtTokenSymbol}</TableCell>
+      <TableCell className="text-center font-medium">{loan.collateralAmountUi.toFixed(2)} ${loan.collateralTokenSymbol}</TableCell>
+      <TableCell className="text-center font-medium text-green-600">{loan.apy}%</TableCell>
+      <TableCell className="text-center font-medium">{formatDuration(loan.duration)}</TableCell>
+      <TableCell className="text-center">
+        <AcceptOfferModal
+          loan={loan}
+          label="Lend"
+          size="sm"
+          triggerClassName="text-xs"
+          triggerVariant="default"
+          parentBusy={accepting}
+          hidePublic={borrowerIsStealth}
+          onAcceptPublic={onAcceptPublic}
+          onPrivateSuccess={onPrivateSuccess}
+        />
+      </TableCell>
+    </TableRow>
   )
 }

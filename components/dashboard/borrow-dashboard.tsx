@@ -14,7 +14,7 @@ import { useLoanContract } from "@/hooks/useLoanContract"
 import { useTapestryProfile } from "@/components/tapestry-profile-provider"
 import LoanViewModal from "./loan-view-modal"
 import { WalletNameCell } from "./wallet-name-cell"
-import { PrivateAcceptButton } from "./private-accept-button"
+import { AcceptOfferModal } from "./accept-offer-modal"
 import { useIsStealth } from "@/hooks/useIsStealth"
 
 export default function BorrowDashboard() {
@@ -331,25 +331,16 @@ function OpportunityRow({
       <TableCell className="text-center font-medium text-red-500">{loan.apy}%</TableCell>
       <TableCell className="text-center font-medium">{formatDuration(loan.duration)}</TableCell>
       <TableCell className="text-center">
-        <div className="flex items-center justify-center gap-1">
-          {!lenderIsStealth && (
-            <Button
-              size="sm"
-              variant="destructive"
-              className="text-xs"
-              disabled={accepting}
-              onClick={onAcceptPublic}
-            >
-              {accepting ? "Confirming..." : "Borrow"}
-            </Button>
-          )}
-          <PrivateAcceptButton
+        <div className="flex items-center justify-center">
+          <AcceptOfferModal
             loan={loan}
             label="Borrow"
             size="sm"
-            className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
-            disabled={accepting}
-            onSuccess={onPrivateSuccess}
+            triggerClassName="text-xs"
+            parentBusy={accepting}
+            hidePublic={lenderIsStealth}
+            onAcceptPublic={onAcceptPublic}
+            onPrivateSuccess={onPrivateSuccess}
           />
         </div>
       </TableCell>
