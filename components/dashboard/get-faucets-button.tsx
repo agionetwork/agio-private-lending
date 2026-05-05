@@ -58,7 +58,8 @@ export function GetFaucetsButton() {
                   <ExternalLink className="h-3 w-3 opacity-60" />
                 </div>
                 <div className="text-xs text-foreground/65 mt-0.5">
-                  Airdrop devnet SOL — needed to pay transaction fees.
+                  Airdrop devnet SOL — pays transaction fees, and doubles as
+                  collateral or lendable liquidity for borrow / lend offers.
                 </div>
                 <div className="text-xs text-foreground/45 mt-1 font-mono truncate">
                   faucet.solana.com
