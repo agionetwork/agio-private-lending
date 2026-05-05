@@ -219,7 +219,11 @@ export default function LendDashboard() {
                         const myLenderSideIsPrivate = isMyStealth(loan.lender)
                         return (
                           <TableRow key={loan.publicKey} className={isLoanExpired ? "bg-red-500/5" : ""}>
-                            <WalletNameCell address={loan.borrower} fallback="Pending" forceMask={myLenderSideIsPrivate} />
+                            <WalletNameCell
+                              address={loan.borrower || loan.lender}
+                              fallback="Open"
+                              forceMask={myLenderSideIsPrivate}
+                            />
                             <TableCell className="text-center font-medium">{loan.debtAmountUi.toFixed(2)} ${loan.debtTokenSymbol}</TableCell>
                             <TableCell className="text-center font-medium">{loan.collateralAmountUi.toFixed(2)} ${loan.collateralTokenSymbol}</TableCell>
                             <TableCell className="text-center font-medium text-green-600">{loan.apy}%</TableCell>

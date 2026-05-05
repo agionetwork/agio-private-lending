@@ -211,7 +211,7 @@ function OfferCard({ offer, onAccepted }: { offer: ParsedLoan; onAccepted: () =>
 
   // Resolve counterparty name: Tapestry displayName > SNS domain > shortened address
   // Handles agent wallets via reverse lookup (agent → owner → profile)
-  const { displayName: counterpartyDisplayName, profileWallet: counterpartyProfileWallet } = useWalletProfile(counterpartyAddress)
+  const { displayName: counterpartyDisplayName, profileWallet: counterpartyProfileWallet, isStealth: counterpartyIsStealth } = useWalletProfile(counterpartyAddress)
   const durationLabel = formatDuration(offer.duration)
   const expectedInterest = offer.debtAmountUi * offer.apy / 100 * offer.duration / (365 * 86400)
   const handleAccept = useCallback(async () => {
@@ -336,7 +336,9 @@ function OfferCard({ offer, onAccepted }: { offer: ParsedLoan; onAccepted: () =>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-sm text-gray-500 dark:text-gray-400">{counterpartyLabel}</p>
-                {counterpartyProfileWallet ? (
+                {counterpartyIsStealth ? (
+                  <p className="font-semibold italic text-muted-foreground text-sm truncate">Anonymous</p>
+                ) : counterpartyProfileWallet ? (
                   <Link
                     href={`/socialfi/profile/${counterpartyProfileWallet}`}
                     className="font-semibold text-blue-600 dark:text-blue-400 hover:underline text-sm truncate block"

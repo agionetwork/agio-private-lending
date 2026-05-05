@@ -206,7 +206,11 @@ export default function BorrowDashboard() {
                         const myBorrowerSideIsPrivate = isMyStealth(loan.borrower)
                         return (
                           <TableRow key={loan.publicKey} className={isLoanExpired ? "bg-red-500/5" : ""}>
-                            <WalletNameCell address={loan.lender} fallback="Pending" forceMask={myBorrowerSideIsPrivate} />
+                            <WalletNameCell
+                              address={loan.lender || loan.borrower}
+                              fallback="Open"
+                              forceMask={myBorrowerSideIsPrivate}
+                            />
                             <TableCell className="text-center font-medium">{loan.debtAmountUi.toFixed(2)} ${loan.debtTokenSymbol}</TableCell>
                             <TableCell className="text-center font-medium">{loan.collateralAmountUi.toFixed(2)} ${loan.collateralTokenSymbol}</TableCell>
                             <TableCell className="text-center font-medium text-red-500">{loan.apy}%</TableCell>
