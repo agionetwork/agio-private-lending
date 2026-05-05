@@ -274,7 +274,7 @@ function DashboardContent() {
       'SOL': '/images/sol-logo.png',
       'USDC': '/images/usdc-logo.png',
       'USDT': '/images/usdt-logo.png',
-      'EURC': '/images/eurc.webp',
+      'EURC': '/images/eurc-logo.png',
       'bSOL': '/images/bluebgagio.png',
     }
     return logoMap[symbol] || '/images/placeholder-logo.png'

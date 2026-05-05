@@ -17,7 +17,7 @@ import { toast } from "sonner"
 import { VALID_TOKENS } from "@/lib/agent/types"
 
 function getTokenImage(token: string): string {
-  if (token === "EURC") return "/images/eurc.webp"
+  if (token === "EURC") return "/images/eurc-logo.png"
   return `/images/${token.toLowerCase()}-logo.png`
 }
 

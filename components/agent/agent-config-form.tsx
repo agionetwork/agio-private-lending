@@ -16,7 +16,7 @@ import { type AgentConfig, VALID_TOKENS } from "@/lib/agent/types"
 import { useTokenPrices } from "@/hooks/useTokenPrices"
 
 function getTokenImage(token: string): string {
-  if (token === "EURC") return "/images/eurc.webp"
+  if (token === "EURC") return "/images/eurc-logo.png"
   return `/images/${token.toLowerCase()}-logo.png`
 }
 

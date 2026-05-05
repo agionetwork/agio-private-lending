@@ -29,7 +29,7 @@ import { VALID_TOKENS } from "@/lib/agent/types"
 import { TOKEN_MINTS, TOKEN_DECIMALS } from "@/lib/token-mints"
 
 function getTokenImage(token: string): string {
-  if (token === "EURC") return "/images/eurc.webp"
+  if (token === "EURC") return "/images/eurc-logo.png"
   return `/images/${token.toLowerCase()}-logo.png`
 }
 
