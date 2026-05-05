@@ -30,7 +30,18 @@ export function Header() {
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled || menuOpen ? "bg-[#0A1230]/95 backdrop-blur-md border-b border-[#1C2A52]" : "bg-transparent"}`}>
       <div className="max-w-[1360px] mx-auto flex h-16 items-center justify-between px-4 md:px-10">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3 min-w-0">
+          {/* Mobile hamburger — sits to the LEFT of the brand mark on
+              mobile only; on desktop the nav lives in the centre and
+              this button is hidden. */}
+          <button
+            className="md:hidden flex items-center justify-center w-9 h-9 text-white shrink-0"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+          >
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+
           <Link href="/" className="flex items-center gap-2">
             <Image
               src="/agio-logo-3d.png"
@@ -39,7 +50,7 @@ export function Header() {
               height={36}
               className="object-contain"
             />
-            <span className="font-display text-[15px] font-medium tracking-tight text-white">Agio Network</span>
+            <span className="hidden md:inline font-display text-[15px] font-medium tracking-tight text-white">Agio Network</span>
           </Link>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[rgba(74,144,255,0.25)] rounded-full font-mono text-[10px] tracking-[0.1em] uppercase text-[#4A90FF] bg-[rgba(74,144,255,0.08)]">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444] animate-[landing-pulse_1.6s_ease-in-out_infinite]" />
@@ -61,19 +72,10 @@ export function Header() {
             href="/borrow-lend"
             data-slot="button"
             data-variant="default"
-            className="inline-flex items-center justify-center px-5 py-2 text-[13px] font-display font-medium text-white rounded-lg uppercase tracking-wider"
+            className="inline-flex items-center justify-center px-5 py-2 text-[13px] font-display font-medium text-white rounded-lg uppercase tracking-wider whitespace-nowrap shrink-0"
           >
             LAUNCH APP
           </Link>
-
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden flex items-center justify-center w-9 h-9 text-white"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-          >
-            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
         </div>
       </div>
 
