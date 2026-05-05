@@ -740,6 +740,19 @@ html { scroll-behavior: smooth; }
   padding: 4px;
   height: auto;
 }
+/* Light-mode override: parent tabs (Overview/Borrow/Lend on the dashboard,
+   Borrow/Lend on /borrow-lend) should read as a light opaque card with a
+   soft blue gradient, not the navy strip used in dark mode. */
+:root:not(.dark) .agio-glass-page [data-slot="tabs-list"] {
+  background:
+    linear-gradient(180deg, rgba(74, 144, 255, 0.06) 0%, rgba(255, 255, 255, 0) 60%),
+    linear-gradient(135deg, rgba(74, 144, 255, 0.10) 0%, transparent 55%),
+    linear-gradient(180deg, #FFFFFF 0%, #EEF3FB 100%);
+  border-color: rgba(74, 144, 255, 0.18);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 4px 14px -8px rgba(74, 144, 255, 0.18);
+}
 /* Tabs strip is brand-tinted dark in BOTH modes (matches the header).
    Inactive triggers stay readable on top of the dark surface. */
 .agio-glass-page [data-slot="tabs-trigger"] {
@@ -750,6 +763,19 @@ html { scroll-behavior: smooth; }
   background: rgba(255, 255, 255, 0.06) !important;
 }
 .agio-glass-page [data-slot="tabs-trigger"][data-state="active"] {
+  color: #fff !important;
+}
+/* In light mode the parent strip is white, so inactive triggers must be
+   foreground-coloured instead of white-on-white. Active stays #fff because
+   the active pill itself is still a saturated blue/red. */
+:root:not(.dark) .agio-glass-page [data-slot="tabs-trigger"] {
+  color: hsl(var(--foreground) / 0.65) !important;
+}
+:root:not(.dark) .agio-glass-page [data-slot="tabs-trigger"]:hover {
+  color: hsl(var(--foreground)) !important;
+  background: rgba(74, 144, 255, 0.06) !important;
+}
+:root:not(.dark) .agio-glass-page [data-slot="tabs-trigger"][data-state="active"] {
   color: #fff !important;
 }
 .agio-glass-page [data-slot="tabs-trigger"] {
@@ -849,6 +875,28 @@ html { scroll-behavior: smooth; }
 }
 .agio-glass-page [data-slot="input"]::placeholder {
   color: hsl(var(--muted-foreground));
+}
+/* Hover-tinted chevron for any Select trigger (token pickers, yes/no, etc).
+   Dark mode → chevron brightens to white; light mode → chevron picks up the
+   brand blue. Applies anywhere a SelectTrigger is hovered, not just inside
+   the glass page. */
+[data-slot="select-trigger"] [data-slot="select-icon"] {
+  transition: color 0.18s ease, opacity 0.18s ease;
+}
+[data-slot="select-trigger"]:hover [data-slot="select-icon"],
+[data-slot="select-trigger"]:focus-visible [data-slot="select-icon"],
+[data-slot="select-trigger"][data-state="open"] [data-slot="select-icon"] {
+  opacity: 1;
+}
+:root.dark [data-slot="select-trigger"]:hover [data-slot="select-icon"],
+:root.dark [data-slot="select-trigger"]:focus-visible [data-slot="select-icon"],
+:root.dark [data-slot="select-trigger"][data-state="open"] [data-slot="select-icon"] {
+  color: #ffffff;
+}
+:root:not(.dark) [data-slot="select-trigger"]:hover [data-slot="select-icon"],
+:root:not(.dark) [data-slot="select-trigger"]:focus-visible [data-slot="select-icon"],
+:root:not(.dark) [data-slot="select-trigger"][data-state="open"] [data-slot="select-icon"] {
+  color: #1358EC;
 }
 
 /* ────────────────────────────────────────────────────────────────────────

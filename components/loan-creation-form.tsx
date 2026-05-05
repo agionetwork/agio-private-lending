@@ -31,7 +31,7 @@ import { useSNS } from "@/hooks/useSNS"
 
 const MODE_CONFIG = {
   borrow: {
-    title: "CREATE BORROW OFFER",
+    title: "CREATE BORROW REQUEST",
     amountTooltip: "The amount you want to borrow in the selected token.",
     collateralTooltip: "The token and amount you will provide as collateral for this loan.",
     percentageTooltip:
@@ -550,7 +550,7 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
             </div>
 
             <div className="grid grid-cols-1 gap-4 mt-6">
-              <div className="space-y-3">
+              <div className="space-y-6">
                 <div className="flex items-center gap-1">
                   <Label
                     htmlFor="collateral-percentage"
@@ -595,8 +595,8 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 mt-8">
-              <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-4 mt-6">
+              <div className="space-y-6">
                 <div className="flex items-center gap-1">
                   <Label htmlFor="loan-term" className="text-sm font-medium text-foreground">
                     PERIOD:
@@ -641,8 +641,8 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 mt-8">
-              <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-4 mt-6">
+              <div className="space-y-6">
                 <div className="flex items-center gap-1">
                   <Label htmlFor="apy" className="text-sm font-medium text-foreground">
                     <TermTooltip term="apy">APY (%)</TermTooltip>:
@@ -688,22 +688,24 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
             </div>
 
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-medium text-foreground whitespace-nowrap">
-                  {config.privacyLabel}
-                </Label>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <QuestionMarkCircledIcon className="h-4 w-4 text-muted-foreground hover:text-blue-600 transition-colors flex-shrink-0" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>{config.privacyTooltip}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Label className="text-sm font-medium text-foreground whitespace-nowrap">
+                    {config.privacyLabel}
+                  </Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <QuestionMarkCircledIcon className="h-4 w-4 text-muted-foreground hover:text-blue-600 transition-colors flex-shrink-0" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>{config.privacyTooltip}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <Select value={usePrivacy} onValueChange={setUsePrivacy}>
-                  <SelectTrigger className="w-20 h-8 text-black dark:text-white bg-transparent dark:bg-transparent">
+                  <SelectTrigger className="w-20 h-8 text-black dark:text-white bg-transparent dark:bg-transparent flex-shrink-0">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="text-black dark:text-white bg-white dark:bg-blue-950">
@@ -715,20 +717,22 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
             </div>
 
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-medium text-foreground whitespace-nowrap">
-                  {config.exclusiveLabel}
-                </Label>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <QuestionMarkCircledIcon className="h-4 w-4 text-muted-foreground hover:text-blue-600 transition-colors flex-shrink-0" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>{config.exclusiveTooltip}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Label className="text-sm font-medium text-foreground whitespace-nowrap">
+                    {config.exclusiveLabel}
+                  </Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <QuestionMarkCircledIcon className="h-4 w-4 text-muted-foreground hover:text-blue-600 transition-colors flex-shrink-0" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>{config.exclusiveTooltip}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <Select value={isExclusive} onValueChange={(v) => {
                   setIsExclusive(v)
                   if (v === "no") {
@@ -736,7 +740,7 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
                     setErrors((prev) => { const { receiverAddress: _, ...rest } = prev; return rest })
                   }
                 }}>
-                  <SelectTrigger className="w-20 h-8 text-black dark:text-white bg-transparent dark:bg-transparent">
+                  <SelectTrigger className="w-20 h-8 text-black dark:text-white bg-transparent dark:bg-transparent flex-shrink-0">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="text-black dark:text-white bg-white dark:bg-blue-950">
