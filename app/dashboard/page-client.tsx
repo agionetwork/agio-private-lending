@@ -10,6 +10,7 @@ import { Badge, type BadgeProps } from "../../components/ui/badge"
 import { Button, type ButtonProps } from "../../components/ui/button"
 import { ResponsiveLine } from "@nivo/line"
 import { ResponsivePie } from '@nivo/pie'
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useSearchParams, useRouter } from "next/navigation"
 import {
   Tooltip,
@@ -161,12 +162,32 @@ function DashboardContent() {
     }
   }, [myBorrowedLoans, myLentLoans, prices])
 
-  // Recent activity from real loans
+  // Recent activity from real loans — full sorted list. Pagination is
+  // applied in the render path so flipping pages doesn't reshape the
+  // overview tab around it.
   const recentActivity = useMemo(() => {
-    return myLoans
-      .sort((a, b) => (b.start || 0) - (a.start || 0))
-      .slice(0, 5)
+    return [...myLoans].sort((a, b) => (b.start || 0) - (a.start || 0))
   }, [myLoans])
+
+  const RECENT_ACTIVITY_PAGE_SIZE = 5
+  const [recentActivityPage, setRecentActivityPage] = useState(1)
+  const recentActivityTotalPages = Math.max(
+    1,
+    Math.ceil(recentActivity.length / RECENT_ACTIVITY_PAGE_SIZE)
+  )
+
+  // Clamp the current page when the underlying list shrinks (e.g. a loan
+  // is repaid and falls off, or the data refreshes mid-view).
+  useEffect(() => {
+    if (recentActivityPage > recentActivityTotalPages) {
+      setRecentActivityPage(recentActivityTotalPages)
+    }
+  }, [recentActivityPage, recentActivityTotalPages])
+
+  const recentActivityPageItems = useMemo(() => {
+    const start = (recentActivityPage - 1) * RECENT_ACTIVITY_PAGE_SIZE
+    return recentActivity.slice(start, start + RECENT_ACTIVITY_PAGE_SIZE)
+  }, [recentActivity, recentActivityPage])
 
   // Loan history chart data: cumulative borrow/lend over time
   // Includes Pending offers (using current time as date since they have no start timestamp)
@@ -322,14 +343,12 @@ function DashboardContent() {
             <Card className="border-2 border-gray-200 dark:border-white/20 shadow-lg bg-transparent hover:shadow-xl transition-all duration-300 overflow-hidden relative">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-blue-100/20 to-blue-200/30 dark:from-blue-900/20 dark:via-blue-800/20 dark:to-blue-700/20 pointer-events-none"></div>
               <CardHeader className="relative z-10">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <CardTitle className={`text-2xl font-bold flex items-center gap-2 ${titleColor}`}>
-                      <LiquidityIcon size={36} />
-                      Your Liquidity
-                      <TitleHelp description="Your assets available for loans and investments" />
-                    </CardTitle>
-                  </div>
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle className={`text-2xl font-bold flex items-center gap-2 ${titleColor}`}>
+                    <LiquidityIcon size={36} />
+                    Your Liquidity
+                    <TitleHelp description="Your assets available for loans and investments" />
+                  </CardTitle>
                   <GetFaucetsButton />
                 </div>
               </CardHeader>
@@ -719,64 +738,96 @@ function DashboardContent() {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {recentActivity.map((loan) => {
-                      const isBorrower = isMyWallet(loan.borrower)
-                      const counterparty = isBorrower ? loan.lender : loan.borrower
-                      return (
-                        <div key={loan.publicKey} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                          <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 rounded-full overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center shadow-sm border border-gray-200 dark:border-gray-700">
-                              <img
-                                src={getTokenLogo(loan.debtTokenSymbol)}
-                                alt={`${loan.debtTokenSymbol} logo`}
-                                className="w-8 h-8 object-contain"
-                                onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-logo.png' }}
-                              />
+                  <>
+                    <div className="space-y-4">
+                      {recentActivityPageItems.map((loan) => {
+                        const isBorrower = isMyWallet(loan.borrower)
+                        const counterparty = isBorrower ? loan.lender : loan.borrower
+                        return (
+                          <div key={loan.publicKey} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <div className="flex items-center space-x-4">
+                              <div className="w-10 h-10 rounded-full overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center shadow-sm border border-gray-200 dark:border-gray-700">
+                                <img
+                                  src={getTokenLogo(loan.debtTokenSymbol)}
+                                  alt={`${loan.debtTokenSymbol} logo`}
+                                  className="w-8 h-8 object-contain"
+                                  onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-logo.png' }}
+                                />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-gray-900 dark:text-white">
+                                  {isBorrower ? 'Borrowed' : 'Lent'} {loan.debtAmountUi.toFixed(2)} {getTokenDisplaySymbol(loan.debtTokenSymbol)}
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  <CounterpartyName address={counterparty} /> - APY: {loan.apy}%
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-semibold text-gray-900 dark:text-white">
-                                {isBorrower ? 'Borrowed' : 'Lent'} {loan.debtAmountUi.toFixed(2)} {getTokenDisplaySymbol(loan.debtTokenSymbol)}
-                              </p>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                <CounterpartyName address={counterparty} /> - APY: {loan.apy}%
-                              </p>
+                            <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:space-x-2">
+                              <Badge
+                                className={
+                                  loan.status === LoanStatus.Accepted
+                                    ? "text-xs bg-green-600 text-white border-transparent pointer-events-none"
+                                    : loan.status === LoanStatus.Repaid
+                                    ? "text-xs bg-blue-600 text-white border-transparent pointer-events-none"
+                                    : loan.status === LoanStatus.Foreclosed
+                                    ? "text-xs bg-red-600 text-white border-transparent pointer-events-none"
+                                    : "text-xs pointer-events-none"
+                                }
+                                variant={
+                                  loan.status === LoanStatus.Accepted ||
+                                  loan.status === LoanStatus.Repaid ||
+                                  loan.status === LoanStatus.Foreclosed
+                                    ? "default"
+                                    : "outline"
+                                }
+                              >
+                                {getStatusLabel(loan.status)}
+                              </Badge>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewLoan(loan)}
+                                className="text-xs"
+                              >
+                                View
+                              </Button>
                             </div>
                           </div>
-                          <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:space-x-2">
-                            <Badge
-                              className={
-                                loan.status === LoanStatus.Accepted
-                                  ? "text-xs bg-green-600 hover:bg-green-700 text-white border-transparent"
-                                  : loan.status === LoanStatus.Repaid
-                                  ? "text-xs bg-blue-600 hover:bg-blue-700 text-white border-transparent"
-                                  : loan.status === LoanStatus.Foreclosed
-                                  ? "text-xs bg-red-600 hover:bg-red-700 text-white border-transparent"
-                                  : "text-xs"
-                              }
-                              variant={
-                                loan.status === LoanStatus.Accepted ||
-                                loan.status === LoanStatus.Repaid ||
-                                loan.status === LoanStatus.Foreclosed
-                                  ? "default"
-                                  : "outline"
-                              }
-                            >
-                              {getStatusLabel(loan.status)}
-                            </Badge>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewLoan(loan)}
-                              className="text-xs"
-                            >
-                              View
-                            </Button>
-                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {recentActivityTotalPages > 1 && (
+                      <div className="flex items-center justify-between mt-4">
+                        <span className="text-xs text-muted-foreground">
+                          Page {recentActivityPage} of {recentActivityTotalPages}
+                        </span>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => setRecentActivityPage((p) => Math.max(1, p - 1))}
+                            disabled={recentActivityPage === 1}
+                            aria-label="Previous page"
+                          >
+                            <ChevronLeft className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => setRecentActivityPage((p) => Math.min(recentActivityTotalPages, p + 1))}
+                            disabled={recentActivityPage === recentActivityTotalPages}
+                            aria-label="Next page"
+                          >
+                            <ChevronRight className="h-3 w-3" />
+                          </Button>
                         </div>
-                      )
-                    })}
-                  </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
