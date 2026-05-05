@@ -3,7 +3,7 @@
 import { useMemo, useState, useRef, useCallback } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
@@ -187,11 +187,7 @@ export default function LendDashboard() {
 
         <TabsContent value="lend-myloans">
           <Card className="border-2 border-gray-200 dark:border-gray-800 shadow-lg bg-transparent">
-            <CardHeader>
-              <CardTitle className="text-base font-medium">My Loans</CardTitle>
-              <CardDescription>Your lend offers and active loans</CardDescription>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               {myLoans.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <p className="text-lg font-medium">No loans</p>
@@ -250,11 +246,7 @@ export default function LendDashboard() {
 
         <TabsContent value="lend-requests">
           <Card className="border-2 border-gray-200 dark:border-gray-800 shadow-lg bg-transparent">
-            <CardHeader>
-              <CardTitle className="text-base font-medium">Available Offers</CardTitle>
-              <CardDescription>Exclusive offers sent to your wallet</CardDescription>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               {offersForMe.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <p className="text-lg font-medium">No offers available</p>
