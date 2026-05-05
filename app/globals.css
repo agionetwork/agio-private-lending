@@ -586,6 +586,19 @@ html { scroll-behavior: smooth; }
     0 1px 0 rgba(74, 144, 255, 0.06) inset,
     0 8px 28px -16px rgba(0, 0, 0, 0.55);
 }
+/* Light mode: header picks up the same saturated blue gradient as the
+   avatar card on the dashboard / socialfi pages (Tailwind blue-600 →
+   blue-800). Still dark enough that the existing white text on header
+   buttons stays legible. */
+:root:not(.dark) .agio-glass-header {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0) 60%),
+    linear-gradient(90deg, #2563EB 0%, #1E40AF 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 8px 28px -16px rgba(30, 64, 175, 0.45);
+}
 .agio-glass-header::after {
   /* Subtle accent line at the very bottom edge so the header reads as an
      elevated surface rather than a flat band. */
@@ -718,6 +731,61 @@ html { scroll-behavior: smooth; }
 }
 .agio-glass-header [data-slot="button"][data-variant="ghost"]:hover {
   color: #fff;
+}
+
+/* Light mode: outline / secondary buttons need a visible border + a
+   touch of fill so they don't disappear on the white page background.
+   Pulled in the brand-blue tint so they read as part of the same family
+   as primary buttons. The header carve-out below preserves the dark
+   header treatment on those same variants. */
+:root:not(.dark) [data-slot="button"][data-variant="outline"] {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(245, 248, 255, 0.85) 100%);
+  border: 1px solid rgba(74, 144, 255, 0.45);
+  color: #1e3a8a;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 1px 2px rgba(30, 64, 175, 0.10),
+    0 4px 14px -8px rgba(30, 64, 175, 0.20);
+}
+:root:not(.dark) [data-slot="button"][data-variant="outline"]:hover {
+  background:
+    linear-gradient(180deg, rgba(232, 240, 255, 0.95) 0%, rgba(214, 228, 255, 0.95) 100%);
+  border-color: rgba(30, 64, 175, 0.55);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 4px 16px -6px rgba(30, 64, 175, 0.25);
+}
+:root:not(.dark) [data-slot="button"][data-variant="secondary"] {
+  background:
+    linear-gradient(180deg, rgba(232, 240, 255, 0.85) 0%, rgba(220, 232, 252, 0.85) 100%);
+  border: 1px solid rgba(74, 144, 255, 0.30);
+  color: #1e3a8a;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 1px 2px rgba(30, 64, 175, 0.08);
+}
+:root:not(.dark) [data-slot="button"][data-variant="secondary"]:hover {
+  background:
+    linear-gradient(180deg, rgba(214, 228, 255, 0.95) 0%, rgba(196, 216, 248, 0.95) 100%);
+  border-color: rgba(30, 64, 175, 0.45);
+}
+/* Header is dark-blue gradient in BOTH themes, so its translucent
+   variants keep their dark-mode glass — the light-mode rules above
+   would clash with the navy/blue header surface. */
+:root:not(.dark) .agio-glass-header [data-slot="button"][data-variant="outline"],
+:root:not(.dark) .agio-glass-header [data-slot="button"][data-variant="secondary"] {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.10) inset;
+}
+:root:not(.dark) .agio-glass-header [data-slot="button"][data-variant="outline"]:hover,
+:root:not(.dark) .agio-glass-header [data-slot="button"][data-variant="secondary"]:hover {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.06) 100%);
+  border-color: rgba(255, 255, 255, 0.32);
 }
 
 /* ────────────────────────────────────────────────────────────────────────
