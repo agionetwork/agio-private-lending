@@ -32,22 +32,22 @@ const PILLARS = [
 
 export function PillarsSection() {
   return (
-    <section id="why-agio" className="py-[120px] border-b border-[#1C2A52] relative bg-[#0A1230]">
+    <section id="why-agio" className="py-[64px] border-b border-[#1C2A52] relative bg-[#0A1230]">
       <div className="max-w-[1360px] mx-auto px-4 md:px-10">
-        <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-6 md:gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-6 md:gap-12 mb-8">
           <div className="font-mono text-[11px] tracking-[0.14em] uppercase text-[#8FA8D8] pt-3">02 / WHY AGIO</div>
-          <h2 className="font-display font-medium text-[clamp(32px,3.6vw,52px)] leading-[1.05] tracking-[-0.022em] text-white" style={{ textWrap: "balance" } as React.CSSProperties}>
+          <h2 className="font-display font-medium text-[clamp(28px,3.2vw,44px)] leading-[1.05] tracking-[-0.022em] text-white" style={{ textWrap: "balance" } as React.CSSProperties}>
             Lending secured by <em className="not-italic text-[#4A90FF] font-normal">smart-contracts</em>,<br />not by institutions.
           </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#1C2A52] border border-[#1C2A52]">
           {PILLARS.map((p) => (
-            <div key={p.title} className="bg-[#0A1230] hover:bg-[#0E1A42] transition-colors p-9 flex flex-col items-center text-center">
+            <div key={p.title} className="bg-[#0A1230] hover:bg-[#0E1A42] transition-colors px-6 py-5 flex flex-col items-center text-center">
               <div className="flex items-center justify-center">
                 {p.icon}
               </div>
-              <h4 className="font-display text-xl font-medium mt-5 mb-2.5 tracking-[-0.01em] text-white">{p.title}</h4>
+              <h4 className="font-display text-lg font-medium mt-3 mb-1.5 tracking-[-0.01em] text-white">{p.title}</h4>
               <p className="text-[#8FA8D8] text-sm max-w-[320px]">{p.desc}</p>
             </div>
           ))}
