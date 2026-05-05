@@ -167,8 +167,8 @@ function DocsLayoutInner({ children }: { children: React.ReactNode }) {
           .docs-sidebar { position: sticky; top: 3.5rem; height: calc(100vh - 3.5rem); transform: translateX(0); z-index: 0; width: auto; }
         }
         .docs-content h1 { font-size: 1.875rem; font-weight: 700; margin-bottom: 0.75rem; line-height: 1.2; color: hsl(var(--primary)); }
-        .docs-content h2 { font-size: 1.25rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.5rem; line-height: 1.3; }
-        .docs-content h3 { font-size: 1.125rem; font-weight: 500; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .docs-content h2 { font-size: 1.25rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.5rem; line-height: 1.3; color: hsl(var(--primary)); }
+        .docs-content h3 { font-size: 1.125rem; font-weight: 500; margin-top: 1.5rem; margin-bottom: 0.5rem; color: hsl(var(--primary)); }
         .docs-content p { margin-bottom: 1rem; line-height: 1.75; }
         .docs-content .lead { font-size: 1.125rem; color: hsl(var(--muted-foreground)); margin-bottom: 1.5rem; }
         .docs-content ul, .docs-content ol { margin-bottom: 1rem; padding-left: 1.5rem; }
