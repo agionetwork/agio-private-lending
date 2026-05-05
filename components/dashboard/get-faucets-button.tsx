@@ -74,11 +74,11 @@ export function GetFaucetsButton() {
             className="block p-4 rounded-lg border border-blue-500/30 hover:border-blue-400 hover:bg-blue-500/[0.06] transition"
           >
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm ring-1 ring-foreground/5">
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm ring-1 ring-foreground/5 overflow-hidden">
                 <img
                   src="/brands/circle.png"
                   alt="Circle"
-                  className="w-7 h-7 object-contain"
+                  className="w-full h-full object-contain"
                 />
               </div>
               <div className="flex-1 min-w-0">
