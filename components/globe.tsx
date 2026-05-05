@@ -176,6 +176,14 @@ function rotateX(v: { x: number; y: number; z: number }, a: number) {
   return { x: v.x, y: v.y * c - v.z * s, z: v.y * s + v.z * c }
 }
 
+function hexToRgba(hex: string, a: number): string {
+  const v = hex.replace("#", "")
+  const r = parseInt(v.slice(0, 2), 16)
+  const g = parseInt(v.slice(2, 4), 16)
+  const b = parseInt(v.slice(4, 6), 16)
+  return `rgba(${r},${g},${b},${a})`
+}
+
 function slerp(a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }, t: number) {
   const dot = Math.max(-1, Math.min(1, a.x * b.x + a.y * b.y + a.z * b.z))
   const omega = Math.acos(dot)
@@ -186,11 +194,22 @@ function slerp(a: { x: number; y: number; z: number }, b: { x: number; y: number
   return { x: a.x * k0 + b.x * k1, y: a.y * k0 + b.y * k1, z: a.z * k0 + b.z * k1 }
 }
 
+type Token = "SOL" | "USDC" | "EURC"
+
+const TOKEN_COLORS: Record<Token, string> = {
+  SOL: "#14F195",
+  USDC: "#2775CA",
+  EURC: "#A780FF",
+}
+
+const TOKENS: Token[] = ["SOL", "USDC", "EURC"]
+
 type Arc = {
   a: { x: number; y: number; z: number }
   b: { x: number; y: number; z: number }
   born: number
   dur: number
+  token: Token
   _done?: boolean
 }
 
@@ -202,7 +221,6 @@ export default function Globe() {
   const stateRef = useRef({
     rotY: 0.4,
     rotX: -0.25,
-    autoSpin: true,
     velY: 0,
     velX: 0,
     dragging: false,
@@ -217,7 +235,6 @@ export default function Globe() {
     cy: 0,
     r: 0,
     dpr: 1,
-    autoT: 0 as ReturnType<typeof setTimeout> | 0,
   })
 
   const project = useCallback((v: { x: number; y: number; z: number }) => {
@@ -252,7 +269,9 @@ export default function Globe() {
 
     const onDown = (e: PointerEvent) => {
       s.dragging = true
-      s.autoSpin = false
+      // Cancel any leftover momentum so the drag feels precise.
+      s.velY = 0
+      s.velX = 0
       s.lastX = e.clientX
       s.lastY = e.clientY
       canvas!.setPointerCapture(e.pointerId)
@@ -277,8 +296,9 @@ export default function Globe() {
       if (s.dragging) {
         s.dragging = false
         canvas!.style.cursor = "grab"
-        clearTimeout(s.autoT as ReturnType<typeof setTimeout>)
-        s.autoT = setTimeout(() => { s.autoSpin = true }, 2500)
+        // Auto-spin resumes immediately once drag ends. The residual velocity
+        // is layered on top in tick() and decays naturally so the transition
+        // looks like a smooth handoff from inertia to ambient rotation.
       }
     }
     const onLeave = () => { s.mouse = null }
@@ -394,6 +414,7 @@ export default function Globe() {
         b: CITY_VECS[bi],
         born: now,
         dur: 2200 + Math.random() * 1800,
+        token: TOKENS[Math.floor(Math.random() * TOKENS.length)],
       })
       if (s.arcs.length > 14) s.arcs.shift()
     }
@@ -434,6 +455,37 @@ export default function Globe() {
           ctx!.arc(head.x, head.y, 6, 0, Math.PI * 2)
           ctx!.fillStyle = accentAlpha(0.22)
           ctx!.fill()
+        }
+
+        // Token badge anchored at the arc origin. Fades in as the arc starts
+        // moving and fades out as it completes, so the trail of recently-
+        // spawned transactions is labelled but the dome doesn't get cluttered.
+        const startP = project(arc.a)
+        if (startP.z > -0.2) {
+          const fadeIn = Math.min(1, elapsed / 250)
+          const fadeOut = 1 - Math.max(0, (t - 0.6) / 0.4)
+          const tokenAlpha = Math.max(0, Math.min(1, fadeIn * fadeOut))
+          if (tokenAlpha > 0.02) {
+            const tColor = TOKEN_COLORS[arc.token]
+            const label = `$${arc.token}`
+            ctx!.font = '600 9.5px "JetBrains Mono", ui-monospace, monospace'
+            const tw = ctx!.measureText(label).width
+            const padX = 4
+            const padY = 2.5
+            const bx = startP.x + 6
+            const by = startP.y - 14
+            const bw = tw + padX * 2
+            const bh = 14
+            ctx!.fillStyle = `rgba(10,18,48,${0.85 * tokenAlpha})`
+            ctx!.beginPath()
+            ;(ctx as any).roundRect ? (ctx as any).roundRect(bx, by, bw, bh, 4) : ctx!.rect(bx, by, bw, bh)
+            ctx!.fill()
+            ctx!.strokeStyle = hexToRgba(tColor, tokenAlpha * 0.85)
+            ctx!.lineWidth = 1
+            ctx!.stroke()
+            ctx!.fillStyle = hexToRgba(tColor, tokenAlpha)
+            ctx!.fillText(label, bx + padX, by + bh - padY - 2)
+          }
         }
         if (t >= 1) arc._done = true
       }
@@ -483,9 +535,11 @@ export default function Globe() {
       ctx!.setTransform(s.dpr, 0, 0, s.dpr, 0, 0)
       ctx!.clearRect(0, 0, s.w, s.h)
 
-      if (s.autoSpin) s.rotY += 0.0012
-      else {
-        s.rotY += s.velY
+      if (!s.dragging) {
+        // Always apply slow ambient rotation, plus residual swipe momentum
+        // that decays. The two combine smoothly: just after release the
+        // velocity dominates; once it fades, the ambient spin stays.
+        s.rotY += 0.0012 + s.velY
         s.rotX += s.velX
         s.velY *= 0.92
         s.velX *= 0.92
