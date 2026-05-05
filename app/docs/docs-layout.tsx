@@ -232,7 +232,7 @@ function DocsLayoutInner({ children }: { children: React.ReactNode }) {
                           href={item.href}
                           onClick={() => setMobileOpen(false)}
                           className={cn(
-                            "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors",
+                            "flex items-center gap-2 rounded-md px-3 py-1.5 font-display text-sm tracking-tight transition-colors",
                             pathname === item.href
                               ? "bg-primary/10 font-medium text-primary"
                               : "text-muted-foreground hover:bg-muted hover:text-foreground"
