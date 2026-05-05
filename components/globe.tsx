@@ -176,14 +176,6 @@ function rotateX(v: { x: number; y: number; z: number }, a: number) {
   return { x: v.x, y: v.y * c - v.z * s, z: v.y * s + v.z * c }
 }
 
-function hexToRgba(hex: string, a: number): string {
-  const v = hex.replace("#", "")
-  const r = parseInt(v.slice(0, 2), 16)
-  const g = parseInt(v.slice(2, 4), 16)
-  const b = parseInt(v.slice(4, 6), 16)
-  return `rgba(${r},${g},${b},${a})`
-}
-
 function slerp(a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }, t: number) {
   const dot = Math.max(-1, Math.min(1, a.x * b.x + a.y * b.y + a.z * b.z))
   const omega = Math.acos(dot)
@@ -196,10 +188,10 @@ function slerp(a: { x: number; y: number; z: number }, b: { x: number; y: number
 
 type Token = "SOL" | "USDC" | "EURC"
 
-const TOKEN_COLORS: Record<Token, string> = {
-  SOL: "#14F195",
-  USDC: "#2775CA",
-  EURC: "#A780FF",
+const TOKEN_ICON_SRC: Record<Token, string> = {
+  SOL: "/tokens/sol.png",
+  USDC: "/tokens/usdc.png",
+  EURC: "/tokens/eurc.png",
 }
 
 const TOKENS: Token[] = ["SOL", "USDC", "EURC"]
@@ -251,6 +243,17 @@ export default function Globe() {
     const ctx = canvas.getContext("2d")
     if (!ctx) return
     const s = stateRef.current
+
+    // Preload token icons. Drawing happens once an image's `complete` flag is
+    // true; until then we just skip the icon for that arc.
+    const tokenIcons: Record<Token, HTMLImageElement> = {
+      SOL: new Image(),
+      USDC: new Image(),
+      EURC: new Image(),
+    }
+    ;(Object.keys(tokenIcons) as Token[]).forEach((t) => {
+      tokenIcons[t].src = TOKEN_ICON_SRC[t]
+    })
 
     function resize() {
       const rect = canvas!.getBoundingClientRect()
@@ -447,44 +450,29 @@ export default function Globe() {
         }
         const head = pts[pts.length - 1]
         if (head && head.z > -0.3) {
+          // Soft glow under the icon so it reads against meridians.
           ctx!.beginPath()
-          ctx!.arc(head.x, head.y, 2.6, 0, Math.PI * 2)
-          ctx!.fillStyle = accentAlpha(1)
-          ctx!.fill()
-          ctx!.beginPath()
-          ctx!.arc(head.x, head.y, 6, 0, Math.PI * 2)
+          ctx!.arc(head.x, head.y, 9, 0, Math.PI * 2)
           ctx!.fillStyle = accentAlpha(0.22)
           ctx!.fill()
-        }
 
-        // Token badge anchored at the arc origin. Fades in as the arc starts
-        // moving and fades out as it completes, so the trail of recently-
-        // spawned transactions is labelled but the dome doesn't get cluttered.
-        const startP = project(arc.a)
-        if (startP.z > -0.2) {
-          const fadeIn = Math.min(1, elapsed / 250)
-          const fadeOut = 1 - Math.max(0, (t - 0.6) / 0.4)
-          const tokenAlpha = Math.max(0, Math.min(1, fadeIn * fadeOut))
-          if (tokenAlpha > 0.02) {
-            const tColor = TOKEN_COLORS[arc.token]
-            const label = `$${arc.token}`
-            ctx!.font = '600 9.5px "JetBrains Mono", ui-monospace, monospace'
-            const tw = ctx!.measureText(label).width
-            const padX = 4
-            const padY = 2.5
-            const bx = startP.x + 6
-            const by = startP.y - 14
-            const bw = tw + padX * 2
-            const bh = 14
-            ctx!.fillStyle = `rgba(10,18,48,${0.85 * tokenAlpha})`
+          // Token icon riding the arc head. Fades in over the first 200ms so
+          // a freshly spawned arc doesn't pop, and stays solid through the
+          // rest of the journey.
+          const icon = tokenIcons[arc.token]
+          if (icon && icon.complete && icon.naturalWidth > 0) {
+            const fadeIn = Math.min(1, elapsed / 200)
+            const size = head.z > 0 ? 16 : 13 // closer = larger
+            const half = size / 2
+            ctx!.globalAlpha = fadeIn * (head.z > 0 ? 1 : 0.8)
+            ctx!.drawImage(icon, head.x - half, head.y - half, size, size)
+            ctx!.globalAlpha = 1
+          } else {
+            // Fallback while the icon is loading: keep the original dot.
             ctx!.beginPath()
-            ;(ctx as any).roundRect ? (ctx as any).roundRect(bx, by, bw, bh, 4) : ctx!.rect(bx, by, bw, bh)
+            ctx!.arc(head.x, head.y, 2.6, 0, Math.PI * 2)
+            ctx!.fillStyle = accentAlpha(1)
             ctx!.fill()
-            ctx!.strokeStyle = hexToRgba(tColor, tokenAlpha * 0.85)
-            ctx!.lineWidth = 1
-            ctx!.stroke()
-            ctx!.fillStyle = hexToRgba(tColor, tokenAlpha)
-            ctx!.fillText(label, bx + padX, by + bh - padY - 2)
           }
         }
         if (t >= 1) arc._done = true
