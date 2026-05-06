@@ -99,6 +99,17 @@ export function filterLoansToRepay(
   })
 }
 
+// Bounds tolerances. The user-configured min/max are inclusive — an
+// offer exactly equal to a bound must match. Comparisons here are
+// already strict (`<` / `>`), but USD-converted values pick up float
+// drift from price multiplication (e.g. 1 USDC at Pyth price 0.9998
+// reads as $0.9998 against a $1 minimum and gets rejected). These
+// epsilons widen each bound just enough to cover typical drift.
+const USD_EPSILON = 0.01 // 1 cent
+const RATIO_EPSILON = 0.5 // 0.5 percentage points
+const APY_EPSILON = 0.01 // 1 basis point
+const DURATION_DAYS_EPSILON = 0.01 // ~14 minutes
+
 // Check if a loan matches the agent config parameters
 // Returns null if matches, or a skip reason string if not
 export function matchLoanToConfig(
@@ -119,17 +130,17 @@ export function matchLoanToConfig(
 
   if (side === "lend") {
     if (!config.lendEnabled) return "lending disabled"
-    if (loan.apy < config.lendMinApy) return `APY ${loan.apy}% < min ${config.lendMinApy}%`
+    if (loan.apy < config.lendMinApy - APY_EPSILON) return `APY ${loan.apy}% < min ${config.lendMinApy}%`
     if (loan.apy > PROTOCOL_MAX_APY) return `APY ${loan.apy}% > protocol max ${PROTOCOL_MAX_APY}%`
 
     // Amount check in USD
     const debtPrice = tokenPrices?.[loan.debtTokenSymbol] ?? 1
     const loanValueUsd = loan.debtAmountUi * debtPrice
-    if (loanValueUsd < config.lendMinAmountUsd) return `$${loanValueUsd.toFixed(0)} < min $${config.lendMinAmountUsd}`
-    if (loanValueUsd > config.lendMaxAmountUsd) return `$${loanValueUsd.toFixed(0)} > max $${config.lendMaxAmountUsd}`
+    if (loanValueUsd < config.lendMinAmountUsd - USD_EPSILON) return `$${loanValueUsd.toFixed(2)} < min $${config.lendMinAmountUsd}`
+    if (loanValueUsd > config.lendMaxAmountUsd + USD_EPSILON) return `$${loanValueUsd.toFixed(2)} > max $${config.lendMaxAmountUsd}`
 
     const durationDays = loan.duration / 86400
-    if (durationDays > config.lendMaxDuration) return `duration ${durationDays.toFixed(1)}d > max ${config.lendMaxDuration}d`
+    if (durationDays > config.lendMaxDuration + DURATION_DAYS_EPSILON) return `duration ${durationDays.toFixed(1)}d > max ${config.lendMaxDuration}d`
 
     if (!config.lendTokens.includes(loan.debtTokenSymbol)) return `debt token ${loan.debtTokenSymbol} not in [${config.lendTokens}]`
     if (!config.lendAcceptedCollateral.includes(loan.collateralTokenSymbol)) return `collateral ${loan.collateralTokenSymbol} not in [${config.lendAcceptedCollateral}]`
@@ -139,25 +150,25 @@ export function matchLoanToConfig(
     const collValueUsd = loan.collateralAmountUi * collPrice
     const actualRatio = loanValueUsd > 0 ? (collValueUsd / loanValueUsd) * 100 : 0
     const effectiveMinRatio = Math.max(config.lendMinCollateralRatio, PROTOCOL_MIN_RATIO)
-    if (actualRatio < effectiveMinRatio) return `ratio ${actualRatio.toFixed(0)}% < min ${effectiveMinRatio}%`
-    if (actualRatio > config.lendMaxCollateralRatio) return `ratio ${actualRatio.toFixed(0)}% > max ${config.lendMaxCollateralRatio}%`
+    if (actualRatio < effectiveMinRatio - RATIO_EPSILON) return `ratio ${actualRatio.toFixed(1)}% < min ${effectiveMinRatio}%`
+    if (actualRatio > config.lendMaxCollateralRatio + RATIO_EPSILON) return `ratio ${actualRatio.toFixed(1)}% > max ${config.lendMaxCollateralRatio}%`
 
     return null // matches
   }
 
   if (side === "borrow") {
     if (!config.borrowEnabled) return "borrowing disabled"
-    if (loan.apy > config.borrowMaxApy) return `APY ${loan.apy}% > max ${config.borrowMaxApy}%`
+    if (loan.apy > config.borrowMaxApy + APY_EPSILON) return `APY ${loan.apy}% > max ${config.borrowMaxApy}%`
     if (loan.apy > PROTOCOL_MAX_APY) return `APY ${loan.apy}% > protocol max ${PROTOCOL_MAX_APY}%`
 
     // Amount check in USD
     const debtPrice = tokenPrices?.[loan.debtTokenSymbol] ?? 1
     const loanValueUsd = loan.debtAmountUi * debtPrice
-    if (loanValueUsd < config.borrowMinAmountUsd) return `$${loanValueUsd.toFixed(0)} < min $${config.borrowMinAmountUsd}`
-    if (loanValueUsd > config.borrowMaxAmountUsd) return `$${loanValueUsd.toFixed(0)} > max $${config.borrowMaxAmountUsd}`
+    if (loanValueUsd < config.borrowMinAmountUsd - USD_EPSILON) return `$${loanValueUsd.toFixed(2)} < min $${config.borrowMinAmountUsd}`
+    if (loanValueUsd > config.borrowMaxAmountUsd + USD_EPSILON) return `$${loanValueUsd.toFixed(2)} > max $${config.borrowMaxAmountUsd}`
 
     const durationDays = loan.duration / 86400
-    if (durationDays > config.borrowMaxDuration) return `duration ${durationDays.toFixed(1)}d > max ${config.borrowMaxDuration}d`
+    if (durationDays > config.borrowMaxDuration + DURATION_DAYS_EPSILON) return `duration ${durationDays.toFixed(1)}d > max ${config.borrowMaxDuration}d`
 
     if (!config.borrowTokens.includes(loan.debtTokenSymbol)) return `debt token ${loan.debtTokenSymbol} not in [${config.borrowTokens}]`
     if (!config.borrowCollateralTokens.includes(loan.collateralTokenSymbol)) return `collateral ${loan.collateralTokenSymbol} not in [${config.borrowCollateralTokens}]`
@@ -167,8 +178,8 @@ export function matchLoanToConfig(
     const collValueUsd = loan.collateralAmountUi * collPrice
     const actualRatio = loanValueUsd > 0 ? (collValueUsd / loanValueUsd) * 100 : 0
     const effectiveMinRatio = Math.max(config.borrowMinCollateralRatio, PROTOCOL_MIN_RATIO)
-    if (actualRatio < effectiveMinRatio) return `ratio ${actualRatio.toFixed(0)}% < min ${effectiveMinRatio}%`
-    if (actualRatio > config.borrowMaxCollateralRatio) return `ratio ${actualRatio.toFixed(0)}% > max ${config.borrowMaxCollateralRatio}%`
+    if (actualRatio < effectiveMinRatio - RATIO_EPSILON) return `ratio ${actualRatio.toFixed(1)}% < min ${effectiveMinRatio}%`
+    if (actualRatio > config.borrowMaxCollateralRatio + RATIO_EPSILON) return `ratio ${actualRatio.toFixed(1)}% > max ${config.borrowMaxCollateralRatio}%`
 
     return null // matches
   }
