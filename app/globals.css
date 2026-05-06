@@ -580,17 +580,21 @@ html { scroll-behavior: smooth; }
     linear-gradient(180deg, #0A1230 0%, #060B22 100%);
   backdrop-filter: blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
-  /* Floating rounded pill — sits with a small gap from the viewport
-     edges so the page background shows through around it. The
-     border-radius wraps every corner instead of just the bottom band. */
-  margin: 10px 12px 0 12px;
+  /* Floating rounded pill, sized to align with the avatar card on
+     /dashboard and /socialfi: same max-width as the Tailwind 2xl
+     container (1400 px) minus the page's px-4 (16 px each side), and
+     the same mx-auto centring. Below the 2xl breakpoint the width
+     just tracks the viewport with 16 px gutters on each side, which
+     mirrors the card's outer edge exactly. */
+  margin: 10px auto 0 auto;
+  width: calc(100% - 32px) !important;
+  max-width: 1368px; /* 1400 (2xl container) − 32 (px-4 ×2) */
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.06) inset,
     0 1px 0 rgba(74, 144, 255, 0.06) inset,
     0 12px 32px -16px rgba(0, 0, 0, 0.55);
-  width: calc(100% - 24px) !important;
   /* Sticky offset matches the top margin so the pill floats neatly
      above the scroll content. */
   top: 10px !important;
