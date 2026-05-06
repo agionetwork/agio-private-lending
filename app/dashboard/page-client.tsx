@@ -453,32 +453,44 @@ function DashboardContent() {
                         )
                       }
 
-                      // Custom arc-link layer that splits left/right by slice
-                      // angle, draws the elbow, embeds the token logo, and
-                      // declutters overlapping labels by pushing each one a
-                      // minimum distance below the previous on its side.
+                      // Custom arc-link layer — keeps the original Nivo
+                      // line shape (one straight segment from the slice's
+                      // outer edge to the label) but adds two things Nivo
+                      // can't:
+                      //   1. Side-aware decluttering so overlapping labels
+                      //      get pushed apart on their own half of the donut.
+                      //   2. An inline 14 px token logo placed before the
+                      //      "$TICKER (XX%)" text.
                       const customLabelLayer = (props: any) => {
                         const { dataWithArc, centerX, centerY, radius } = props
                         const labelGap = 18 // min vertical spacing between labels
-                        const elbowOffset = 8
-                        const horizontalRun = 22
+                        const labelDistance = 32 // horizontal padding past the slice edge
                         const logoSize = 14
-                        const labelGapAfterLogo = 4
+                        const logoTextGap = 4
 
                         const items = dataWithArc.map((d: any) => {
                           const mid = (d.arc.startAngle + d.arc.endAngle) / 2
-                          const sx = centerX + Math.sin(mid) * (radius + elbowOffset)
-                          const sy = centerY - Math.cos(mid) * (radius + elbowOffset)
+                          // Anchor the line ON the slice's outer edge.
+                          const startX = centerX + Math.sin(mid) * radius
+                          const startY = centerY - Math.cos(mid) * radius
                           const isRight = Math.sin(mid) >= 0
-                          const labelX = isRight ? sx + horizontalRun : sx - horizontalRun
+                          // Initial label slot — radial direction extended to
+                          // labelDistance, then declutter may shift Y.
+                          const targetX = centerX + Math.sin(mid) * (radius + labelDistance)
+                          const targetY = centerY - Math.cos(mid) * (radius + labelDistance)
                           return {
                             id: d.id,
                             value: d.value,
                             color: d.color,
-                            sx,
-                            sy,
-                            labelX,
-                            labelY: sy,
+                            startX,
+                            startY,
+                            // Pin labels to a fixed left/right column so the
+                            // logo + text always start from the same X — easier
+                            // for the eye to scan when there are several.
+                            labelX: isRight
+                              ? centerX + radius + labelDistance
+                              : centerX - radius - labelDistance,
+                            labelY: targetY,
                             isRight,
                           }
                         })
@@ -501,17 +513,18 @@ function DashboardContent() {
                         return (
                           <g>
                             {[...right, ...left].map((it: any) => {
-                              const elbowX = it.labelX
-                              const tipX = it.isRight ? it.labelX + 4 : it.labelX - 4
-                              const logoX = it.isRight ? tipX + 4 : tipX - 4 - logoSize
+                              const logoX = it.isRight ? it.labelX : it.labelX - logoSize
                               const textX = it.isRight
-                                ? logoX + logoSize + labelGapAfterLogo
-                                : logoX - labelGapAfterLogo
+                                ? logoX + logoSize + logoTextGap
+                                : logoX - logoTextGap
                               return (
                                 <g key={it.id}>
-                                  <polyline
-                                    points={`${it.sx},${it.sy} ${elbowX},${it.labelY} ${tipX},${it.labelY}`}
-                                    fill="none"
+                                  {/* Single straight line: slice edge → label anchor. */}
+                                  <line
+                                    x1={it.startX}
+                                    y1={it.startY}
+                                    x2={it.labelX}
+                                    y2={it.labelY}
                                     stroke={it.color}
                                     strokeWidth={1.5}
                                   />
