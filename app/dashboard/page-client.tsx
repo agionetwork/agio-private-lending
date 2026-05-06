@@ -837,20 +837,14 @@ function DashboardContent() {
                             </div>
                             <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:space-x-2">
                               <Badge
-                                className={
-                                  loan.status === LoanStatus.Accepted
-                                    ? "text-xs bg-green-600 text-white border-transparent pointer-events-none"
-                                    : loan.status === LoanStatus.Repaid
-                                    ? "text-xs bg-blue-600 text-white border-transparent pointer-events-none"
-                                    : loan.status === LoanStatus.Foreclosed
-                                    ? "text-xs bg-red-600 text-white border-transparent pointer-events-none"
-                                    : "text-xs pointer-events-none"
-                                }
+                                className="text-xs pointer-events-none"
                                 variant={
-                                  loan.status === LoanStatus.Accepted ||
-                                  loan.status === LoanStatus.Repaid ||
-                                  loan.status === LoanStatus.Foreclosed
-                                    ? "default"
+                                  loan.status === LoanStatus.Accepted
+                                    ? "success"
+                                    : loan.status === LoanStatus.Repaid
+                                    ? "info"
+                                    : loan.status === LoanStatus.Foreclosed
+                                    ? "destructive"
                                     : "outline"
                                 }
                               >
