@@ -50,7 +50,7 @@ export function Header() {
               height={36}
               className="object-contain"
             />
-            <span className="hidden md:inline font-display text-[15px] font-medium tracking-tight text-white">Agio Network</span>
+            <span className="hidden sm:inline-block font-display text-[15px] font-medium tracking-tight text-white">Agio Network</span>
           </Link>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[rgba(74,144,255,0.25)] rounded-full font-mono text-[10px] tracking-[0.1em] uppercase text-[#4A90FF] bg-[rgba(74,144,255,0.08)]">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444] animate-[landing-pulse_1.6s_ease-in-out_infinite]" />

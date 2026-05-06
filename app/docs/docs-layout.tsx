@@ -227,8 +227,8 @@ function DocsLayoutInner({ children }: { children: React.ReactNode }) {
 
         <a href="https://agio.network" className="flex items-center gap-2.5 min-w-0" target="_blank" rel="noopener noreferrer">
           <Image src="/agio-logo-3d.png" alt="Agio" width={32} height={32} className="object-contain shrink-0" />
-          <span className="hidden sm:inline font-display text-[15px] font-medium tracking-tight">Agio Network</span>
-          <span className="hidden sm:inline text-muted-foreground text-xs font-normal">Docs</span>
+          <span className="hidden sm:inline-block font-display text-[15px] font-medium tracking-tight">Agio Network</span>
+          <span className="hidden sm:inline-block text-muted-foreground text-xs font-normal">Docs</span>
         </a>
 
         <div style={{ flex: 1 }} />
