@@ -49,6 +49,23 @@ function shortenAddress(addr: string): string {
 }
 
 /**
+ * Format a token amount with adaptive precision so a real-but-tiny
+ * value (e.g. a 0.001 USDC test loan) doesn't render as "0.00". Larger
+ * values keep the familiar 2-dp dollar look. Trailing zeros are
+ * trimmed so we don't print "1.0000".
+ */
+function formatLoanAmount(value: number): string {
+  if (!Number.isFinite(value) || value === 0) return "0"
+  const abs = Math.abs(value)
+  let decimals: number
+  if (abs >= 1) decimals = 2
+  else if (abs >= 0.01) decimals = 4
+  else if (abs >= 0.0001) decimals = 6
+  else decimals = 8
+  return value.toFixed(decimals).replace(/\.?0+$/, "")
+}
+
+/**
  * Small `?` superscript next to an overview-card title. On hover it surfaces
  * the description text that previously lived in <CardDescription>, so the
  * card header reads as a single tight line of title + icon + help glyph.
@@ -92,12 +109,19 @@ function CounterpartyName({
   if (isStealth || isMine) {
     return <span className="italic text-muted-foreground">Anonymous</span>
   }
+  // No nickname yet → render the FULL pubkey in monospace so the cell
+  // doesn't change width once the profile lookup resolves (the previous
+  // shortened "ABCD…WXYZ" form caused a visible reflow + font swap when
+  // displayName arrived). break-all keeps long pubkeys from blowing up
+  // the row on narrow viewports.
   return (
     <Link
       href={`/socialfi/profile/${profileWallet || address}`}
-      className="text-blue-600 dark:text-blue-400 hover:underline"
+      className="text-blue-600 dark:text-blue-400 hover:underline break-all"
     >
-      {displayName || shortenAddress(address)}
+      {displayName || (
+        <span className="font-mono text-[11px]">{address}</span>
+      )}
     </Link>
   )
 }
@@ -854,7 +878,7 @@ function DashboardContent() {
                               </div>
                               <div>
                                 <p className="font-semibold text-gray-900 dark:text-white">
-                                  {isBorrower ? 'Borrowed' : 'Lent'} {loan.debtAmountUi.toFixed(2)} {getTokenDisplaySymbol(loan.debtTokenSymbol)}
+                                  {isBorrower ? 'Borrowed' : 'Lent'} {formatLoanAmount(loan.debtAmountUi)} {getTokenDisplaySymbol(loan.debtTokenSymbol)}
                                 </p>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                   <CounterpartyName address={counterparty} isMine={counterpartyIsMine} /> - APY: {loan.apy}%
