@@ -109,22 +109,18 @@ function CounterpartyName({
   if (isStealth || isMine) {
     return <span className="italic text-muted-foreground">Anonymous</span>
   }
-  // useWalletProfile falls back to multiple "address-like" values when
-  // no real nickname is set:
-  //   - shortenAddress(address) ("ABCD...WXYZ")
-  //   - the SNS domain (lowercase)
-  //   - profile.username from Tapestry (often the address lowercased)
-  // All of those visually replace our full-pubkey render once the hook
-  // resolves and look like a "casing/length flicker" to the user. Skip
-  // anything that's just a representation of the same wallet.
+  // useWalletProfile falls back to address-like values when no real
+  // nickname is set: shortened "ABCD...WXYZ", the SNS domain
+  // (lowercase), or profile.username (often the pubkey lowercased).
+  // Any of those visually replace our full-pubkey render once the
+  // hook resolves and look like a "casing/length flicker" to the
+  // user. Real nicknames almost never contain "..." or "…", and an
+  // exact match against the full address (any case) is also a clear
+  // fallback signal.
   const isAddressLikeName = (val: string | null) => {
     if (!val) return false
-    const v = val.toLowerCase()
-    const a = address.toLowerCase()
-    if (v === a) return true // full address (any case)
-    if (val === shortenAddress(address) || v === shortenAddress(address).toLowerCase()) return true
-    // Generic "4chars...4chars" shape with prefix/suffix matching the address.
-    if (/^.{4}\.{3}.{4}$/.test(val) && a.startsWith(v.slice(0, 4)) && a.endsWith(v.slice(-4))) return true
+    if (val.includes("...") || val.includes("…")) return true
+    if (val.toLowerCase() === address.toLowerCase()) return true
     return false
   }
   const realName = isAddressLikeName(displayName) ? null : displayName
