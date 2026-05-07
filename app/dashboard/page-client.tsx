@@ -110,26 +110,31 @@ function CounterpartyName({
     return <span className="italic text-muted-foreground">Anonymous</span>
   }
   // useWalletProfile falls back to address-like values when no real
-  // nickname is set:
+  // nickname is set, in many shapes:
   //   - shortened "ABCD…WXYZ"
-  //   - SNS domain (lowercase)
-  //   - profile.username, which Tapestry often auto-creates as the
-  //     full pubkey lowercased
-  // Any of those replace our full-pubkey render once the hook
-  // resolves and read as a "casing/length flicker". Detector covers
-  // every shape:
-  //   1. contains "..." or "…" (any abbreviated form)
-  //   2. is a Solana-base58 string of pubkey length (32-44 chars,
-  //      lowercase or mixed) — catches the auto-username case
-  //   3. matches the address itself in any case
-  const SOL_PUBKEY_SHAPE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+  //   - SNS domain
+  //   - Tapestry auto-username (often the full pubkey lowercased,
+  //     OR a short slice of it like the first 8 chars)
+  // Any of those overrun our full-pubkey render and read as a
+  // "casing/length flicker". Detector:
+  //   1. contains "..." or "…"
+  //   2. is base58-only with length ≥ 6 AND appears as a substring
+  //      of the address (case-insensitive). Real nicknames are not
+  //      typically pure base58 substrings of the user's own wallet.
+  //   3. matches the full address in any case.
+  const BASE58_ONLY = /^[1-9A-HJ-NP-Za-km-z]+$/
+  const addressLower = address.toLowerCase()
   const isAddressLikeName = (val: string | null) => {
     if (!val) return false
     const trimmed = val.trim()
     if (!trimmed) return false
     if (trimmed.includes("...") || trimmed.includes("…")) return true
-    if (SOL_PUBKEY_SHAPE.test(trimmed)) return true
-    if (trimmed.toLowerCase() === address.toLowerCase()) return true
+    if (
+      trimmed.length >= 6 &&
+      BASE58_ONLY.test(trimmed) &&
+      addressLower.includes(trimmed.toLowerCase())
+    ) return true
+    if (trimmed.toLowerCase() === addressLower) return true
     return false
   }
   const realName = isAddressLikeName(displayName) ? null : displayName
@@ -895,7 +900,31 @@ function DashboardContent() {
                               </div>
                               <div>
                                 <p className="font-semibold text-gray-900 dark:text-white">
-                                  {isBorrower ? 'Borrowed' : 'Lent'} {formatLoanAmount(loan.debtAmountUi)} {getTokenDisplaySymbol(loan.debtTokenSymbol)}
+                                  {/*
+                                    The on-chain debt_amount is decremented as
+                                    repayments happen and lands at 0 once the
+                                    loan is fully repaid — so a Repaid loan
+                                    naturally has debtAmountUi === 0. Showing
+                                    "Borrowed 0 USDC" reads as a zero-amount
+                                    loan, not a closed one. For Repaid (or any
+                                    state where debt is zero) we surface the
+                                    collateral that was returned instead, with
+                                    "Repaid" / "Closed" framing.
+                                  */}
+                                  {loan.debtAmountUi > 0 ? (
+                                    <>
+                                      {isBorrower ? 'Borrowed' : 'Lent'}{' '}
+                                      {formatLoanAmount(loan.debtAmountUi)}{' '}
+                                      {getTokenDisplaySymbol(loan.debtTokenSymbol)}
+                                    </>
+                                  ) : loan.status === LoanStatus.Repaid ? (
+                                    <>
+                                      Repaid loan ({formatLoanAmount(loan.collateralAmountUi)}{' '}
+                                      {getTokenDisplaySymbol(loan.collateralTokenSymbol)} collateral returned)
+                                    </>
+                                  ) : (
+                                    <>Loan closed</>
+                                  )}
                                 </p>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                   <CounterpartyName address={counterparty} isMine={counterpartyIsMine} /> - APY: {loan.apy}%
