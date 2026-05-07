@@ -255,7 +255,8 @@ async function runCycle(userWallet: string): Promise<void> {
   }
 
   // 1. Lending: accept pending borrow requests
-  if (config.lendEnabled) {
+  // `?? true` for backward compat with configs saved before this flag existed.
+  if (config.lendEnabled && (config.lendAutoAcceptOffers ?? true)) {
     try {
       const borrowRequests = filterPendingBorrowRequests(allLoans)
 
@@ -410,7 +411,8 @@ async function runCycle(userWallet: string): Promise<void> {
   }
 
   // 2. Borrowing: accept pending lend offers
-  if (config.borrowEnabled) {
+  // `?? true` for backward compat with configs saved before this flag existed.
+  if (config.borrowEnabled && (config.borrowAutoAcceptOffers ?? true)) {
     try {
       const lendOffers = filterPendingLendOffers(allLoans)
 

@@ -20,6 +20,7 @@ export interface AgentConfig {
   lendMinCollateralRatio: number // percentage (e.g. 150 = 150%)
   lendMaxCollateralRatio: number // percentage (e.g. 300 = 300%)
   lendAutoForeclose: boolean
+  lendAutoAcceptOffers: boolean
   lendAutoCreateOffers: boolean
 
   // Borrowing (agent borrows funds)
@@ -33,6 +34,7 @@ export interface AgentConfig {
   borrowMaxCollateralRatio: number // percentage
   borrowMaxDuration: number // days
   borrowAutoRepay: boolean
+  borrowAutoAcceptOffers: boolean
   borrowAutoCreateRequests: boolean
 
   // Jupiter swap settings
@@ -68,6 +70,7 @@ export const DEFAULT_AGENT_CONFIG: AgentConfig = {
   lendMinCollateralRatio: 150,
   lendMaxCollateralRatio: 300,
   lendAutoForeclose: true,
+  lendAutoAcceptOffers: true,
   lendAutoCreateOffers: false,
 
   borrowEnabled: false,
@@ -80,6 +83,7 @@ export const DEFAULT_AGENT_CONFIG: AgentConfig = {
   borrowMaxCollateralRatio: 250,
   borrowMaxDuration: 30,
   borrowAutoRepay: true,
+  borrowAutoAcceptOffers: true,
   borrowAutoCreateRequests: false,
 
   swapEnabled: false,

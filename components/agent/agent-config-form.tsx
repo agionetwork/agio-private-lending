@@ -261,6 +261,25 @@ export function AgentConfigForm({ wallet, config, onSaved }: Props) {
                   className="w-full"
                 />
               </div>
+
+              {/* Accept / Create toggles — independent so the agent can run
+                  in pure-acceptor, pure-poster, or both modes. */}
+              <div className="space-y-2 pt-1 border-t">
+                <div className="flex items-center justify-between pt-2">
+                  <Label className="text-sm font-medium">Accept matching borrow requests</Label>
+                  <Switch
+                    checked={form.lendAutoAcceptOffers ?? true}
+                    onCheckedChange={(v) => update("lendAutoAcceptOffers", v)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Auto-create lend offers</Label>
+                  <Switch
+                    checked={form.lendAutoCreateOffers}
+                    onCheckedChange={(v) => update("lendAutoCreateOffers", v)}
+                  />
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -374,6 +393,25 @@ export function AgentConfigForm({ wallet, config, onSaved }: Props) {
                   onValueChange={([v]) => update("borrowMaxDuration", v)}
                   className="w-full"
                 />
+              </div>
+
+              {/* Accept / Create toggles — independent so the agent can run
+                  in pure-acceptor, pure-poster, or both modes. */}
+              <div className="space-y-2 pt-1 border-t">
+                <div className="flex items-center justify-between pt-2">
+                  <Label className="text-sm font-medium">Accept matching lend offers</Label>
+                  <Switch
+                    checked={form.borrowAutoAcceptOffers ?? true}
+                    onCheckedChange={(v) => update("borrowAutoAcceptOffers", v)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Auto-create borrow requests</Label>
+                  <Switch
+                    checked={form.borrowAutoCreateRequests}
+                    onCheckedChange={(v) => update("borrowAutoCreateRequests", v)}
+                  />
+                </div>
               </div>
             </div>
           )}
