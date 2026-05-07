@@ -291,7 +291,19 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (loanAmount < 1) newErrors.loanAmount = "Minimum loan amount is $1.00"
+    // The previous check compared raw token units to 1, which only
+    // happens to mean "$1" for USDC. For SOL or EURC the same form
+    // would let through fractional-USD principals. Compare in USD
+    // using the live token price so the floor is consistent.
+    const loanUsdFloor = 1
+    const loanTokenPrice = getTokenPrice(token) || 1
+    const loanUsd = loanAmount * loanTokenPrice
+    if (loanAmount <= 0) {
+      newErrors.loanAmount = "Loan amount must be greater than 0"
+    } else if (loanUsd < loanUsdFloor) {
+      const minTokens = loanUsdFloor / loanTokenPrice
+      newErrors.loanAmount = `Minimum loan amount is $${loanUsdFloor.toFixed(2)} USD (≈ ${minTokens.toFixed(loanTokenPrice >= 1 ? 2 : 4)} ${token})`
+    }
     if (loanTerm < 1) newErrors.loanTerm = "Minimum term is 1 day"
     if (apy < 0) newErrors.apy = "APY cannot be negative"
     if (collateralPercentage <= 0)

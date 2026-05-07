@@ -862,7 +862,13 @@ async function runCycle(userWallet: string): Promise<void> {
         const collateralTokenSymbol = config.lendAcceptedCollateral[0] || "SOL"
 
         const debtPrice = tokenPrices[debtTokenSymbol] ?? 1
-        const debtAmount = Math.max(config.lendMinAmountUsd / debtPrice, 0.01)
+        // Floor at $1 USD-equivalent so the bot never posts a sub-dollar
+        // offer (matches the manual form's validateForm check). Without
+        // this, a config with lendMinAmountUsd = 0 would publish an
+        // offer with debtAmount = 0.01 token units which reads as
+        // "Lent 0 USDC" once repaid.
+        const desiredUsd = Math.max(config.lendMinAmountUsd, 1)
+        const debtAmount = desiredUsd / debtPrice
 
         // Protocol floor: ensure collateral ratio and APY meet protocol limits
         const effectiveRatio = Math.max(config.lendMinCollateralRatio, SECURITY_CONFIG.VALIDATION.MIN_COLLATERAL_RATIO)
@@ -1006,7 +1012,7 @@ async function runCycle(userWallet: string): Promise<void> {
         const collateralTokenSymbol = config.borrowCollateralTokens[0] || "SOL"
 
         const debtPrice = tokenPrices[debtTokenSymbol] ?? 1
-        const debtAmount = Math.max(config.borrowMinAmountUsd / debtPrice, 0.01)
+        const debtAmount = Math.max(config.borrowMinAmountUsd, 1) / debtPrice
 
         // Protocol floor: ensure collateral ratio and APY meet protocol limits
         const effectiveBorrowRatio = Math.max(config.borrowMinCollateralRatio, SECURITY_CONFIG.VALIDATION.MIN_COLLATERAL_RATIO)
