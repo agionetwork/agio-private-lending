@@ -110,17 +110,26 @@ function CounterpartyName({
     return <span className="italic text-muted-foreground">Anonymous</span>
   }
   // useWalletProfile falls back to address-like values when no real
-  // nickname is set: shortened "ABCD...WXYZ", the SNS domain
-  // (lowercase), or profile.username (often the pubkey lowercased).
-  // Any of those visually replace our full-pubkey render once the
-  // hook resolves and look like a "casing/length flicker" to the
-  // user. Real nicknames almost never contain "..." or "…", and an
-  // exact match against the full address (any case) is also a clear
-  // fallback signal.
+  // nickname is set:
+  //   - shortened "ABCD…WXYZ"
+  //   - SNS domain (lowercase)
+  //   - profile.username, which Tapestry often auto-creates as the
+  //     full pubkey lowercased
+  // Any of those replace our full-pubkey render once the hook
+  // resolves and read as a "casing/length flicker". Detector covers
+  // every shape:
+  //   1. contains "..." or "…" (any abbreviated form)
+  //   2. is a Solana-base58 string of pubkey length (32-44 chars,
+  //      lowercase or mixed) — catches the auto-username case
+  //   3. matches the address itself in any case
+  const SOL_PUBKEY_SHAPE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
   const isAddressLikeName = (val: string | null) => {
     if (!val) return false
-    if (val.includes("...") || val.includes("…")) return true
-    if (val.toLowerCase() === address.toLowerCase()) return true
+    const trimmed = val.trim()
+    if (!trimmed) return false
+    if (trimmed.includes("...") || trimmed.includes("…")) return true
+    if (SOL_PUBKEY_SHAPE.test(trimmed)) return true
+    if (trimmed.toLowerCase() === address.toLowerCase()) return true
     return false
   }
   const realName = isAddressLikeName(displayName) ? null : displayName
