@@ -413,6 +413,56 @@ export function AgentConfigForm({ wallet, config, onSaved }: Props) {
                   />
                 </div>
               </div>
+
+              {/* Repayment & collateral — what the bot does to active
+                  borrowed loans (close to expiry / under-collateralised). */}
+              <div className="space-y-2 pt-1 border-t">
+                <div className="flex items-center justify-between pt-2">
+                  <Label className="text-sm font-medium">Auto-repay before expiry</Label>
+                  <Switch
+                    checked={form.borrowAutoRepay ?? true}
+                    onCheckedChange={(v) => update("borrowAutoRepay", v)}
+                  />
+                </div>
+                {(form.borrowAutoRepay ?? true) && (
+                  <div className="space-y-1.5 pl-1">
+                    <Label className="text-xs text-muted-foreground uppercase">
+                      Repay window: {form.borrowRepayBeforeHours ?? 1} h before expiry
+                    </Label>
+                    <Slider
+                      min={1}
+                      max={48}
+                      step={1}
+                      value={[form.borrowRepayBeforeHours ?? 1]}
+                      onValueChange={([v]) => update("borrowRepayBeforeHours", v)}
+                      className="w-full"
+                    />
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-1">
+                  <Label className="text-sm font-medium">Auto-top-up collateral</Label>
+                  <Switch
+                    checked={form.borrowAutoTopUpCollateral ?? false}
+                    onCheckedChange={(v) => update("borrowAutoTopUpCollateral", v)}
+                  />
+                </div>
+                {(form.borrowAutoTopUpCollateral ?? false) && (
+                  <div className="space-y-1.5 pl-1">
+                    <Label className="text-xs text-muted-foreground uppercase">
+                      Trigger when ratio drops below: {form.borrowTopUpThresholdRatio ?? 135}%
+                    </Label>
+                    <Slider
+                      min={125}
+                      max={200}
+                      step={1}
+                      value={[form.borrowTopUpThresholdRatio ?? 135]}
+                      onValueChange={([v]) => update("borrowTopUpThresholdRatio", v)}
+                      className="w-full"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

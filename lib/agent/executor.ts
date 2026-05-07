@@ -26,6 +26,7 @@ import {
   buildAcceptLendOfferTx,
   buildForecloseLoanTx,
   buildRepayLoanTx,
+  buildAddCollateralTx,
   buildCreateLendOfferTx,
   buildCreateBorrowRequestTx,
   buildRescindBorrowOfferTx,
@@ -657,10 +658,16 @@ async function runCycle(userWallet: string): Promise<void> {
     }
   }
 
-  // 4. Auto-repay loans close to expiry (agent is borrower)
-  if (config.borrowEnabled) {
+  // 4. Auto-repay loans close to expiry (agent is borrower).
+  // Gated on borrowAutoRepay so users can opt out of automatic
+  // repayment without disabling the borrow strategy entirely.
+  if (config.borrowEnabled && (config.borrowAutoRepay ?? true)) {
     try {
-      const toRepay = filterLoansToRepay(allLoans, agentPubkeyStr)
+      const toRepay = filterLoansToRepay(
+        allLoans,
+        agentPubkeyStr,
+        config.borrowRepayBeforeHours ?? 1,
+      )
 
       for (const loan of toRepay) {
         // Balance check: borrower needs principal + interest (program transfers both on full repay)
@@ -710,6 +717,83 @@ async function runCycle(userWallet: string): Promise<void> {
         timestamp: new Date().toISOString(),
         type: "error",
         details: `Repay scan error: ${errMsg(err)}`,
+        txHash: null,
+        status: "error",
+      })
+    }
+  }
+
+  // 4b. Auto-top-up collateral on active loans where the agent is the
+  // borrower. Triggers when the live USD ratio drops below
+  // borrowTopUpThresholdRatio. We add just enough collateral to bring
+  // the ratio back to (threshold + 5pp) so we don't get pulled into a
+  // top-up every poll cycle on minor price wobble.
+  if (config.borrowEnabled && (config.borrowAutoTopUpCollateral ?? false)) {
+    try {
+      const threshold = config.borrowTopUpThresholdRatio ?? 135
+      const target = threshold + 5
+      for (const loan of allLoans) {
+        if (loan.status !== LoanStatus.Accepted) continue
+        if (loan.borrower?.toLowerCase() !== agentPubkeyStr.toLowerCase()) continue
+
+        const debtPrice = tokenPrices[loan.debtTokenSymbol] ?? 1
+        const collPrice = tokenPrices[loan.collateralTokenSymbol] ?? 1
+        const debtUsd = loan.debtAmountUi * debtPrice
+        const collUsd = loan.collateralAmountUi * collPrice
+        if (debtUsd <= 0 || collPrice <= 0) continue
+        const ratio = (collUsd / debtUsd) * 100
+        if (ratio >= threshold) continue
+
+        // How much extra collateral (in token units) brings ratio to target.
+        const targetCollUsd = (target / 100) * debtUsd
+        const addUsd = targetCollUsd - collUsd
+        const addAmount = addUsd / collPrice
+        if (addAmount <= 0) continue
+
+        const balance = await getCachedBalance(loan.collateralTokenSymbol)
+        if (balance < addAmount) {
+          await logAction(userWallet, {
+            timestamp: new Date().toISOString(),
+            type: "error",
+            details: `Top-up skipped (loan ${loan.publicKey.slice(0, 8)}…): need ${addAmount.toFixed(4)} ${loan.collateralTokenSymbol}, balance ${balance.toFixed(4)}`,
+            txHash: null,
+            status: "error",
+          })
+          continue
+        }
+
+        try {
+          const serializedTx = await buildAddCollateralTx(
+            connection,
+            program,
+            agentPubkey,
+            loan,
+            addAmount,
+          )
+          const txHash = await signAndSendTransaction(userWallet, serializedTx)
+          balanceCache.delete(loan.collateralTokenSymbol)
+          await logAction(userWallet, {
+            timestamp: new Date().toISOString(),
+            type: "swapped_tokens",
+            details: `Added ${addAmount.toFixed(4)} ${loan.collateralTokenSymbol} collateral to loan ${loan.publicKey.slice(0, 8)}… (ratio ${ratio.toFixed(0)}% → ${target}%)`,
+            txHash,
+            status: "success",
+          })
+        } catch (err) {
+          await logAction(userWallet, {
+            timestamp: new Date().toISOString(),
+            type: "error",
+            details: `Top-up failed (loan ${loan.publicKey.slice(0, 8)}…): ${errMsg(err)}`,
+            txHash: null,
+            status: "error",
+          })
+        }
+      }
+    } catch (err) {
+      await logAction(userWallet, {
+        timestamp: new Date().toISOString(),
+        type: "error",
+        details: `Top-up scan error: ${errMsg(err)}`,
         txHash: null,
         status: "error",
       })

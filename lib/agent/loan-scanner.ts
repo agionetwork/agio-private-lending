@@ -80,13 +80,17 @@ export function filterExpiredLoans(
   })
 }
 
-// Active loans where agent is borrower and close to expiry (within 1 hour)
+// Active loans where agent is borrower and close to expiry. The window
+// is the user's configured `borrowRepayBeforeHours`; for very short
+// devnet loans we cap it at half the loan duration so the bot doesn't
+// try to repay before the loan even starts accruing interest.
 export function filterLoansToRepay(
   allLoans: ParsedLoan[],
   agentPubkey: string,
+  beforeHours: number = 1,
 ): ParsedLoan[] {
   const now = Math.floor(Date.now() / 1000)
-  const ONE_HOUR = 3600
+  const configuredWindow = Math.max(60, Math.floor(beforeHours * 3600))
 
   return allLoans.filter((l) => {
     if (l.status !== LoanStatus.Accepted) return false
@@ -94,7 +98,7 @@ export function filterLoansToRepay(
     if (!l.start) return false
     const expiry = l.start + l.duration
     // For short-duration loans (devnet), use half the loan duration as the repay window
-    const repayWindow = Math.min(ONE_HOUR, Math.max(l.duration * 0.5, 120))
+    const repayWindow = Math.min(configuredWindow, Math.max(l.duration * 0.5, 120))
     return expiry - now < repayWindow && expiry > now
   })
 }

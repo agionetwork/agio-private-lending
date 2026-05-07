@@ -34,6 +34,13 @@ export interface AgentConfig {
   borrowMaxCollateralRatio: number // percentage
   borrowMaxDuration: number // days
   borrowAutoRepay: boolean
+  /** Auto-repay closes a loan when it's within this many hours of expiry. */
+  borrowRepayBeforeHours: number
+  /** Watches active loans and tops up collateral if the ratio drops. */
+  borrowAutoTopUpCollateral: boolean
+  /** Trigger when the collateral ratio falls below this %. Default 135 (above
+   *  the protocol's 120 % foreclosure floor with a buffer). */
+  borrowTopUpThresholdRatio: number
   borrowAutoAcceptOffers: boolean
   borrowAutoCreateRequests: boolean
 
@@ -83,6 +90,9 @@ export const DEFAULT_AGENT_CONFIG: AgentConfig = {
   borrowMaxCollateralRatio: 250,
   borrowMaxDuration: 30,
   borrowAutoRepay: true,
+  borrowRepayBeforeHours: 1,
+  borrowAutoTopUpCollateral: false,
+  borrowTopUpThresholdRatio: 135,
   borrowAutoAcceptOffers: true,
   borrowAutoCreateRequests: false,
 
