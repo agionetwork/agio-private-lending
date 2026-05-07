@@ -73,9 +73,25 @@ function TitleHelp({ description }: { description: string }) {
   )
 }
 
-function CounterpartyName({ address }: { address: string | null }) {
-  const { displayName, profileWallet } = useWalletProfile(address)
+function CounterpartyName({
+  address,
+  isMine = false,
+}: {
+  address: string | null
+  /**
+   * Set to true when `address` resolves to the logged-in user (main
+   * wallet, agent wallet, or one of their stealths). The cell then
+   * renders an italic "Anonymous" label instead of resolving the
+   * profile back to the user — otherwise a self-deal looks like the
+   * user borrowed from themselves.
+   */
+  isMine?: boolean
+}) {
+  const { displayName, profileWallet, isStealth } = useWalletProfile(address)
   if (!address) return <>Open offer</>
+  if (isStealth || isMine) {
+    return <span className="italic text-muted-foreground">Anonymous</span>
+  }
   return (
     <Link
       href={`/socialfi/profile/${profileWallet || address}`}
@@ -820,6 +836,11 @@ function DashboardContent() {
                       {recentActivityPageItems.map((loan) => {
                         const isBorrower = isMyWallet(loan.borrower)
                         const counterparty = isBorrower ? loan.lender : loan.borrower
+                        // If the resolved counterparty also belongs to the
+                        // logged user (self-deal across main/agent/stealth),
+                        // mask it to "Anonymous" so the row doesn't read
+                        // like the user lent to themselves.
+                        const counterpartyIsMine = isMyWallet(counterparty)
                         return (
                           <div key={loan.publicKey} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <div className="flex items-center space-x-4">
@@ -836,7 +857,7 @@ function DashboardContent() {
                                   {isBorrower ? 'Borrowed' : 'Lent'} {loan.debtAmountUi.toFixed(2)} {getTokenDisplaySymbol(loan.debtTokenSymbol)}
                                 </p>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                                  <CounterpartyName address={counterparty} /> - APY: {loan.apy}%
+                                  <CounterpartyName address={counterparty} isMine={counterpartyIsMine} /> - APY: {loan.apy}%
                                 </p>
                               </div>
                             </div>
