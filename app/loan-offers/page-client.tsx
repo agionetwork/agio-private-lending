@@ -78,7 +78,7 @@ const ACCEPTED_TOKENS = ['SOL', 'USDC', 'EURC', 'bSOL'] as const
 
 export default function LoanOffersPageClient() {
   const searchParams = useSearchParams()
-  const { openOffers, loading, refetch, isMyWallet } = useLoans()
+  const { openOffers, loading, refetch, isMyWallet, myWalletsReady } = useLoans()
   const { publicKey } = useWallet()
 
   const urlType = searchParams.get("type")
@@ -157,7 +157,12 @@ export default function LoanOffersPageClient() {
     return offers
   }, [openOffers, filterType, filterToken, sortBy, apyRange, daysRange, publicKey, isMyWallet])
 
-  if (loading) {
+  // Gate the offers list on BOTH the loan-fetch AND the agent +
+  // stealth lookups. Without the second wait, the user's own
+  // agent/stealth offers briefly slip through isMyWallet's filter
+  // (see useLoans) and the marketplace flashes them before
+  // pulling them out — Surfer reported "6 offers → 4 offers".
+  if (loading || !myWalletsReady) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center py-16">

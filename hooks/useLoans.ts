@@ -25,36 +25,57 @@ export function useLoans() {
   const [agentWallet, setAgentWallet] = useState<string | null>(null)
   // Resolve stealth wallets (Cloak privacy mode) so private loans show as user's own
   const [stealthWallets, setStealthWallets] = useState<string[]>([])
+  // Tracks whether the agent + stealth lookups have finished so
+  // consumers can wait before rendering filters that depend on
+  // isMyWallet. Without this, the marketplace briefly shows the
+  // user's own agent/stealth offers before the late-arriving lookup
+  // pulls them out (visible "6 → 4 offers" flicker on Surfer).
+  const [agentResolved, setAgentResolved] = useState(false)
+  const [stealthsResolved, setStealthsResolved] = useState(false)
 
   useEffect(() => {
     if (!publicKey) {
       setAgentWallet(null)
       setStealthWallets([])
+      setAgentResolved(true)
+      setStealthsResolved(true)
       return
     }
+    setAgentResolved(false)
+    setStealthsResolved(false)
     const wallet = publicKey.toBase58()
     let cancelled = false
 
     fetch(`/api/agent/public-key?wallet=${wallet}`)
       .then(res => res.json())
       .then(data => {
-        if (!cancelled) setAgentWallet(data.agentPublicKey || null)
+        if (cancelled) return
+        setAgentWallet(data.agentPublicKey || null)
+        setAgentResolved(true)
       })
       .catch(() => {
-        if (!cancelled) setAgentWallet(null)
+        if (cancelled) return
+        setAgentWallet(null)
+        setAgentResolved(true)
       })
 
     fetch(`/api/private-offer/list?wallet=${wallet}`)
       .then(res => res.json())
       .then(data => {
-        if (!cancelled) setStealthWallets(Array.isArray(data?.stealthPublicKeys) ? data.stealthPublicKeys : [])
+        if (cancelled) return
+        setStealthWallets(Array.isArray(data?.stealthPublicKeys) ? data.stealthPublicKeys : [])
+        setStealthsResolved(true)
       })
       .catch(() => {
-        if (!cancelled) setStealthWallets([])
+        if (cancelled) return
+        setStealthWallets([])
+        setStealthsResolved(true)
       })
 
     return () => { cancelled = true }
   }, [publicKey])
+
+  const myWalletsReady = !publicKey || (agentResolved && stealthsResolved)
 
   const stealthSet = useMemo(() => new Set(stealthWallets), [stealthWallets])
 
@@ -124,5 +145,13 @@ export function useLoans() {
     stealthWallets,
     isMyWallet,
     isMyStealth,
+    /**
+     * True once the agent + stealth lookups have settled (or no
+     * wallet is connected). Consumers that filter offers via
+     * isMyWallet should wait for this before rendering, otherwise
+     * the user's own agent/stealth offers leak into the marketplace
+     * for a frame.
+     */
+    myWalletsReady,
   }
 }
