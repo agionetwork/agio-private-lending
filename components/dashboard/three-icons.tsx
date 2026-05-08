@@ -81,17 +81,18 @@ export function LiquidityIcon({ size = 32 }: IconProps = {}) {
   const ref = useMiniScene((scene) => {
     const group = new THREE.Group()
 
-    // Brighter, lighter blue family — sits closer to Tailwind's
-    // sky-400 / blue-300 than the saturated brand-blue used elsewhere.
+    // Light blue family — face sits in Tailwind sky-200 / blue-200
+    // territory so the disc reads as clearly light blue rather than
+    // mid-tone brand blue. Rim a touch deeper for definition.
     const faceMat = new THREE.MeshStandardMaterial({
-      color: 0x7dbcff,
-      metalness: 0.55,
-      roughness: 0.3,
+      color: 0xbae6fd,
+      metalness: 0.45,
+      roughness: 0.32,
     })
     const rimMat = new THREE.MeshStandardMaterial({
-      color: 0x4a90ff,
-      metalness: 0.7,
-      roughness: 0.22,
+      color: 0x60a5fa,
+      metalness: 0.65,
+      roughness: 0.24,
     })
 
     // Coin body — short cylinder oriented so its flat faces look at the camera.
