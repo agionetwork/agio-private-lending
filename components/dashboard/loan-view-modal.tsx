@@ -533,7 +533,7 @@ export default function LoanViewModal({ loan, isOpen, onClose, onRepaySuccess, o
           )}
 
           {(loan.status === LoanStatus.Accepted || loan.status === LoanStatus.Pending) && colPrice > 0 && debtPrice > 0 && (
-            <div className="rounded-md border border-border/60 bg-card p-3">
+            <div className="py-2">
               <div className="text-xs font-medium text-muted-foreground mb-2">
                 <TermTooltip term="collateral-ratio">Loan health</TermTooltip>
               </div>

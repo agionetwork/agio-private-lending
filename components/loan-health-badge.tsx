@@ -113,13 +113,25 @@ export function LoanHealthBar({ ratio, isPending = false, className }: Props) {
   // Map 100..200% to 0..100% along the bar. Cap at extremes.
   const pct = Math.max(0, Math.min(100, ((safe - 100) / 100) * 100))
 
+  // Tick labels positioned at their REAL location on the 100..200 scale,
+  // so 120 sits 20 % across, 150 lands at the midpoint, and 200+ pins to
+  // the right edge. Each tick uses translate(-50%) to centre on its
+  // line; the 100 / 200+ ends are kept flush left/right so they don't
+  // get clipped by the container.
+  const TICKS: { value: number; label: string }[] = [
+    { value: 100, label: "100%" },
+    { value: 120, label: "120%" },
+    { value: 150, label: "150%" },
+    { value: 200, label: "200%+" },
+  ]
+
   return (
-    <div title={tooltip} className={cn("space-y-1", className)}>
-      <div className="flex items-baseline justify-between text-xs">
-        <span className="font-medium">{safe > 0 ? `${safe.toFixed(1)}%` : "Ratio unavailable"}</span>
-        <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium", styles)}>{LABELS[status]}</span>
+    <div title={tooltip} className={cn("space-y-1.5", className)}>
+      <div className="flex items-baseline justify-between text-sm">
+        <span className="font-semibold">{safe > 0 ? `${safe.toFixed(1)}%` : "Ratio unavailable"}</span>
+        <span className={cn("rounded-full border px-2.5 py-0.5 text-xs font-medium", styles)}>{LABELS[status]}</span>
       </div>
-      <div className="relative h-1.5 rounded-full bg-muted overflow-hidden">
+      <div className="relative h-2 rounded-full bg-muted overflow-hidden">
         <div
           className={cn(
             "absolute left-0 top-0 h-full rounded-full transition-all",
@@ -146,10 +158,22 @@ export function LoanHealthBar({ ratio, isPending = false, className }: Props) {
           title="Acceptance floor (130%)"
         />
       </div>
-      <div className="flex justify-between text-[10px] text-muted-foreground">
-        <span>100%</span>
-        <span>120%</span>
-        <span className="ml-auto">200%+</span>
+      <div className="relative h-4 text-xs font-medium text-muted-foreground">
+        {TICKS.map((t) => {
+          const left = ((t.value - 100) / 100) * 100
+          // Pin the endpoints flush so they don't clip; centre the rest on their tick.
+          const transform =
+            left <= 0 ? "translateX(0)" : left >= 100 ? "translateX(-100%)" : "translateX(-50%)"
+          return (
+            <span
+              key={t.value}
+              className="absolute top-0 tabular-nums"
+              style={{ left: `${left}%`, transform }}
+            >
+              {t.label}
+            </span>
+          )
+        })}
       </div>
     </div>
   )
