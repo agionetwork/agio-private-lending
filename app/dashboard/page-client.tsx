@@ -527,15 +527,14 @@ function DashboardContent() {
                       // declutter pass pushes them apart by a fixed Y gap.
                       const customLabelLayer = (props: any) => {
                         const { dataWithArc, centerX, centerY, radius } = props
-                        const lineLen = 14 // short radial connector
-                        const labelGap = 20 // min vertical spacing between labels
+                        const lineLen = 22 // short radial connector
+                        const labelGap = 22 // min vertical spacing between label boxes
                         const logoSize = 14
-                        const logoTextGap = 4
+                        const labelHeight = 20
+                        const labelWidth = 130 // foreignObject reserve width
 
                         const items = dataWithArc.map((d: any) => {
                           const mid = (d.arc.startAngle + d.arc.endAngle) / 2
-                          // Line: slice edge → a point lineLen outward along
-                          // the radial.
                           const startX = centerX + Math.sin(mid) * radius
                           const startY = centerY - Math.cos(mid) * radius
                           const endX = centerX + Math.sin(mid) * (radius + lineLen)
@@ -569,13 +568,14 @@ function DashboardContent() {
                         declutter(right)
                         declutter(left)
 
+                        // Each label sits ABOVE its connector tip: the
+                        // foreignObject is anchored a bit above (endX, endY)
+                        // and centred on endX. break-words on the inner
+                        // div keeps long values from clipping.
+                        const labelOffsetY = labelHeight + 4
                         return (
                           <g>
                             {[...right, ...left].map((it: any) => {
-                              const logoX = it.isRight ? it.endX + 2 : it.endX - 2 - logoSize
-                              const textX = it.isRight
-                                ? logoX + logoSize + logoTextGap
-                                : logoX - logoTextGap
                               return (
                                 <g key={it.id}>
                                   {/* Short radial connector. */}
@@ -583,27 +583,42 @@ function DashboardContent() {
                                     x1={it.startX}
                                     y1={it.startY}
                                     x2={it.endX}
-                                    y2={it.endY}
+                                    y2={it.labelY}
                                     stroke={it.color}
                                     strokeWidth={1.5}
                                   />
-                                  <image
-                                    href={getTokenLogo(it.id)}
-                                    x={logoX}
-                                    y={it.labelY - logoSize / 2}
-                                    width={logoSize}
-                                    height={logoSize}
-                                  />
-                                  <text
-                                    x={textX}
-                                    y={it.labelY + 4}
-                                    textAnchor={it.isRight ? "start" : "end"}
-                                    fill={chartAxisColor}
-                                    fontSize={11}
-                                    fontFamily="ui-sans-serif, system-ui, sans-serif"
+                                  <foreignObject
+                                    x={it.endX - labelWidth / 2}
+                                    y={it.labelY - labelOffsetY}
+                                    width={labelWidth}
+                                    height={labelHeight}
+                                    style={{ overflow: "visible" }}
                                   >
-                                    ${getTokenDisplaySymbol(it.id)} ({it.value.toFixed(2)}%)
-                                  </text>
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        gap: 4,
+                                        fontSize: 11,
+                                        fontFamily: "ui-sans-serif, system-ui, sans-serif",
+                                        color: chartAxisColor,
+                                        whiteSpace: "nowrap",
+                                        lineHeight: 1,
+                                      }}
+                                    >
+                                      <img
+                                        src={getTokenLogo(it.id)}
+                                        width={logoSize}
+                                        height={logoSize}
+                                        alt=""
+                                        style={{ flexShrink: 0 }}
+                                      />
+                                      <span>
+                                        ${getTokenDisplaySymbol(it.id)} ({it.value.toFixed(2)}%)
+                                      </span>
+                                    </div>
+                                  </foreignObject>
                                 </g>
                               )
                             })}

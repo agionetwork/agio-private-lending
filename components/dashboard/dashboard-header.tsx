@@ -133,7 +133,7 @@ export default function DashboardHeader({ onConnectWallet }: DashboardHeaderProp
             </span>
           </Link>
         </div>
-        <nav className="hidden md:flex flex-1 items-center justify-center space-x-6 font-mono text-[12px] tracking-[0.06em] uppercase">
+        <nav className="hidden md:flex flex-1 items-center justify-center space-x-6 font-mono text-[12px] font-bold tracking-[0.06em] uppercase">
           <Link
             href="/dashboard"
             className={`transition-colors hover:text-white/80 ${
@@ -318,7 +318,7 @@ export default function DashboardHeader({ onConnectWallet }: DashboardHeaderProp
               key={item.href}
               href={item.href}
               className={cn(
-                "block px-3 py-2 rounded-md font-mono text-[13px] tracking-[0.06em] uppercase transition-colors",
+                "block px-3 py-2 rounded-md font-mono text-[13px] font-bold tracking-[0.06em] uppercase transition-colors",
                 pathname === item.href
                   ? "text-white bg-white/10"
                   : "text-white/60 hover:text-white hover:bg-white/5"

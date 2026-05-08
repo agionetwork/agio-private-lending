@@ -81,13 +81,15 @@ export function LiquidityIcon({ size = 32 }: IconProps = {}) {
   const ref = useMiniScene((scene) => {
     const group = new THREE.Group()
 
+    // Brighter, lighter blue family — sits closer to Tailwind's
+    // sky-400 / blue-300 than the saturated brand-blue used elsewhere.
     const faceMat = new THREE.MeshStandardMaterial({
-      color: 0x4a90ff,
-      metalness: 0.6,
-      roughness: 0.28,
+      color: 0x7dbcff,
+      metalness: 0.55,
+      roughness: 0.3,
     })
     const rimMat = new THREE.MeshStandardMaterial({
-      color: 0x1358ec,
+      color: 0x4a90ff,
       metalness: 0.7,
       roughness: 0.22,
     })
