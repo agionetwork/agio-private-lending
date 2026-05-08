@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { CircleDollarSign, Users, UserPlus, Sparkles, Loader2, Clock, Wallet, Search } from "lucide-react"
+import { CircleDollarSign, Users, UserPlus, Loader2, Clock, Wallet, Search } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
@@ -309,8 +309,11 @@ export default function SocialFiPageClient() {
             {/* Network Suggestions */}
             <Card className="border border-gray-200 dark:border-gray-200/10">
               <CardContent className="p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center justify-center gap-2">
+                  {/* Same Users glyph the left-rail "Network" item uses
+                      so the sidebar block reads as part of the same nav
+                      family. */}
+                  <Users className="h-4 w-4 text-muted-foreground" />
                   <h4 className="text-sm font-semibold text-muted-foreground">Network Suggestions</h4>
                 </div>
                 {loadingSidebar ? (
@@ -327,9 +330,8 @@ export default function SocialFiPageClient() {
                   </div>
                 )}
                 <Button
-                  variant="ghost"
                   size="sm"
-                  className="w-full text-xs text-blue-600 hover:text-blue-700"
+                  className="w-full text-xs bg-blue-600 hover:bg-blue-700 text-white"
                   onClick={() => { setActiveNav("network"); setNetworkFilter("all-profiles") }}
                 >
                   View All Profiles
