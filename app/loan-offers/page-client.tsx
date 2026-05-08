@@ -170,31 +170,38 @@ export default function LoanOffersPageClient() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-wrap items-end gap-4 mb-8">
-        {/* View-mode toggle — sits to the LEFT of the range sliders.
-            Hidden on phones; the list view doesn't fit narrow viewports.
-            Bumped to sm: so it shows on tablets and up. */}
-        <div className="hidden sm:inline-flex items-center rounded-lg border border-blue-500/40 bg-background/80 p-1 gap-1 shadow-sm">
+        {/* View-mode toggle — always visible, sits to the LEFT of the
+            range sliders. Mobile still falls back to "cards" via the
+            effectiveViewMode override below; the toggle stays clickable
+            so the affordance is consistent regardless of viewport. */}
+        <div
+          role="group"
+          aria-label="View mode"
+          className="inline-flex items-center rounded-lg border-2 border-blue-500 bg-background p-1 gap-1 shadow-md self-end"
+        >
           <Button
             variant={viewMode === "cards" ? "default" : "ghost"}
-            size="icon"
-            className="h-9 w-9"
+            size="sm"
+            className="h-9 px-3 gap-1.5 text-xs font-medium"
             aria-label="Card view"
             aria-pressed={viewMode === "cards"}
-            title="Card view"
+            title="Show offers as cards"
             onClick={() => setViewMode("cards")}
           >
-            <LayoutGrid className="h-5 w-5" />
+            <LayoutGrid className="h-4 w-4" />
+            <span className="hidden sm:inline">Cards</span>
           </Button>
           <Button
             variant={viewMode === "list" ? "default" : "ghost"}
-            size="icon"
-            className="h-9 w-9"
+            size="sm"
+            className="h-9 px-3 gap-1.5 text-xs font-medium"
             aria-label="List view"
             aria-pressed={viewMode === "list"}
-            title="List view"
+            title="Show offers as a list"
             onClick={() => setViewMode("list")}
           >
-            <ListIcon className="h-5 w-5" />
+            <ListIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">List</span>
           </Button>
         </div>
 
