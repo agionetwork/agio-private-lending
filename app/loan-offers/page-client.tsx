@@ -258,10 +258,23 @@ export default function LoanOffersPageClient() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Tokens</SelectItem>
-              <SelectItem value="SOL">SOL</SelectItem>
-              <SelectItem value="USDC">USDC</SelectItem>
-              <SelectItem value="EURC">EURC</SelectItem>
-              <SelectItem value="bSOL">agioSOL</SelectItem>
+              {ACCEPTED_TOKENS.map((sym) => (
+                <SelectItem key={sym} value={sym}>
+                  <span className="inline-flex items-center gap-2">
+                    <img
+                      src={getTokenLogo(sym)}
+                      alt=""
+                      width={14}
+                      height={14}
+                      className="rounded-full object-contain shrink-0"
+                      onError={(e) => {
+                        ;(e.target as HTMLImageElement).src = "/images/placeholder-logo.png"
+                      }}
+                    />
+                    {getTokenDisplaySymbol(sym)}
+                  </span>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
