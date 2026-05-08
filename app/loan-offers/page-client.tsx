@@ -177,7 +177,7 @@ export default function LoanOffersPageClient() {
         <div
           role="group"
           aria-label="View mode"
-          className="inline-flex items-center rounded-lg border-2 border-blue-500 bg-background p-1 gap-1 shadow-md self-end"
+          className="inline-flex items-center gap-1 self-end"
         >
           <Button
             variant={viewMode === "cards" ? "default" : "ghost"}
