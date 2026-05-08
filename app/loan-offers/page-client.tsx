@@ -375,6 +375,32 @@ function OfferRow({ offer, onAccepted }: { offer: ParsedLoan; onAccepted: () => 
   const counterpartyLinkClass = isLendOffer
     ? "text-blue-600 dark:text-blue-400 hover:underline font-medium"
     : "text-red-600 dark:text-red-400 hover:underline font-medium"
+  // useWalletProfile falls back to address-like values (shortened
+  // form, full pubkey lowercased, base58 substring of the wallet)
+  // when no real Tapestry nickname or SNS domain is set. Those slip
+  // through and read as a "wallet → name" flicker on every poll. Skip
+  // any displayName that's just a representation of the same wallet
+  // and render a single shortened pubkey consistently.
+  const isAddressLikeName = (val: string | null | undefined, addr: string) => {
+    if (!val) return false
+    const v = val.trim()
+    if (!v) return false
+    if (v.includes("...") || v.includes("…")) return true
+    const a = addr.toLowerCase()
+    if (v.toLowerCase() === a) return true
+    if (
+      v.length >= 6 &&
+      /^[1-9A-HJ-NP-Za-km-z]+$/.test(v) &&
+      a.includes(v.toLowerCase())
+    ) {
+      return true
+    }
+    return false
+  }
+  const realCounterpartyName =
+    counterpartyAddress && !isAddressLikeName(counterpartyName, counterpartyAddress)
+      ? counterpartyName
+      : null
   const counterpartyCell = isStealth ? (
     <span className="italic text-muted-foreground">Anonymous</span>
   ) : counterpartyAddress ? (
@@ -382,7 +408,7 @@ function OfferRow({ offer, onAccepted }: { offer: ParsedLoan; onAccepted: () => 
       href={`/socialfi/profile/${profileWallet || counterpartyAddress}`}
       className={counterpartyLinkClass}
     >
-      {counterpartyName || shortenAddress(counterpartyAddress)}
+      {realCounterpartyName || shortenAddress(counterpartyAddress)}
     </Link>
   ) : (
     <span className="text-muted-foreground">Open</span>
