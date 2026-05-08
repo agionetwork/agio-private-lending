@@ -520,15 +520,16 @@ function DashboardContent() {
                         )
                       }
 
-                      // Custom arc-link layer — labels sit just outside the
-                      // slice along the same radial direction, so every
-                      // connector line is short and roughly the same length.
-                      // When two slices on the same side would collide, the
-                      // declutter pass pushes them apart by a fixed Y gap.
+                      // Custom arc-link layer — connector goes from the
+                      // slice edge, out radially to a small elbow, then
+                      // horizontally to a label that sits flush with the
+                      // line tip. The label flows logo → \$TICKER (XX%)
+                      // and is anchored to the side the slice lives on.
                       const customLabelLayer = (props: any) => {
                         const { dataWithArc, centerX, centerY, radius } = props
-                        const lineLen = 22 // short radial connector
-                        const labelGap = 22 // min vertical spacing between label boxes
+                        const radialLen = 18 // radial segment from slice
+                        const horizontalLen = 30 // horizontal run to label
+                        const labelGap = 22 // min vertical spacing between labels
                         const logoSize = 14
                         const labelHeight = 20
                         const labelWidth = 130 // foreignObject reserve width
@@ -537,8 +538,8 @@ function DashboardContent() {
                           const mid = (d.arc.startAngle + d.arc.endAngle) / 2
                           const startX = centerX + Math.sin(mid) * radius
                           const startY = centerY - Math.cos(mid) * radius
-                          const endX = centerX + Math.sin(mid) * (radius + lineLen)
-                          const endY = centerY - Math.cos(mid) * (radius + lineLen)
+                          const elbowX = centerX + Math.sin(mid) * (radius + radialLen)
+                          const elbowY = centerY - Math.cos(mid) * (radius + radialLen)
                           const isRight = Math.sin(mid) >= 0
                           return {
                             id: d.id,
@@ -546,9 +547,9 @@ function DashboardContent() {
                             color: d.color,
                             startX,
                             startY,
-                            endX,
-                            endY,
-                            labelY: endY,
+                            elbowX,
+                            elbowY,
+                            labelY: elbowY,
                             isRight,
                           }
                         })
@@ -568,28 +569,27 @@ function DashboardContent() {
                         declutter(right)
                         declutter(left)
 
-                        // Each label sits ABOVE its connector tip: the
-                        // foreignObject is anchored a bit above (endX, endY)
-                        // and centred on endX. break-words on the inner
-                        // div keeps long values from clipping.
-                        const labelOffsetY = labelHeight + 4
                         return (
                           <g>
                             {[...right, ...left].map((it: any) => {
+                              const tipX = it.isRight
+                                ? it.elbowX + horizontalLen
+                                : it.elbowX - horizontalLen
+                              const labelX = it.isRight ? tipX + 4 : tipX - 4 - labelWidth
                               return (
                                 <g key={it.id}>
-                                  {/* Short radial connector. */}
-                                  <line
-                                    x1={it.startX}
-                                    y1={it.startY}
-                                    x2={it.endX}
-                                    y2={it.labelY}
+                                  {/* Two-segment polyline: slice edge → elbow → horizontal tip. */}
+                                  <polyline
+                                    points={`${it.startX},${it.startY} ${it.elbowX},${it.labelY} ${tipX},${it.labelY}`}
+                                    fill="none"
                                     stroke={it.color}
                                     strokeWidth={1.5}
+                                    strokeLinejoin="round"
+                                    strokeLinecap="round"
                                   />
                                   <foreignObject
-                                    x={it.endX - labelWidth / 2}
-                                    y={it.labelY - labelOffsetY}
+                                    x={labelX}
+                                    y={it.labelY - labelHeight / 2}
                                     width={labelWidth}
                                     height={labelHeight}
                                     style={{ overflow: "visible" }}
@@ -598,8 +598,9 @@ function DashboardContent() {
                                       style={{
                                         display: "flex",
                                         alignItems: "center",
-                                        justifyContent: "center",
+                                        justifyContent: it.isRight ? "flex-start" : "flex-end",
                                         gap: 4,
+                                        height: "100%",
                                         fontSize: 11,
                                         fontFamily: "ui-sans-serif, system-ui, sans-serif",
                                         color: chartAxisColor,
@@ -719,13 +720,19 @@ function DashboardContent() {
                           legendPosition: 'middle',
                         }}
                         colors={({ id }) => id === 'Borrowed' ? '#DC2626' : '#4A90FF'}
-                        lineWidth={3}
-                        enableArea={true}
-                        areaOpacity={theme === 'dark' ? 0.18 : 0.12}
-                        pointSize={9}
-                        pointColor={theme === 'dark' ? '#0A1230' : '#FFFFFF'}
-                        pointBorderWidth={2.5}
-                        pointBorderColor={{ from: 'serieColor' }}
+                        // Scatter-style: drop the connecting line and the
+                        // area fill so each loan event reads as a single
+                        // dot. lineWidth: 0 removes the stroke; the
+                        // explicit layers array drops the "lines" and
+                        // "areas" Nivo layers so even a 0-width path
+                        // doesn't draw.
+                        lineWidth={0}
+                        enableArea={false}
+                        layers={["grid", "markers", "axes", "crosshair", "points", "slices", "mesh", "legends"]}
+                        pointSize={11}
+                        pointColor={{ from: 'serieColor' }}
+                        pointBorderWidth={2}
+                        pointBorderColor={theme === 'dark' ? '#0A1230' : '#FFFFFF'}
                         enablePointLabel={false}
                         useMesh={true}
                         tooltip={({ point }) => {
