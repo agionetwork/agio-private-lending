@@ -27,6 +27,10 @@ import { Check, X, Loader2, Wand2, ShieldCheck, FileSignature, PartyPopper, Arro
 import { useTapestryProfile } from "@/components/tapestry-profile-provider"
 import { toast } from "sonner"
 import { useSNS } from "@/hooks/useSNS"
+import { useRiskClamps } from "@/hooks/useRiskClamps"
+import { RiskZoneBar } from "@/components/loan/risk-zone-bar"
+import { WorstCasePreview } from "@/components/loan/worst-case-preview"
+import { MAX_APY_PCT, isLoanSafe } from "@/lib/loan-math"
 
 const MODE_CONFIG = {
   borrow: {
@@ -435,6 +439,30 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
     }
   }, [prices, token, tokenCollateral])
 
+  // Live USD values for the safety check. Both sliders + the on-chain
+  // validator agree on this single arithmetic so the form can never offer
+  // up a combination the program will reject.
+  const debtPriceUsd = getTokenPrice(token) || 0
+  const collPriceUsd = getTokenPrice(tokenCollateral) || 0
+  const principalUsd = loanAmount * debtPriceUsd
+  const collateralValueUsd = collateralAmount * collPriceUsd
+  const apyBpsLive = Math.round(apy * 100)
+  const durationSecsLive = loanTerm * 86_400
+
+  const { clampedSetApyPct, clampedSetCollateralPct, clampedSetDurationDays, apyCeilingPct } =
+    useRiskClamps({
+      collateralValueUsd,
+      principalUsd,
+      apyPct: apy,
+      durationDays: loanTerm,
+      collateralPct: collateralPercentage,
+      setApyPct: setApy,
+      setCollateralPct: handleCollateralPercentageChange,
+      setDurationDays: setLoanTerm,
+    })
+
+  const loanIsSafe = isLoanSafe(collateralValueUsd, principalUsd, apyBpsLive, durationSecsLive)
+
   return (
     <Card className="w-full max-w-md mx-auto shadow-lg rounded-xl overflow-hidden border-2 border-gray-200 dark:border-white/20 hover:shadow-xl transition-all duration-300 relative">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-blue-100/20 to-blue-200/30 dark:from-blue-900/20 dark:via-blue-800/20 dark:to-blue-700/20 pointer-events-none"></div>
@@ -624,7 +652,7 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
                   max={300}
                   step={5}
                   value={[collateralPercentage]}
-                  onValueChange={([value]) => handleCollateralPercentageChange(value)}
+                  onValueChange={([value]) => clampedSetCollateralPct(value)}
                   className="w-full bg-transparent dark:bg-transparent"
                 />
               </div>
@@ -670,7 +698,7 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
                   max={365}
                   step={1}
                   value={[loanTerm]}
-                  onValueChange={([value]) => setLoanTerm(value)}
+                  onValueChange={([value]) => clampedSetDurationDays(value)}
                   className="w-full bg-transparent dark:bg-transparent"
                 />
               </div>
@@ -685,17 +713,22 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
                   <Input
                     type="number"
                     min={0}
-                    max={200}
+                    max={MAX_APY_PCT}
                     step={0.1}
                     value={apy}
                     onChange={(e) => {
                       const v = Number(e.target.value)
-                      if (!isNaN(v)) setApy(v)
+                      if (!isNaN(v)) clampedSetApyPct(v)
                     }}
-                    onBlur={() => setApy(Math.min(200, Math.max(0, apy)))}
+                    onBlur={() => clampedSetApyPct(Math.min(MAX_APY_PCT, Math.max(0, apy)))}
                     className="w-16 h-6 text-sm text-center px-1 bg-transparent dark:bg-transparent text-black dark:text-white border-gray-300 dark:border-gray-600"
                   />
                   <span className="text-sm font-medium text-foreground">%</span>
+                  {apyCeilingPct < MAX_APY_PCT && (
+                    <span className="text-[10px] text-muted-foreground tabular-nums">
+                      max safe: {apyCeilingPct.toFixed(1)}%
+                    </span>
+                  )}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -713,12 +746,27 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
                 <Slider
                   id="apy"
                   min={0}
-                  max={200}
+                  max={MAX_APY_PCT}
                   step={0.1}
                   value={[apy]}
-                  onValueChange={([value]) => setApy(value)}
+                  onValueChange={([value]) => clampedSetApyPct(value)}
                   className="w-full bg-transparent dark:bg-transparent"
                 />
+                <div className="space-y-2 pt-1">
+                  <RiskZoneBar
+                    collateralValueUsd={collateralValueUsd}
+                    principalUsd={principalUsd}
+                    apyBps={apyBpsLive}
+                    durationSeconds={durationSecsLive}
+                  />
+                  <WorstCasePreview
+                    collateralValueUsd={collateralValueUsd}
+                    principalUsd={principalUsd}
+                    apyBps={apyBpsLive}
+                    durationSeconds={durationSecsLive}
+                    collateralSymbol={tokenCollateral}
+                  />
+                </div>
               </div>
             </div>
 
@@ -822,7 +870,8 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
         <Button
           onClick={handleCreateLoan}
           className="bg-[#1358EC] !text-white h-8 text-base px-12 hover:bg-[#104BCA]"
-          disabled={isLoading || resolving || !isPriceReliable}
+          disabled={isLoading || resolving || !isPriceReliable || !loanIsSafe}
+          title={!loanIsSafe ? "Loan terms violate the collateral safety constraint" : undefined}
         >
           {isLoading ? (
             <>
