@@ -64,13 +64,20 @@ export function RiskZoneBar({
   return (
     <div className={cn("space-y-1", className)}>
       <div className="flex items-baseline justify-between text-xs">
-        <span className="text-muted-foreground">Collateral health</span>
+        <span className="text-muted-foreground">Collateral health (at maturity)</span>
         <span className={cn("font-medium tabular-nums", zoneColor)}>
-          {zoneLabel} · {ratio.toFixed(2)}×
+          {zoneLabel} · {(ratio * 100).toFixed(0)}%
         </span>
       </div>
       <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-red-500 via-yellow-500 to-emerald-500">
-        {/* 1.5× boundary tick at the midpoint */}
+        {/* 130% acceptance-floor tick (10% of bar) */}
+        <div
+          className="absolute top-0 bottom-0 w-px bg-black/40 dark:bg-white/40"
+          style={{ left: "10%" }}
+          aria-hidden
+          title="Acceptance floor (130%)"
+        />
+        {/* 150% creation-min / safe boundary tick at the midpoint */}
         <div
           className="absolute top-0 bottom-0 w-px bg-black/40 dark:bg-white/40"
           style={{ left: "50%" }}
@@ -80,15 +87,16 @@ export function RiskZoneBar({
         <div
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-3.5 w-1.5 rounded-sm bg-foreground shadow-md transition-[left] duration-200 ease-out"
           style={{ left: `${markerPct}%` }}
-          aria-label={`Current ratio ${ratio.toFixed(2)}`}
+          aria-label={`Current ratio ${(ratio * 100).toFixed(0)}%`}
         />
       </div>
       <div className="relative h-3.5 text-[10px] text-muted-foreground tabular-nums">
-        <span className="absolute left-0 -translate-x-0 text-red-500 font-medium">
-          1.25× Liquidation
+        <span className="absolute left-0 text-red-500 font-medium">125% Liquidation</span>
+        <span className="absolute" style={{ left: "10%", transform: "translateX(-50%)" }}>
+          130%
         </span>
-        <span className="absolute left-1/2 -translate-x-1/2">1.5×</span>
-        <span className="absolute right-0">1.75×+</span>
+        <span className="absolute left-1/2 -translate-x-1/2">150%</span>
+        <span className="absolute right-0">175%+</span>
       </div>
     </div>
   )

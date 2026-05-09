@@ -138,6 +138,13 @@ export function LoanHealthBar({ ratio, isPending = false, className }: Props) {
         <span className={cn("rounded-full border px-2.5 py-0.5 text-xs font-medium", styles)}>{LABELS[status]}</span>
       </div>
       <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-red-500 via-yellow-500 to-emerald-500">
+        {/* 130% acceptance-floor tick (10% of bar) */}
+        <div
+          className="absolute top-0 bottom-0 w-px bg-black/40 dark:bg-white/40"
+          style={{ left: "10%" }}
+          aria-hidden
+          title="Acceptance floor (130%)"
+        />
         {/* 150% boundary tick at the midpoint */}
         <div
           className="absolute top-0 bottom-0 w-px bg-black/40 dark:bg-white/40"
@@ -154,6 +161,9 @@ export function LoanHealthBar({ ratio, isPending = false, className }: Props) {
       </div>
       <div className="relative h-3.5 text-[10px] text-muted-foreground tabular-nums">
         <span className="absolute left-0 text-red-500 font-medium">125% Liquidation</span>
+        <span className="absolute" style={{ left: "10%", transform: "translateX(-50%)" }}>
+          130%
+        </span>
         <span className="absolute left-1/2 -translate-x-1/2">150%</span>
         <span className="absolute right-0">175%+</span>
       </div>
