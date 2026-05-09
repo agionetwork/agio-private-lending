@@ -23,7 +23,7 @@ import { usePrivateLoanFlow, type PrivateLoanProgress } from "@/hooks/usePrivate
 import { useTokenPrices } from "@/hooks/useTokenPrices"
 import { useWalletTokens } from "@/hooks/useWalletTokens"
 import { estimatePrivateLoanCost, formatCostLines } from "@/lib/cloak/cost-estimator"
-import { Check, X, Loader2, Wand2, ShieldCheck, FileSignature, PartyPopper } from "lucide-react"
+import { Check, X, Loader2, Wand2, ShieldCheck, FileSignature, PartyPopper, ArrowUpDown } from "lucide-react"
 import { useTapestryProfile } from "@/components/tapestry-profile-provider"
 import { toast } from "sonner"
 import { useSNS } from "@/hooks/useSNS"
@@ -498,6 +498,30 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              {/* Swap arrow — flips Amount ↔ Collateral tokens. Same UX
+                  pattern as Jupiter's Sell ↔ Buy switch. Recomputes the
+                  collateral value off the new pair so the percentage
+                  ratio stays consistent. */}
+              <div className="relative h-0">
+                <button
+                  type="button"
+                  aria-label="Swap amount and collateral tokens"
+                  title="Swap tokens"
+                  onClick={() => {
+                    const prevToken = token
+                    const prevCollateral = tokenCollateral
+                    setToken(prevCollateral)
+                    setTokenCollateral(prevToken)
+                    // Recalculate collateral amount against the new
+                    // token pair so the existing percentage holds.
+                    calcCollateral(loanAmount, prevCollateral, prevToken, collateralPercentage)
+                  }}
+                  className="absolute left-1/2 -translate-x-1/2 -top-3 z-10 inline-flex items-center justify-center w-8 h-8 rounded-full border border-border bg-background hover:border-blue-500/60 hover:text-blue-600 dark:hover:text-blue-400 shadow-sm transition-colors"
+                >
+                  <ArrowUpDown className="h-4 w-4" />
+                </button>
               </div>
 
               <div className="space-y-1">
