@@ -299,12 +299,18 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
     // happens to mean "$1" for USDC. For SOL or EURC the same form
     // would let through fractional-USD principals. Compare in USD
     // using the live token price so the floor is consistent.
+    //
+    // Tolerance: ±$0.01 absorbs Pyth USDC drift (~$0.9998) so a 1 USDC
+    // loan doesn't get rejected for being $0.0002 short of $1. Same
+    // ±$0.01 the agent's loan-scanner uses, so creation and matching
+    // agree on what counts as "$1".
     const loanUsdFloor = 1
+    const loanUsdTolerance = 0.01
     const loanTokenPrice = getTokenPrice(token) || 1
     const loanUsd = loanAmount * loanTokenPrice
     if (loanAmount <= 0) {
       newErrors.loanAmount = "Loan amount must be greater than 0"
-    } else if (loanUsd < loanUsdFloor) {
+    } else if (loanUsd < loanUsdFloor - loanUsdTolerance) {
       const minTokens = loanUsdFloor / loanTokenPrice
       newErrors.loanAmount = `Minimum loan amount is $${loanUsdFloor.toFixed(2)} USD (≈ ${minTokens.toFixed(loanTokenPrice >= 1 ? 2 : 4)} ${token})`
     }
