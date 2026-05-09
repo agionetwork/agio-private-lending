@@ -19,6 +19,13 @@ import {
 } from "@/lib/tapestry-server"
 import { calculateAllPoints, calculatePointsDetailed, POINTS_FLOOR_VERSION, type TokenPrices } from "@/lib/points"
 import { fetchTokenPrices } from "@/lib/token-prices"
+import {
+  isLoanSafe,
+  maxApyBps,
+  minCollateralUsd,
+  worstCasePriceDropPct,
+  MAX_APY_PCT,
+} from "@/lib/loan-math"
 import { SOLANA_CONFIG } from "@/config/solana"
 import { TOKEN_MINTS, roundUi, resolveTokenProgram } from "@/lib/token-mints"
 import { VALID_TOKENS } from "@/lib/agent/types"
@@ -954,6 +961,99 @@ export function registerFreeTools(server: McpServer) {
         total: events.length,
         events: events.slice(0, maxEvents),
       })
+    },
+  )
+
+  // --- preview-loan-safety ---
+  // Lets autonomous agents validate proposed loan terms before submitting
+  // an on-chain transaction. Mirrors the exact constraint enforced by
+  // is_loan_safe in the Anchor program: collateral_value_usd must be at
+  // least 1.2 × principal_usd × (1 + apy × duration_years).
+  server.tool(
+    "preview-loan-safety",
+    "Validate proposed loan terms against the on-chain safety constraint without submitting a transaction.",
+    {
+      principalToken: z
+        .enum(["SOL", "USDC", "EURC"])
+        .describe("Token symbol of the loan principal."),
+      principalAmount: z
+        .number()
+        .positive()
+        .describe("Loan principal denominated in principalToken."),
+      collateralToken: z
+        .enum(["SOL", "USDC", "EURC", "bSOL"])
+        .describe("Token symbol of the collateral."),
+      collateralAmount: z
+        .number()
+        .positive()
+        .describe("Collateral amount denominated in collateralToken."),
+      apyBps: z
+        .number()
+        .int()
+        .min(0)
+        .describe(`APY in basis points. Capped at ${MAX_APY_PCT * 100}.`),
+      durationSeconds: z
+        .number()
+        .int()
+        .positive()
+        .describe("Loan duration in seconds."),
+    },
+    async (args) => {
+      try {
+        const prices = await fetchTokenPrices()
+        const principalPrice = prices[args.principalToken]
+        const collateralPrice = prices[args.collateralToken]
+
+        if (!principalPrice || !collateralPrice) {
+          return jsonResult({
+            success: false,
+            error: "Missing oracle price for one of the requested tokens.",
+            errorCode: "ORACLE_UNAVAILABLE",
+          })
+        }
+
+        const principalUsd = args.principalAmount * principalPrice
+        const collateralValueUsd = args.collateralAmount * collateralPrice
+
+        const safe = isLoanSafe(
+          collateralValueUsd,
+          principalUsd,
+          args.apyBps,
+          args.durationSeconds,
+        )
+
+        const ceiling = maxApyBps(collateralValueUsd, principalUsd, args.durationSeconds)
+        const minColUsd = minCollateralUsd(principalUsd, args.apyBps, args.durationSeconds)
+        const dropPct = worstCasePriceDropPct(
+          collateralValueUsd,
+          principalUsd,
+          args.apyBps,
+          args.durationSeconds,
+        )
+
+        const reason = safe
+          ? undefined
+          : args.apyBps > ceiling
+            ? `APY exceeds the safe ceiling of ${ceiling} bps for the chosen collateral and duration.`
+            : `Collateral value ($${collateralValueUsd.toFixed(2)}) is below the required $${minColUsd.toFixed(2)}.`
+
+        return jsonResult({
+          success: true,
+          isSafe: safe,
+          maxApyBps: ceiling,
+          minCollateralUsd: minColUsd,
+          worstCasePriceDropPct: dropPct,
+          principalUsd,
+          collateralValueUsd,
+          ...(reason ? { reason } : {}),
+        })
+      } catch (err) {
+        return jsonResult({
+          success: false,
+          error: sanitizeError(err),
+          errorCode: "PREVIEW_FAILED",
+        })
+      }
     },
   )
 }
