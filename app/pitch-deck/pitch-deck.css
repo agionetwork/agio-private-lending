@@ -144,16 +144,15 @@
   position: relative;
   overflow: hidden;
   padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
 }
 .rich-agents-wordmark {
-  height: 600px;
+  position: absolute;
+  top: 50%;
+  left: 21.6%;
+  transform: translate(-50%, calc(-50% - 25px));
   width: 600px;
+  height: 600px;
   object-fit: contain;
-  margin-left: 80px;
-  position: relative;
   z-index: 2;
 }
 .rich-agents-robot {
@@ -552,6 +551,10 @@
   height: 60px;
   object-fit: contain;
 }
+.compare-table tr.hl td.name img {
+  width: 100px;
+  height: 100px;
+}
 .compare-table tr.hl td {
   background: rgba(79, 124, 255, 0.13) !important;
   border-bottom-color: var(--accent);
@@ -621,6 +624,7 @@
   justify-content: center;
   gap: 8px;
   font-weight: 700;
+  font-size: 30px;
 }
 .privacy-cell img {
   width: 50px;

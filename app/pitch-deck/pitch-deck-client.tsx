@@ -280,6 +280,8 @@ function Problem() {
     <>
       <div className="frame">
         <h2 className="problem-headline">
+          <br />
+          <br />
           When an <span className="accent">Agent</span> spots a profitable opportunity that needs liquidity, it has{" "}
           <span className="red">only 2 options</span>:
         </h2>
@@ -347,22 +349,11 @@ function Solution() {
 }
 
 function HowItWorks({ active }: { active: boolean }) {
-  // Restart the SVG SMIL animations whenever this slide becomes active.
-  const svgRef = useRef<SVGSVGElement | null>(null)
+  // SMIL animations don't reliably restart via setCurrentTime across browsers,
+  // so we remount the entire SVG by changing its key whenever the slide becomes active.
+  const [mountKey, setMountKey] = useState(0)
   useEffect(() => {
-    const svg = svgRef.current
-    if (!svg) return
-    if (active) {
-      try {
-        svg.setCurrentTime(0)
-        svg.unpauseAnimations()
-      } catch {}
-    } else {
-      try {
-        svg.pauseAnimations()
-        svg.setCurrentTime(0)
-      } catch {}
-    }
+    if (active) setMountKey((k) => k + 1)
   }, [active])
 
   return (
@@ -373,7 +364,7 @@ function HowItWorks({ active }: { active: boolean }) {
         </h2>
         <div className="hiw-flow">
           <svg
-            ref={svgRef}
+            key={mountKey}
             className="hiw-svg"
             viewBox="0 0 1680 760"
             preserveAspectRatio="none"
@@ -491,8 +482,8 @@ function HowItWorks({ active }: { active: boolean }) {
           </div>
 
           <div className="hiw-agio">
-            <img src="/pitch-deck/agio-favicon.png" alt="Agio" />
             <div className="hiw-agio-name">Agio</div>
+            <img src="/pitch-deck/agio-favicon.png" alt="Agio" />
           </div>
         </div>
       </div>
@@ -580,6 +571,7 @@ function Competition() {
                 <th>Terms</th>
                 <th>Liquidation</th>
                 <th>Privacy</th>
+                <th></th>
                 <th>Agent Friendly</th>
               </tr>
             </thead>
@@ -609,6 +601,9 @@ function Competition() {
                 <td>
                   <span className="check yes">✓</span>
                 </td>
+                <td>
+                  <span className="check yes">✓</span>
+                </td>
               </tr>
               <tr>
                 <td className="name">
@@ -631,6 +626,7 @@ function Competition() {
                 <td className="val">dynamic</td>
                 <td className="val">auto</td>
                 <td className="val">—</td>
+                <td className="val">—</td>
                 <td>
                   <span className="check yes">✓</span>
                 </td>
@@ -648,6 +644,7 @@ function Competition() {
                 <td className="val">fungible</td>
                 <td className="val">dynamic</td>
                 <td className="val">auto</td>
+                <td className="val">—</td>
                 <td className="val">—</td>
                 <td>
                   <span className="check yes">✓</span>
@@ -668,6 +665,9 @@ function Competition() {
                 <td className="val">auto</td>
                 <td className="val">—</td>
                 <td className="val">—</td>
+                <td>
+                  <span className="check yes">✓</span>
+                </td>
               </tr>
               <tr>
                 <td className="name">
@@ -682,6 +682,7 @@ function Competition() {
                 <td className="val">NFT</td>
                 <td className="val">offerbook</td>
                 <td className="val">manual</td>
+                <td className="val">—</td>
                 <td className="val">—</td>
                 <td className="val">—</td>
               </tr>
@@ -790,7 +791,7 @@ function GoToMarket() {
             <div className="gtm-headline">
               <div className="gtm-logos">
                 <img
-                  src="/pitch-deck/logo-moltbook.webp"
+                  src="/pitch-deck/logo-moltbook.png"
                   alt="Moltbook"
                   className="logo-bare"
                   style={{ maxWidth: 320, maxHeight: 220 }}
