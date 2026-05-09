@@ -43,8 +43,12 @@ export function WorstCasePreview({
   }
 
   return (
-    <p className={cn("text-xs italic text-muted-foreground", className)}>
-      If {collateralSymbol} drops {dropPct.toFixed(1)}% in price, this loan auto-liquidates.
+    <p className={cn("text-xs italic text-muted-foreground dark:text-white", className)}>
+      If {collateralSymbol} drops{" "}
+      <span className="font-medium not-italic text-red-600 dark:text-red-500">
+        {dropPct.toFixed(1)}%
+      </span>{" "}
+      in price, this loan auto-liquidates.
     </p>
   )
 }
