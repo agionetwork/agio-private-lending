@@ -7,6 +7,7 @@ import {
   safetyZone,
 } from "@/lib/loan-math"
 import { cn } from "@/lib/utils"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface Props {
   collateralValueUsd: number
@@ -54,18 +55,25 @@ export function RiskZoneBar({
         ? "Stressed"
         : "Safe"
 
-  const zoneColor =
-    zone === "liquidation"
-      ? "text-red-500"
-      : zone === "stressed"
-        ? "text-yellow-500"
-        : "text-emerald-500"
-
   return (
     <div className={cn("space-y-1", className)}>
       <div className="flex items-baseline justify-between text-xs">
-        <span className="text-muted-foreground">Collateral health (at maturity)</span>
-        <span className={cn("font-medium tabular-nums", zoneColor)}>
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-medium text-foreground">LOAN HEALTH</span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-bold cursor-help select-none leading-none transition-colors bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-600 dark:text-blue-200">?</span>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs bg-transparent dark:bg-blue-950">
+                <p>
+                  How much room your collateral has before this loan auto-liquidates. Calculated from your collateral ratio against the 125% liquidation threshold, with worst-case interest accrued through maturity included. Higher is safer.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <span className="font-medium tabular-nums text-red-600 dark:text-red-500">
           {zoneLabel} · {(ratio * 100).toFixed(0)}%
         </span>
       </div>
