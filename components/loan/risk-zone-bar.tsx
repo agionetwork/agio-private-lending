@@ -98,16 +98,16 @@ export function RiskZoneBar({
           aria-label={`Current ratio ${(ratio * 100).toFixed(0)}%`}
         />
       </div>
-      <div className="relative h-3.5 text-[10px] text-muted-foreground tabular-nums">
-        <div className="absolute left-0 flex flex-col items-start leading-tight text-red-500 font-medium">
+      <div className="relative h-8 text-[10px] text-muted-foreground tabular-nums">
+        <div className="absolute left-0 top-0 flex flex-col items-start leading-tight text-red-500 font-medium">
           <span>125%</span>
-          <span>Liquidation</span>
+          <span className="text-[9px]">Liquidation</span>
         </div>
-        <span className="absolute" style={{ left: "10%", transform: "translateX(-50%)" }}>
+        <span className="absolute top-0" style={{ left: "14%", transform: "translateX(-50%)" }}>
           130%
         </span>
-        <span className="absolute left-1/2 -translate-x-1/2">150%</span>
-        <span className="absolute right-0">175%+</span>
+        <span className="absolute top-0 left-1/2 -translate-x-1/2">150%</span>
+        <span className="absolute top-0 right-0">175%+</span>
       </div>
     </div>
   )

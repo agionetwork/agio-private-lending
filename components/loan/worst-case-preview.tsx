@@ -36,14 +36,14 @@ export function WorstCasePreview({
 
   if (dropPct <= 0) {
     return (
-      <p className={cn("text-xs italic text-red-500", className)}>
+      <p className={cn("mt-2 text-xs italic text-red-500", className)}>
         At current settings, this loan is already inside the liquidation zone.
       </p>
     )
   }
 
   return (
-    <p className={cn("text-xs italic text-muted-foreground dark:text-white", className)}>
+    <p className={cn("mt-2 text-xs italic text-muted-foreground dark:text-white", className)}>
       If {collateralSymbol} drops{" "}
       <span className="font-medium not-italic text-red-600 dark:text-red-500">
         {dropPct.toFixed(1)}%
