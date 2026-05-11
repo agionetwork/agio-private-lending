@@ -366,7 +366,7 @@
   display: block;
   object-fit: contain;
   position: relative;
-  top: 44px;
+  top: 20px;
 }
 .hiw-agio-name {
   color: var(--accent);
