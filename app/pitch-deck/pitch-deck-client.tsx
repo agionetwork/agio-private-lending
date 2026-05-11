@@ -326,7 +326,7 @@ function Solution() {
             <div className="feature-row">
               <div className="feature-key">TERMS</div>
               <div className="feature-val">
-                Collateral / Duration / Interest, <span className="dim">all programmable</span>
+                Collateral / Duration / Interest<div className="dim">all programmable</div>
               </div>
             </div>
             <div className="feature-row">
@@ -533,7 +533,7 @@ function Market() {
 
           <div className="stat-row stat-row--hl">
             <div className="stat-body">
-              <div className="stat-label">Agentic AI Market</div>
+              <div className="stat-label">Agentic Market</div>
               <div className="stat-text">Built for AI</div>
             </div>
             <div className="stat-num">
