@@ -99,7 +99,10 @@ export function RiskZoneBar({
         />
       </div>
       <div className="relative h-3.5 text-[10px] text-muted-foreground tabular-nums">
-        <span className="absolute left-0 text-red-500 font-medium">125% Liquidation</span>
+        <div className="absolute left-0 flex flex-col items-start leading-tight text-red-500 font-medium">
+          <span>125%</span>
+          <span>Liquidation</span>
+        </div>
         <span className="absolute" style={{ left: "10%", transform: "translateX(-50%)" }}>
           130%
         </span>
