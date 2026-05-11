@@ -140,39 +140,25 @@
 }
 
 /* Rich Agents */
-.rich-agents-frame {
-  position: relative;
-  overflow: hidden;
-  padding: 0;
-}
-.rich-agents-wordmark {
-  position: absolute;
-  top: 50%;
-  left: 21.6%;
-  transform: translate(-50%, calc(-50% - 25px));
-  width: 600px;
-  height: 600px;
-  object-fit: contain;
-  z-index: 2;
-}
-.rich-agents-robot {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: auto;
-  height: 78%;
-  object-fit: contain;
-  object-position: bottom right;
-  pointer-events: none;
-  z-index: 1;
-}
-
 /* Friction Scenes */
+.friction-frame {
+  padding-top: 140px;
+  align-items: center;
+}
+.friction-wordmark {
+  display: block;
+  width: 360px;
+  height: auto;
+  object-fit: contain;
+  margin: 0 auto 100px;
+}
 .friction-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 36px;
   padding: 0 24px;
+  width: 100%;
+  box-sizing: border-box;
   align-items: start;
 }
 .friction-card {

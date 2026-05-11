@@ -14,7 +14,6 @@ const OVERLAY_HIDE_MS = 1800
 
 const SLIDE_LABELS = [
   "Cover",
-  "Rich Agents",
   "Friction",
   "Problem",
   "Solution",
@@ -140,39 +139,36 @@ export default function PitchDeckClient() {
             <Cover />
           </Slide>
           <Slide active={index === 1}>
-            <RichAgents />
-          </Slide>
-          <Slide active={index === 2}>
             <Friction />
           </Slide>
-          <Slide active={index === 3}>
+          <Slide active={index === 2}>
             <Problem />
           </Slide>
-          <Slide active={index === 4}>
+          <Slide active={index === 3}>
             <Solution />
           </Slide>
-          <Slide active={index === 5}>
-            <HowItWorks active={index === 5} />
+          <Slide active={index === 4}>
+            <HowItWorks active={index === 4} />
           </Slide>
-          <Slide active={index === 6}>
+          <Slide active={index === 5}>
             <Market />
           </Slide>
-          <Slide active={index === 7}>
+          <Slide active={index === 6}>
             <Competition />
           </Slide>
-          <Slide active={index === 8}>
+          <Slide active={index === 7}>
             <Ecosystem />
           </Slide>
-          <Slide active={index === 9}>
+          <Slide active={index === 8}>
             <Traction />
           </Slide>
-          <Slide active={index === 10}>
+          <Slide active={index === 9}>
             <GoToMarket />
           </Slide>
-          <Slide active={index === 11}>
+          <Slide active={index === 10}>
             <Team />
           </Slide>
-          <Slide active={index === 12}>
+          <Slide active={index === 11}>
             <Connect />
           </Slide>
         </div>
@@ -233,31 +229,20 @@ function Cover() {
   )
 }
 
-function RichAgents() {
-  return (
-    <>
-      <div className="frame rich-agents-frame">
-        <img src="/pitch-deck/solana-wordmark-white.png" alt="Solana" className="rich-agents-wordmark" />
-        <img
-          src="/pitch-deck/robot-hand-solana.png"
-          alt="Robot hand holding phone with Solana"
-          className="rich-agents-robot"
-        />
-      </div>
-      <div className="footer" />
-    </>
-  )
-}
-
 function Friction() {
   return (
     <>
-      <div className="frame" style={{ paddingTop: 250 }}>
+      <div className="frame friction-frame">
+        <img
+          src="/pitch-deck/solana-wordmark-white.png"
+          alt="Solana"
+          className="friction-wordmark"
+        />
         <div className="friction-grid">
           <figure className="friction-card">
             <img src="/pitch-deck/scene-bank.png" alt="Bank account refused" />
             <figcaption>
-              <span className="red">Poor</span> AI Agents, they can't open a bank account
+              <span className="red">Poor</span> <span className="accent">AI Agents</span>, they can't open a bank account
             </figcaption>
           </figure>
           <figure className="friction-card">
