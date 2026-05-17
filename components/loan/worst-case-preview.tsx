@@ -5,7 +5,6 @@ import {
   safetyRatio,
   healthZone,
   liquidationProbabilityPct,
-  safetyDays,
   recommendedAdditionalCollateral,
 } from "@/lib/loan-math"
 import { cn } from "@/lib/utils"
@@ -50,7 +49,6 @@ export function WorstCasePreview({
     durationDays,
     collateralSymbol,
   )
-  const sDays = safetyDays(collateralValueUsd, debtTotalUsd, durationDays, collateralSymbol)
   const price = collateralPriceUsd ?? 0
   const rec = recommendedAdditionalCollateral(
     collateralValueUsd,
@@ -61,7 +59,6 @@ export function WorstCasePreview({
     15,
   )
   const addAmount = rec?.amount
-  const days = Math.round(durationDays)
   const p = Math.round(prob)
 
   const numClass =
@@ -83,14 +80,14 @@ export function WorstCasePreview({
   if (zone === "green") {
     body = (
       <>
-        Low liquidation risk (<Num>~{p}%</Num>). Comfortable margin for the{" "}
-        <Num>{days}-day</Num> duration.
+        Low liquidation risk (<Num>~{p}%</Num>). Your collateral has a
+        comfortable margin.
       </>
     )
   } else if (zone === "yellow") {
     body = (
       <>
-        Moderate risk (<Num>~{p}%</Num>) over <Num>{days} days</Num>.
+        Moderate risk (<Num>~{p}%</Num>).
         {addAmount ? (
           <>
             {" "}
@@ -103,7 +100,7 @@ export function WorstCasePreview({
     body = (
       <>
         Elevated risk (<Num>~{p}%</Num>) — {collateralSymbol} volatility may
-        trigger liquidation within <Num>~{Math.round(sDays)} days</Num>.
+        trigger liquidation.
         {addAmount ? (
           <>
             {" "}
