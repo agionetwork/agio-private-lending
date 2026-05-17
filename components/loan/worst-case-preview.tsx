@@ -2,6 +2,8 @@
 
 import {
   maxDebtUsd,
+  safetyRatio,
+  healthZone,
   liquidationProbabilityPct,
   safetyDays,
   recommendedAdditionalCollateral,
@@ -19,9 +21,10 @@ interface Props {
 }
 
 /**
- * One-line preview of the real liquidation probability for the chosen
- * parameters, with a concrete add-collateral recommendation. Uses the same
- * model the MCP preview-loan-safety tool returns.
+ * One-line liquidation-risk preview. The prose is neutral (white) so it never
+ * visually contradicts the health bar; only the figures (%, days, token
+ * amount) are tinted, and that tint follows the SAME zone the bar shows
+ * (healthZone of the at-maturity safety ratio) so text and bar always agree.
  */
 export function WorstCasePreview({
   collateralValueUsd,
@@ -36,6 +39,11 @@ export function WorstCasePreview({
 
   const debtTotalUsd = maxDebtUsd(principalUsd, apyBps, durationSeconds)
   const durationDays = durationSeconds / 86400
+
+  // Zone = exactly what RiskZoneBar paints.
+  const ratio = safetyRatio(collateralValueUsd, principalUsd, apyBps, durationSeconds)
+  const zone = healthZone(ratio)
+
   const prob = liquidationProbabilityPct(
     collateralValueUsd,
     debtTotalUsd,
@@ -56,26 +64,71 @@ export function WorstCasePreview({
   const days = Math.round(durationDays)
   const p = Math.round(prob)
 
-  let phrase: string
-  let tone: string
-  if (prob < 5) {
-    phrase = `Very low liquidation risk (<5%). Your collateral has a strong margin.`
-    tone = "text-emerald-600 dark:text-emerald-500"
-  } else if (prob < 15) {
-    phrase = `Low risk (~${p}%). Comfortable margin for the ${days}-day duration.`
-    tone = "text-emerald-600 dark:text-emerald-500"
-  } else if (prob < 30) {
-    phrase = `Moderate risk (~${p}%).${addAmount ? ` Consider adding ${addAmount} ${collateralSymbol} to reduce below 15%.` : ""}`
-    tone = "text-yellow-600 dark:text-yellow-500"
-  } else if (prob < 50) {
-    phrase = `⚠ High risk (~${p}%). ${collateralSymbol} volatility may trigger liquidation within ~${Math.round(sDays)} days.${addAmount ? ` Add ${addAmount} ${collateralSymbol} for a safer position.` : ""}`
-    tone = "text-orange-600 dark:text-orange-500"
+  const numClass =
+    zone === "green"
+      ? "text-emerald-600 dark:text-emerald-500"
+      : zone === "yellow"
+        ? "text-yellow-600 dark:text-yellow-500"
+        : zone === "orange"
+          ? "text-orange-600 dark:text-orange-500"
+          : "text-red-600 dark:text-red-500"
+
+  const Num = ({ children }: { children: React.ReactNode }) => (
+    <span className={cn("font-semibold not-italic", numClass)}>{children}</span>
+  )
+
+  // Wording severity follows the bar zone (not the divergent probability),
+  // so a green bar never reads as "high risk".
+  let body: React.ReactNode
+  if (zone === "green") {
+    body = (
+      <>
+        Low liquidation risk (<Num>~{p}%</Num>). Comfortable margin for the{" "}
+        <Num>{days}-day</Num> duration.
+      </>
+    )
+  } else if (zone === "yellow") {
+    body = (
+      <>
+        Moderate risk (<Num>~{p}%</Num>) over <Num>{days} days</Num>.
+        {addAmount ? (
+          <>
+            {" "}
+            Add <Num>{addAmount} {collateralSymbol}</Num> for a safer position.
+          </>
+        ) : null}
+      </>
+    )
+  } else if (zone === "orange") {
+    body = (
+      <>
+        Elevated risk (<Num>~{p}%</Num>) — {collateralSymbol} volatility may
+        trigger liquidation within <Num>~{Math.round(sDays)} days</Num>.
+        {addAmount ? (
+          <>
+            {" "}
+            Add <Num>{addAmount} {collateralSymbol}</Num> to de-risk.
+          </>
+        ) : null}
+      </>
+    )
   } else {
-    phrase = `⚠ Critical risk (~${p}%). Very likely to be liquidated before the deadline.${addAmount ? ` Add ${addAmount} ${collateralSymbol} or reduce the duration.` : ""}`
-    tone = "text-red-600 dark:text-red-500"
+    body = (
+      <>
+        Critical risk (<Num>~{p}%</Num>). Very likely to be liquidated before
+        the deadline.
+        {addAmount ? (
+          <>
+            {" "}
+            Add <Num>{addAmount} {collateralSymbol}</Num> or reduce the
+            duration.
+          </>
+        ) : null}
+      </>
+    )
   }
 
   return (
-    <p className={cn("mt-2 text-xs italic", tone, className)}>{phrase}</p>
+    <p className={cn("mt-2 text-xs italic text-foreground", className)}>{body}</p>
   )
 }

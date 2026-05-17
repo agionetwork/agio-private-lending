@@ -569,7 +569,7 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
                     // token pair so the existing percentage holds.
                     calcCollateral(loanAmount, prevCollateral, prevToken, collateralPercentage)
                   }}
-                  className="absolute left-1/2 -translate-x-1/2 -top-3 z-10 inline-flex items-center justify-center w-8 h-8 rounded-full border border-blue-500/30 bg-blue-500/15 hover:bg-blue-500/25 text-blue-600 dark:text-blue-200 shadow-sm transition-colors"
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 inline-flex items-center justify-center w-8 h-8 rounded-full border border-blue-500/30 bg-blue-500/15 hover:bg-blue-500/25 text-blue-600 dark:text-blue-200 shadow-sm transition-colors"
                 >
                   <ArrowUpDown className="h-4 w-4" />
                 </button>
