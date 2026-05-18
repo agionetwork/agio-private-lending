@@ -35,11 +35,12 @@ export const MAX_SWAP_SLIPPAGE_BPS = 500
 export const LIQUIDATION_THRESHOLD = CREATION_THRESHOLD
 export const SECONDS_PER_YEAR = 31_536_000
 
-// Protocol-wide APY ceiling. The on-chain `apy` field is u8, and the form
-// caps user input at this value. Keep aligned with `DEFAULT_MAX_APY` in the
-// Anchor program (currently 200 there for legacy reasons; product cap is 30).
-export const MAX_APY_PCT = 30
-export const MAX_APY_BPS = MAX_APY_PCT * 100
+// Protocol-wide APY ceiling. Raised to 100% — the collateral formula
+// self-regulates (higher APY → higher debt_total → more collateral
+// required), so no artificial low cap is needed. The on-chain `apy` field
+// is u8 and DEFAULT_MAX_APY is 200 there, so 100 is well within range.
+export const MAX_APY_PCT = 100
+export const MAX_APY_BPS = MAX_APY_PCT * 100 // 10000 bps
 
 // Boundaries used by RiskZoneBar to color the meter.
 // Ratio = collateral_value / max_debt_at_maturity.
@@ -229,59 +230,213 @@ export function riskLevel(probPct: number): RiskLevel {
   return "CRITICAL"
 }
 
+// A token is "stable" if its daily σ is under 0.5%/day.
+const STABLE_VOL_THRESHOLD = 0.005
+const SOL_LIKE = new Set(["SOL", "bSOL", "mSOL", "JitoSOL", "jitoSOL"])
+
+export type RiskDirection =
+  | "collateral_drops"
+  | "debt_appreciates"
+  | "spread_widens"
+  | "none"
+
+function isSameAssetClass(a: string, b: string): boolean {
+  return SOL_LIKE.has(a) && SOL_LIKE.has(b)
+}
+
 /**
- * Probability (%) the loan is liquidated before the deadline, modelling the
- * collateral price as a driftless lognormal random walk:
+ * The risk comes from whichever token can move relative to the other:
+ *  - volatile collateral, stable debt  → collateral_drops (σ = collateral)
+ *  - stable collateral, volatile debt  → debt_appreciates (σ = debt)
+ *  - both stable                       → spread_widens (σ = max, ~0)
+ *  - both volatile, same class         → spread_widens (σ = max/10, correlated)
+ *  - both volatile, different class    → spread_widens (σ = max)
+ *  - same token                        → none
+ */
+export function getRelevantVolatility(
+  collateralSymbol: string,
+  debtSymbol: string,
+): { sigmaDaily: number; direction: RiskDirection; sourceToken: string } {
+  if (collateralSymbol === debtSymbol) {
+    return { sigmaDaily: 0, direction: "none", sourceToken: collateralSymbol }
+  }
+  const sc = dailyVolatility(collateralSymbol)
+  const sd = dailyVolatility(debtSymbol)
+  const cStable = sc < STABLE_VOL_THRESHOLD
+  const dStable = sd < STABLE_VOL_THRESHOLD
+
+  if (!cStable && dStable) {
+    return { sigmaDaily: sc, direction: "collateral_drops", sourceToken: collateralSymbol }
+  }
+  if (cStable && !dStable) {
+    return { sigmaDaily: sd, direction: "debt_appreciates", sourceToken: debtSymbol }
+  }
+  if (cStable && dStable) {
+    const sigmaDaily = Math.max(sc, sd)
+    return {
+      sigmaDaily,
+      direction: "spread_widens",
+      sourceToken: sd >= sc ? debtSymbol : collateralSymbol,
+    }
+  }
+  // both volatile
+  const maxSym = sd >= sc ? debtSymbol : collateralSymbol
+  const maxSigma = Math.max(sc, sd)
+  const sigmaDaily = isSameAssetClass(collateralSymbol, debtSymbol)
+    ? maxSigma / 10
+    : maxSigma
+  return { sigmaDaily, direction: "spread_widens", sourceToken: maxSym }
+}
+
+/**
+ * Core risk geometry. `buffer` is the fractional move (of the relevant token)
+ * that would push the loan to the 1.10 foreclosure line:
+ *  - collateral_drops / spread_widens: (collateral − debt×1.10) / collateral
+ *  - debt_appreciates:                  collateral / (debt×1.10) − 1
+ */
+function riskCore(
+  collateralValueUsd: number,
+  debtTotalUsd: number,
+  durationDays: number,
+  collateralSymbol: string,
+  debtSymbol?: string,
+): {
+  sigmaDaily: number
+  sigmaPeriod: number
+  buffer: number
+  direction: RiskDirection
+  sourceToken: string
+} {
+  // Back-compat: no debt symbol → legacy collateral-drops model.
+  const sel = debtSymbol
+    ? getRelevantVolatility(collateralSymbol, debtSymbol)
+    : {
+        sigmaDaily: dailyVolatility(collateralSymbol),
+        direction: "collateral_drops" as RiskDirection,
+        sourceToken: collateralSymbol,
+      }
+  const days = Math.max(durationDays, 1 / 24)
+  const sigmaPeriod = sel.sigmaDaily * Math.sqrt(days)
+
+  let buffer: number
+  if (sel.direction === "debt_appreciates") {
+    buffer = collateralValueUsd / (debtTotalUsd * FORECLOSURE_THRESHOLD) - 1
+  } else {
+    buffer =
+      (collateralValueUsd - debtTotalUsd * FORECLOSURE_THRESHOLD) / collateralValueUsd
+  }
+  return { ...sel, sigmaPeriod, buffer }
+}
+
+/**
+ * Probability (%) the loan is liquidated before the deadline. Driftless
+ * lognormal random walk of the *relevant* token (the one that actually
+ * drives risk for this pair):
  *
- *   σ_period   = σ_daily × √duration_days
- *   buffer     = (collateral − debt × 1.10) / collateral
- *   z          = ln(1 − buffer) / σ_period
- *   prob       = Φ(z) × 1.2   (1.2 = safety multiplier for model error)
+ *   collateral_drops / spread_widens:  z = ln(1 − buffer) / σ_period
+ *   debt_appreciates:                  z = −ln(1 + buffer) / σ_period
+ *   prob = Φ(z) × 1.2   (1.2 = safety multiplier for model error)
  *
- * Clamped to [0, 99]. Stable collateral (σ≈0) ⇒ ~0%.
+ * Clamped to [0, 99]. `debtSymbol` is optional for back-compat (omitted ⇒
+ * legacy collateral-drops behaviour).
  */
 export function liquidationProbabilityPct(
   collateralValueUsd: number,
   debtTotalUsd: number,
   durationDays: number,
   collateralSymbol: string,
+  debtSymbol?: string,
 ): number {
   if (collateralValueUsd <= 0 || debtTotalUsd <= 0) return 0
-  const sigmaDaily = dailyVolatility(collateralSymbol)
-  const days = Math.max(durationDays, 1 / 24) // floor at ~1h
-  const sigmaPeriod = sigmaDaily * Math.sqrt(days)
-  if (sigmaPeriod <= 1e-9) return 0
-
-  const buffer =
-    (collateralValueUsd - debtTotalUsd * FORECLOSURE_THRESHOLD) / collateralValueUsd
+  const { sigmaPeriod, buffer, direction } = riskCore(
+    collateralValueUsd,
+    debtTotalUsd,
+    durationDays,
+    collateralSymbol,
+    debtSymbol,
+  )
+  if (direction === "none" || sigmaPeriod <= 1e-9) return 0
   if (buffer <= 0) return 99
-  if (buffer >= 1) return 0
 
-  const z = Math.log(1 - buffer) / sigmaPeriod
+  let z: number
+  if (direction === "debt_appreciates") {
+    z = -Math.log(1 + buffer) / sigmaPeriod
+  } else {
+    if (buffer >= 1) return 0
+    z = Math.log(1 - buffer) / sigmaPeriod
+  }
   const prob = normalCdf(z) * 1.2 * 100
   return Math.min(99, Math.max(0, prob))
 }
 
 /**
  * Days of typical (1σ) volatility the position can absorb before hitting the
- * foreclosure line. Intuitive "how long am I safe" figure, capped at the loan
- * duration.
+ * foreclosure line, capped at the loan duration. Direction-aware.
  */
 export function safetyDays(
   collateralValueUsd: number,
   debtTotalUsd: number,
   durationDays: number,
   collateralSymbol: string,
+  debtSymbol?: string,
 ): number {
   if (collateralValueUsd <= 0 || debtTotalUsd <= 0) return 0
-  const buffer = Math.max(
-    0,
-    (collateralValueUsd - debtTotalUsd * FORECLOSURE_THRESHOLD) / collateralValueUsd,
+  const { sigmaDaily, buffer, direction } = riskCore(
+    collateralValueUsd,
+    debtTotalUsd,
+    durationDays,
+    collateralSymbol,
+    debtSymbol,
   )
-  const sigmaDaily = dailyVolatility(collateralSymbol)
-  if (sigmaDaily <= 1e-9) return durationDays
-  const d = Math.pow(buffer / sigmaDaily, 2)
+  if (direction === "none" || sigmaDaily <= 1e-9) return durationDays
+  const d = Math.pow(Math.max(0, buffer) / sigmaDaily, 2)
   return Math.min(durationDays, d)
+}
+
+/**
+ * Full liquidation-risk assessment for a collateral/debt pair, including the
+ * risk direction and which token's volatility was used.
+ */
+export function assessLiquidationRisk(
+  collateralValueUsd: number,
+  debtTotalUsd: number,
+  durationDays: number,
+  collateralSymbol: string,
+  debtSymbol: string,
+): {
+  percent: number
+  level: RiskLevel
+  direction: RiskDirection
+  sigmaDailyPct: number
+  sourceToken: string
+  safetyDays: number
+} {
+  const { sigmaDaily, direction, sourceToken } = riskCore(
+    collateralValueUsd,
+    debtTotalUsd,
+    durationDays,
+    collateralSymbol,
+    debtSymbol,
+  )
+  const percent = liquidationProbabilityPct(
+    collateralValueUsd,
+    debtTotalUsd,
+    durationDays,
+    collateralSymbol,
+    debtSymbol,
+  )
+  return {
+    percent: Math.round(percent * 10) / 10,
+    level: riskLevel(percent),
+    direction,
+    sigmaDailyPct: Math.round(sigmaDaily * 1000) / 10,
+    sourceToken,
+    safetyDays:
+      Math.round(
+        safetyDays(collateralValueUsd, debtTotalUsd, durationDays, collateralSymbol, debtSymbol) *
+          10,
+      ) / 10,
+  }
 }
 
 /**
@@ -296,6 +451,7 @@ export function recommendedAdditionalCollateral(
   collateralSymbol: string,
   collateralPriceUsd: number,
   targetProbPct = 15,
+  debtSymbol?: string,
 ): {
   amount: number
   token: string
@@ -308,6 +464,7 @@ export function recommendedAdditionalCollateral(
     debtTotalUsd,
     durationDays,
     collateralSymbol,
+    debtSymbol,
   )
   if (current <= targetProbPct) return null
 
@@ -320,6 +477,7 @@ export function recommendedAdditionalCollateral(
       debtTotalUsd,
       durationDays,
       collateralSymbol,
+      debtSymbol,
     )
     if (p > targetProbPct) lo = mid
     else hi = mid
@@ -339,6 +497,7 @@ export function recommendedAdditionalCollateral(
           debtTotalUsd,
           durationDays,
           collateralSymbol,
+          debtSymbol,
         ) * 10,
       ) / 10,
   }

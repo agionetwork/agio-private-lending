@@ -492,6 +492,7 @@ export function LoanCreationForm({ mode }: LoanCreationFormProps) {
               apyBps={apyBpsLive}
               durationSeconds={durationSecsLive}
               collateralSymbol={tokenCollateral}
+              debtSymbol={token}
               collateralPriceUsd={collPriceUsd}
             />
           </div>

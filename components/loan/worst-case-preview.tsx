@@ -4,7 +4,7 @@ import {
   maxDebtUsd,
   safetyRatio,
   healthZone,
-  liquidationProbabilityPct,
+  assessLiquidationRisk,
   recommendedAdditionalCollateral,
 } from "@/lib/loan-math"
 import { cn } from "@/lib/utils"
@@ -15,6 +15,8 @@ interface Props {
   apyBps: number
   durationSeconds: number
   collateralSymbol: string
+  /** Debt/principal token — needed to detect debt-appreciation risk. */
+  debtSymbol?: string
   collateralPriceUsd?: number
   className?: string
 }
@@ -31,6 +33,7 @@ export function WorstCasePreview({
   apyBps,
   durationSeconds,
   collateralSymbol,
+  debtSymbol,
   collateralPriceUsd,
   className,
 }: Props) {
@@ -43,11 +46,14 @@ export function WorstCasePreview({
   const ratio = safetyRatio(collateralValueUsd, principalUsd, apyBps, durationSeconds)
   const zone = healthZone(ratio)
 
-  const prob = liquidationProbabilityPct(
+  // Direction-aware probability (debt token may appreciate, not just
+  // collateral dropping).
+  const risk = assessLiquidationRisk(
     collateralValueUsd,
     debtTotalUsd,
     durationDays,
     collateralSymbol,
+    debtSymbol ?? collateralSymbol,
   )
   const price = collateralPriceUsd ?? 0
   const rec = recommendedAdditionalCollateral(
@@ -57,9 +63,10 @@ export function WorstCasePreview({
     collateralSymbol,
     price,
     15,
+    debtSymbol,
   )
   const addAmount = rec?.amount
-  const p = Math.round(prob)
+  const p = Math.round(risk.percent)
 
   const numClass =
     zone === "green"
@@ -77,7 +84,21 @@ export function WorstCasePreview({
   // Wording severity follows the bar zone (not the divergent probability),
   // so a green bar never reads as "high risk".
   let body: React.ReactNode
-  if (zone === "green") {
+  if (risk.direction === "debt_appreciates") {
+    body = (
+      <>
+        Liquidation risk (<Num>~{p}%</Num>) comes from {debtSymbol} appreciating
+        — your {collateralSymbol} collateral is stable but the {debtSymbol} you
+        owe may rise in value.
+        {addAmount ? (
+          <>
+            {" "}
+            Add <Num>{addAmount} {collateralSymbol}</Num> for a safer position.
+          </>
+        ) : null}
+      </>
+    )
+  } else if (zone === "green") {
     body = (
       <>
         Low liquidation risk (<Num>~{p}%</Num>). Your collateral has a

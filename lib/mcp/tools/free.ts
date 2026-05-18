@@ -29,11 +29,8 @@ import {
   priceDropToWarning,
   priceDropToForeclosure,
   foreclosureDistribution,
-  liquidationProbabilityPct,
-  riskLevel,
-  safetyDays,
+  assessLiquidationRisk,
   recommendedAdditionalCollateral,
-  dailyVolatility,
   GREEN_THRESHOLD,
   CREATION_THRESHOLD,
   WARNING_THRESHOLD,
@@ -41,6 +38,7 @@ import {
   LIQUIDATION_FEE_BPS,
   MAX_SWAP_SLIPPAGE_BPS,
   MAX_APY_PCT,
+  MAX_APY_BPS,
 } from "@/lib/loan-math"
 import { SOLANA_CONFIG } from "@/config/solana"
 import { TOKEN_MINTS, roundUi, resolveTokenProgram } from "@/lib/token-mints"
@@ -1075,19 +1073,21 @@ export function registerFreeTools(server: McpServer) {
         // proxy for swap proceeds (ignores live Jupiter slippage).
         const dist = foreclosureDistribution(collateralValueUsd, debtTotalUsd)
 
-        // Liquidation probability over the loan horizon.
+        // Liquidation probability over the loan horizon — direction-aware
+        // (risk may come from the debt token appreciating, not just the
+        // collateral dropping).
         const durationDays = args.durationSeconds / 86400
-        const probPct = liquidationProbabilityPct(
+        const risk = assessLiquidationRisk(
           collateralValueUsd,
           debtTotalUsd,
           durationDays,
           args.collateralToken,
+          args.principalToken,
         )
-        const probRound = Math.round(probPct * 10) / 10
-        const level = riskLevel(probPct)
-        const sDays = Math.round(
-          safetyDays(collateralValueUsd, debtTotalUsd, durationDays, args.collateralToken) * 10,
-        ) / 10
+        const probPct = risk.percent
+        const probRound = risk.percent
+        const level = risk.level
+        const sDays = risk.safetyDays
         const rec = recommendedAdditionalCollateral(
           collateralValueUsd,
           debtTotalUsd,
@@ -1095,12 +1095,24 @@ export function registerFreeTools(server: McpServer) {
           args.collateralToken,
           collateralPrice,
           15,
+          args.principalToken,
         )
-        const sigmaDailyPct = (dailyVolatility(args.collateralToken) * 100).toFixed(1)
+        const sigmaDailyPct = risk.sigmaDailyPct.toFixed(1)
+        const days = Math.round(durationDays)
+        const directionNote =
+          risk.direction === "debt_appreciates"
+            ? ` — risk is debt (${risk.sourceToken}) appreciating`
+            : risk.direction === "spread_widens"
+              ? ` — risk is the ${args.collateralToken}/${args.principalToken} spread widening`
+              : ""
         const description =
-          probPct < 5
-            ? `Very low liquidation risk (<5%) over ${Math.round(durationDays)} days.`
-            : `~${Math.round(probPct)}% chance of liquidation in ${Math.round(durationDays)} days based on ${args.collateralToken} historical volatility.`
+          risk.direction === "none"
+            ? "Same token on both sides — no price risk."
+            : risk.direction === "debt_appreciates"
+              ? `~${Math.round(probPct)}% chance of liquidation in ${days} days if ${risk.sourceToken} price rises significantly.`
+              : probPct < 5
+                ? `Very low liquidation risk (<5%) over ${days} days.`
+                : `~${Math.round(probPct)}% chance of liquidation in ${days} days based on ${risk.sourceToken} historical volatility.`
         const recommendation = rec
           ? `Add ${rec.amount} ${args.collateralToken} to reduce risk below 15%.`
           : "No additional collateral needed — risk is already low."
@@ -1124,7 +1136,8 @@ export function registerFreeTools(server: McpServer) {
             percent: probRound,
             riskLevel: level,
             safetyDays: sDays,
-            basedOn: `${args.collateralToken} historical volatility (σ=${sigmaDailyPct}%/day)`,
+            riskDirection: risk.direction,
+            basedOn: `${risk.sourceToken} historical volatility (σ=${sigmaDailyPct}%/day)${directionNote}`,
             description,
             recommendation,
             recommendedAdditional: rec,
@@ -1171,7 +1184,9 @@ export function registerFreeTools(server: McpServer) {
               ),
             ),
             tokenVolatility: `${sigmaDailyPct}% daily`,
-            maxApyBps: ceiling,
+            maxApyBps: MAX_APY_BPS,
+            safeCeilingBps: ceiling,
+            note: `Safe ceiling is the max APY where this collateral still meets the ${(CREATION_THRESHOLD * 100).toFixed(0)}% minimum. You can choose any APY up to ${MAX_APY_PCT}% (${MAX_APY_BPS} bps) but will need more collateral for higher rates.`,
           },
           liquidation: {
             feePct: LIQUIDATION_FEE_BPS / 100,
